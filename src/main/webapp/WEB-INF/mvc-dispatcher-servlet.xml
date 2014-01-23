@@ -1,0 +1,102 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:oauth="http://www.springframework.org/schema/security/oauth2"
+	xmlns:sec="http://www.springframework.org/schema/security"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mongo="http://www.springframework.org/schema/data/mongo"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans     
+        http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+        http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context-3.2.xsd
+        http://www.springframework.org/schema/util
+        http://www.springframework.org/schema/util/spring-util-3.2.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd
+        http://www.springframework.org/schema/security/oauth2 
+        http://www.springframework.org/schema/security/spring-security-oauth2-1.0.xsd
+        http://www.springframework.org/schema/security
+        http://www.springframework.org/schema/security/spring-security-3.1.xsd
+        http://www.springframework.org/schema/data/mongo
+      	http://www.springframework.org/schema/data/mongo/spring-mongo-1.0.xsd">
+
+
+	<mvc:default-servlet-handler />
+
+	<!-- Enable Image uploads (used in ImageController.class) -->
+
+	<mvc:annotation-driven>
+		<mvc:message-converters register-defaults="true">
+			<bean
+				class="org.springframework.http.converter.BufferedImageHttpMessageConverter" />
+		</mvc:message-converters>
+	</mvc:annotation-driven>
+
+	<!-- Enable Annotations -->
+
+	<context:annotation-config />
+	<context:component-scan base-package="com.spatialtranscriptomics.controller" />
+	<context:component-scan base-package="com.spatialtranscriptomics.model" />
+	<context:component-scan base-package="com.spatialtranscriptomics.service" />
+	<context:component-scan base-package="com.spatialtranscriptomics.serviceImpl" />
+
+	<!-- Enable Property Placeholder -->
+
+	<context:property-placeholder location="classpath:application.properties" />
+
+	<!-- Amazon S3 Config -->
+
+	<!-- We create a simple AmazonS3Client instance here. It is Autowired and 
+		used in com.spatialtranscriptomics.serviceImpl.ImageServiceImpl.class -->
+
+	<bean id="s3Client" class="com.amazonaws.services.s3.AmazonS3Client">
+		<constructor-arg>
+			<ref bean="awsCredentials" />
+		</constructor-arg>
+	</bean>
+
+	<bean id="awsCredentials" class="com.amazonaws.auth.BasicAWSCredentials">
+		<constructor-arg type="String" value="${s3.accesskey}" />
+		<constructor-arg type="String" value="${s3.secretkey}" />
+	</bean>
+
+	<!-- Mongo Config -->
+
+	<!-- We use multiple databases, e.g. 'analysis', 'feature',... in MongoDB 
+		We create a separate mongoTemplate instances for each database here. The 
+		mongoTemplate instances are Autowired and used in the classes in package 
+		com.spatialtranscriptomics.serviceImpl -->
+
+	<mongo:mongo host="${mongodb.host}"/>
+
+	<bean id="mongoCredentials" class="org.springframework.data.authentication.UserCredentials">
+		<constructor-arg name="username" value="${mongodb.user}" />
+		<constructor-arg name="password" value="${mongodb.password}" />
+	</bean>
+
+	<bean id="mongoTemplateAnalysis" class="org.springframework.data.mongodb.core.MongoTemplate">
+		<constructor-arg ref="mongo" />
+		<constructor-arg name="databaseName" value="${mongodb.database.analysis}" />
+		<constructor-arg name="userCredentials" ref="mongoCredentials" />
+	</bean>
+
+	<bean id="mongoTemplateFeature" class="org.springframework.data.mongodb.core.MongoTemplate">
+		<constructor-arg ref="mongo" />
+		<constructor-arg name="databaseName" value="${mongodb.database.feature}" />
+		<constructor-arg name="userCredentials" ref="mongoCredentials" />
+	</bean>
+
+	<bean id="mongoTemplateUser" class="org.springframework.data.mongodb.core.MongoTemplate">
+		<constructor-arg ref="mongo" />
+		<constructor-arg name="databaseName" value="${mongodb.database.user}" />
+		<constructor-arg name="userCredentials" ref="mongoCredentials" />
+	</bean>
+
+	<bean id="mongoTemplateExperiment" class="org.springframework.data.mongodb.core.MongoTemplate">
+		<constructor-arg ref="mongo" />
+		<constructor-arg name="databaseName" value="${mongodb.database.experiment}" />
+		<constructor-arg name="userCredentials" ref="mongoCredentials" />
+	</bean> 
+
+
+</beans>
