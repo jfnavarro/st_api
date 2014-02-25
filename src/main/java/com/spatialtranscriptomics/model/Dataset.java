@@ -29,19 +29,19 @@ public class Dataset implements IDataset{
 	@NotBlank(message = "Name must not be blank.")
 	String name;
 	
-	String chipid;
-	String figure_blue;
-	String figure_red;
-	int figure_status;
-	double[] alignment_matrix;
-	int stat_barcodes;
-	int stat_genes;
-	int stat_unique_barcodes;
-	int stat_unique_genes;
-	String stat_tissue;
-	String stat_specie;
-	String stat_comments;
-	Date stat_created;	
+	String image_alignment_id;
+	String tissue;
+	String species;
+	
+	int overall_gene_count;
+	int unique_gene_count;
+	int overall_barcode_count;
+	int unique_barcode_count;
+	int overall_hit_count;
+	double[] overall_hit_quartiles;
+	double[] gene_pooled_hit_quartiles;
+	String comment;
+	Date last_modified;	
 	
 	public String getId() {
 		return id;
@@ -52,108 +52,109 @@ public class Dataset implements IDataset{
 		this.id = id;
 	}
 
-	public String getChipid() {
-		return chipid;
-	}
-	public void setChipid(String chipid) {
-		this.chipid = chipid;
-	}
-	public String getFigure_blue() {
-		return figure_blue;
-	}
-	public void setFigure_blue(String figure_blue) {
-		this.figure_blue = figure_blue;
-	}
-	public String getFigure_red() {
-		return figure_red;
-	}
-	public void setFigure_red(String figure_red) {
-		this.figure_red = figure_red;
-	}
-	public int getFigure_status() {
-		return figure_status;
-	}
-	public void setFigure_status(int figure_status) {
-		this.figure_status = figure_status;
-	}
-	
-	public double[] getAlignment_matrix(){
-		return alignment_matrix;
-	}
-	public void setAlignment_matrix(double[] alignment_matrix){
-		this.alignment_matrix = alignment_matrix;
-	}
-	
 	public String getName() {
 		return name;
 	}
+
 	public void setName(String name) {
 		this.name = name;
 	}
 
-	public int getStat_barcodes() {
-		return this.stat_barcodes;
+	public String getImage_alignment_id() {
+		return this.image_alignment_id;
 	}
 
-	public void setStat_barcodes(int stat_barcodes) {
-		this.stat_barcodes = stat_barcodes;
+	public void setImage_alignment_id(String imal) {
+		this.image_alignment_id = imal;
 	}
 
-	public int getStat_genes() {
-		return this.stat_genes;
+	public String getTissue() {
+		return this.tissue;
 	}
 
-	public void setStat_genes(int stat_genes) {
-		this.stat_genes = stat_genes;
+	public void setTissue(String tissue) {
+		this.tissue = tissue;
 	}
 
-	public int getStat_unique_barcodes() {
-		return this.stat_unique_barcodes;
+	public String getSpecies() {
+		return this.species;
 	}
 
-	public void setStat_unique_barcodes(int stat_unique_barcodes) {
-		this.stat_unique_barcodes = stat_unique_barcodes;
+	public void setSpecies(String species) {
+		this.species = species;
 	}
 
-	public int getStat_unique_genes() {
-		return this.stat_unique_genes;
+	public int getOverall_gene_count() {
+		return overall_gene_count;
 	}
 
-	public void setStat_unique_genes(int stat_unique_genes) {
-		this.stat_unique_genes = stat_unique_genes;
+	public void setOverall_gene_count(int count) {
+		this.overall_gene_count = count;
 	}
 
-	public String getStat_tissue() {
-		return this.stat_tissue;
+	public int getUnique_gene_count() {
+		return this.unique_gene_count;
 	}
 
-	public void setStat_tissue(String stat_tissue) {
-		this.stat_tissue = stat_tissue;
+	public void setUnique_gene_count(int count) {
+		this.unique_gene_count = count;
 	}
 
-	public String getStat_specie() {
-		return this.stat_specie;
+	public int getOverall_barcode_count() {
+		return overall_barcode_count;
 	}
 
-	public void setStat_specie(String stat_specie) {
-		this.stat_specie = stat_specie;
+	public void setOverall_barcode_count(int count) {
+		this.overall_barcode_count = count;
 	}
 
-	public Date getStat_created() {
-		return this.stat_created;
+	public int getUnique_barcode_count() {
+		return this.unique_barcode_count;
 	}
 
-	public void setStat_created(Date stat_created) {
-		this.stat_created = stat_created;
+	public void setUnique_barcode_count(int count) {
+		this.unique_barcode_count = count;
 	}
 
-	public String getStat_comments() {
-		return this.stat_comments;
+	public int getOverall_hit_count() {
+		return this.overall_hit_count;
 	}
 
-	public void setStat_comments(String stat_comments) {
-		this.stat_comments = stat_comments;
+	public void setOverall_hit_count(int count) {
+		this.overall_hit_count = count;
 	}
 
-	
+	public double[] getOverall_hit_quartiles() {
+		return this.overall_hit_quartiles;
+	}
+
+	public void setOverall_hit_quartiles(double[] quartiles) {
+		this.overall_hit_quartiles = quartiles;
+	}
+
+	public double[] getGene_pooled_hit_quartiles() {
+		return this.gene_pooled_hit_quartiles;
+	}
+
+	public void setGene_pooled_hit_quartiles(double[] quartiles) {
+		this.gene_pooled_hit_quartiles = quartiles;
+	}
+
+	public String getComment() {
+		return this.comment;
+	}
+
+	public void setComment(String comm) {
+		this.comment = comm;
+	}
+
+	public Date getLast_modified() {
+		return this.last_modified;
+	}
+
+	public void setLast_modified(Date lastmod) {
+		this.last_modified = lastmod;
+	}
+
+		
 }

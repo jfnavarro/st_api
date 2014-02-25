@@ -17,8 +17,10 @@ public interface AccountService {
 
 	public Account find(String id);
 
-	public Account findByName(String username);
+	public Account findByEmail(String email);
 
+	public List<Account> findByDataset(String datasetId);
+	
 	public List<Account> list();
 
 	public Account add(Account account);
@@ -26,5 +28,6 @@ public interface AccountService {
 	public void update(Account account);
 
 	public void delete(String id);
-
+	
+	
 }

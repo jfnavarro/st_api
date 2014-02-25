@@ -27,20 +27,17 @@ public class Feature implements IFeature {
 	@Id
 	String id;
 	
-	/** Grid location barcode. */
 	String barcode;
 
-	/** Gene identifier. */
-	String gene;
+	String gene_nomenclature;
 	
-	/** Number of hits. */
 	int hits;
 	
-	/** Grid location x coordinate. */
 	int x;
 	
-	/** Grid location y coordinate. */
 	int y;
+	
+	String annotation;
 	
 	public String getId() {
 		return id;
@@ -57,14 +54,6 @@ public class Feature implements IFeature {
 
 	public void setBarcode(String barcode) {
 		this.barcode = barcode;
-	}
-
-	public String getGene() {
-		return gene;
-	}
-
-	public void setGene(String gene) {
-		this.gene = gene;
 	}
 
 	public int getHits() {
@@ -89,6 +78,22 @@ public class Feature implements IFeature {
 
 	public void setY(int y) {
 		this.y = y;
+	}
+
+	public String getGene_nomenclature() {
+		return this.gene_nomenclature;
+	}
+
+	public void setGene_nomenclature(String gene) {
+		this.gene_nomenclature = gene;
+	}
+
+	public String getAnnotation() {
+		return this.annotation;
+	}
+
+	public void setAnnotation(String ann) {
+		this.annotation = ann;
 	}
 
 }

@@ -44,12 +44,11 @@ public class ImageServiceImpl implements ImageService {
 	private @Value("${s3.imagebucket}")
 	String imageBucket;
 
-	@SuppressWarnings("unused")
 	private static final Logger logger = Logger
 			.getLogger(ImageServiceImpl.class);
 
+	
 	public List<ImageMetadata> list() {
-
 		ObjectListing objects = s3Client.listObjects(imageBucket);
 
 		List<S3ObjectSummary> objs = objects.getObjectSummaries();
@@ -64,8 +63,8 @@ public class ImageServiceImpl implements ImageService {
 		return imageMetadataList;
 	}
 
+	
 	public ImageMetadata getImageMetadata(String filename) {
-
 		List<ImageMetadata> imList = this.list();
 
 		for (ImageMetadata im : imList) {
@@ -76,8 +75,8 @@ public class ImageServiceImpl implements ImageService {
 		return null;
 	}
 
+	
 	public BufferedImage getBufferedImage(String filename) {
-
 		try {
 			S3ObjectInputStream in = s3Client.getObject(imageBucket, filename)
 					.getObjectContent();
@@ -90,9 +89,10 @@ public class ImageServiceImpl implements ImageService {
 
 	}
 
+	
 	public void add(String filename, BufferedImage img) {
-
 		try {
+			logger.debug("Adding image " + filename);
 			ObjectMetadata om = new ObjectMetadata();
 			om.setContentType("image/jpeg");
 
@@ -108,8 +108,9 @@ public class ImageServiceImpl implements ImageService {
 
 	}
 
+	
 	public void delete(String filename) {
-
+		logger.debug("Deleting image " + filename);
 		s3Client.deleteObject(imageBucket, filename);
 	}
 

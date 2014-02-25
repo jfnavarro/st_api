@@ -25,11 +25,10 @@ import com.spatialtranscriptomics.service.GeneService;
 public class GeneServiceImpl implements GeneService {
 
 	@Autowired
-	MongoOperations mongoTemplateFeature;
+	MongoOperations mongoTemplateFeatureDB;
 
 	public List<Gene> findByDatasetId(String datasetId) {
-
-		return mongoTemplateFeature.findAll(Gene.class, datasetId);
+		return mongoTemplateFeatureDB.findAll(Gene.class, datasetId);
 	}
 
 }

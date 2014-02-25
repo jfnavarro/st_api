@@ -6,6 +6,7 @@
 
 package com.spatialtranscriptomics.serviceImpl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -16,6 +17,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import com.spatialtranscriptomics.model.Account;
+import com.spatialtranscriptomics.model.DatasetInfo;
 import com.spatialtranscriptomics.service.AccountService;
 
 /**
@@ -26,41 +28,50 @@ import com.spatialtranscriptomics.service.AccountService;
 @Service
 public class AccountServiceImpl implements AccountService {
 
-	@SuppressWarnings("unused")
 	private static final Logger logger = Logger
 			.getLogger(AccountServiceImpl.class);
 
 	@Autowired
-	MongoOperations mongoTemplateUser;
-
+	MongoOperations mongoTemplateUserDB;
 
 	public Account find(String id) {
-		return mongoTemplateUser.findOne(
+		return mongoTemplateUserDB.findOne(
 				new Query(Criteria.where("id").is(id)), Account.class);
 	}
 
-	public Account findByName(String username) {
-		return mongoTemplateUser.findOne(new Query(Criteria.where("username")
-				.is(username)), Account.class);
+	public Account findByEmail(String email) {
+		return mongoTemplateUserDB.findOne(new Query(Criteria.where("email").is(email)), Account.class);
 	}
 
 	public List<Account> list() {
-		return mongoTemplateUser.findAll(Account.class);
+		return mongoTemplateUserDB.findAll(Account.class);
 	}
 
 	public Account add(Account account) {
-		mongoTemplateUser.insert(account);
+		logger.debug("Adding account");
+		mongoTemplateUserDB.insert(account);
 		return account;
 	}
 
 	public void update(Account account) {
-		mongoTemplateUser.save(account);
+		logger.debug("Updating account " + account.getId());
+		mongoTemplateUserDB.save(account);
 
 	}
 
 	public void delete(String id) {
-		mongoTemplateUser.remove(find(id));
+		logger.debug("Removing account " + id);
+		mongoTemplateUserDB.remove(find(id));
+	}
 
+	public List<Account> findByDataset(String datasetId) {
+		List<DatasetInfo> dsis = mongoTemplateUserDB.find(new Query(Criteria.where("dataset_id").is(datasetId)), DatasetInfo.class);
+		if (dsis == null) { return null; }
+		List<String> strs = new ArrayList<String>(dsis.size());
+		for (DatasetInfo dsi : dsis) {
+			strs.add(dsi.getAccount_id());
+		}
+		return mongoTemplateUserDB.find(new Query(Criteria.where("id").in(strs)), Account.class);
 	}
 
 }

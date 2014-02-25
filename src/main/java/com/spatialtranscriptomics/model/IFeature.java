@@ -16,17 +16,13 @@ public interface IFeature {
 
 	public void setId(String id);
 
-	public String getBarcode();
+	public String getGene_nomenclature();
 
-	public void setBarcode(String barcode);
-
-	public String getGene();
-
-	public void setGene(String gene);
-
-	public int getHits();
-
-	public void setHits(int hits);
+	public void setGene_nomenclature(String gene);
+	
+	public String getAnnotation();
+	
+	public void setAnnotation(String ann);
 
 	public int getX();
 
@@ -35,4 +31,12 @@ public interface IFeature {
 	public int getY();
 
 	public void setY(int y);
+	
+	public int getHits();
+
+	public void setHits(int hits);
+	
+	public String getBarcode();
+
+	public void setBarcode(String barcode);
 }

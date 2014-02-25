@@ -26,7 +26,6 @@ import com.spatialtranscriptomics.service.ChipService;
 @Service
 public class ChipServiceImpl implements ChipService {
 
-	@SuppressWarnings("unused")
 	private static final Logger logger = Logger
 			.getLogger(ChipServiceImpl.class);
 
@@ -34,37 +33,36 @@ public class ChipServiceImpl implements ChipService {
 	MongoUserDetailsServiceImpl customUserDetailsService;
 
 	@Autowired
-	MongoOperations mongoTemplateAnalysis;
+	MongoOperations mongoTemplateAnalysisDB;
 
 	public Chip find(String id) {
-		return mongoTemplateAnalysis.findOne(
+		return mongoTemplateAnalysisDB.findOne(
 				new Query(Criteria.where("id").is(id)), Chip.class);
 	}
 
 	public Chip findByName(String name) {
-		return mongoTemplateAnalysis.findOne(new Query(Criteria.where("name")
+		return mongoTemplateAnalysisDB.findOne(new Query(Criteria.where("name")
 				.is(name)), Chip.class);
 	}
 
 	public List<Chip> list() {
-
-		return mongoTemplateAnalysis.findAll(Chip.class);
+		return mongoTemplateAnalysisDB.findAll(Chip.class);
 	}
 
 	public Chip add(Chip chip) {
-
-		mongoTemplateAnalysis.insert(chip);
+		logger.debug("Adding chip");
+		mongoTemplateAnalysisDB.insert(chip);
 		return chip;
 	}
 
 	public void update(Chip chip) {
-
-		mongoTemplateAnalysis.save(chip);
+		logger.debug("Updating chip " + chip.getId());
+		mongoTemplateAnalysisDB.save(chip);
 	}
 
 	public void delete(String id) {
-
-		mongoTemplateAnalysis.remove(find(id));
+		logger.debug("Deleting chip " + id);
+		mongoTemplateAnalysisDB.remove(find(id));
 	}
 
 }

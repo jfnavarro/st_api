@@ -18,59 +18,55 @@ public interface IDataset {
 
 	public void setId(String id);
 
-	public String getChipid();
-
-	public void setChipid(String chipid);
-
-	public String getFigure_blue();
-
-	public void setFigure_blue(String figure_blue);
-
-	public String getFigure_red();
-
-	public void setFigure_red(String figure_red);
-
-	public int getFigure_status();
-
-	public void setFigure_status(int figure_status);
-
-	public double[] getAlignment_matrix();
-
-	public void setAlignment_matrix(double[] alignment_matrix);
-
 	public String getName();
 
 	public void setName(String name);
+	
+	public String getImage_alignment_id();
+	
+	public void setImage_alignment_id(String imal);
 
-	public int getStat_barcodes();
+	public String getTissue();
 
-	public void setStat_barcodes(int stat_barcodes);
+	public void setTissue(String tissue);
 
-	public int getStat_genes();
+	public String getSpecies();
 
-	public void setStat_genes(int stat_genes);
+	public void setSpecies(String species);
+	
+	public int getOverall_gene_count();
 
-	public int getStat_unique_barcodes();
+	public void setOverall_gene_count(int count);
+	
+	public int getUnique_gene_count();
 
-	public void setStat_unique_barcodes(int stat_unique_barcodes);
+	public void setUnique_gene_count(int count);
 
-	public int getStat_unique_genes();
+	public int getOverall_barcode_count();
 
-	public void setStat_unique_genes(int stat_unique_genes);
+	public void setOverall_barcode_count(int count);
 
-	public String getStat_tissue();
+	public int getUnique_barcode_count();
 
-	public void setStat_tissue(String stat_tissue);
+	public void setUnique_barcode_count(int count);
 
-	public String getStat_specie();
+	public int getOverall_hit_count();
+	
+	public void setOverall_hit_count(int count);
+	
+	public double[] getOverall_hit_quartiles();
 
-	public void setStat_specie(String stat_specie);
+	public void setOverall_hit_quartiles(double[] quartiles);
 
-	public String getStat_comments();
+	public double[] getGene_pooled_hit_quartiles();
 
-	public void setStat_comments(String stat_comments);
+	public void setGene_pooled_hit_quartiles(double[] quartiles);
 
-	public Date getStat_created();
+	public String getComment();
+	
+	public void setComment(String comm);
+	
+	public Date getLast_modified();
 
-	public void setStat_created(Date stat_created);
+	public void setLast_modified(Date lastmod);
 }

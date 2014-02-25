@@ -45,7 +45,6 @@ public class ImageController {
 	@RequestMapping(method = RequestMethod.GET)
 	public @ResponseBody
 	List<ImageMetadata> listMetadata(){
-
 		return imageService.list();
 	}
 
@@ -56,7 +55,6 @@ public class ImageController {
 	@RequestMapping(value = "{id:.+}", headers = "Accept=image/jpeg, image/jpg", method = RequestMethod.GET)
 	public @ResponseBody
 	BufferedImage get(@PathVariable String id) {
-
 		BufferedImage img = imageService.getBufferedImage(id);
 		return img;
 	}
@@ -66,9 +64,8 @@ public class ImageController {
 	@RequestMapping(value = "{id:.+}", method = RequestMethod.PUT)
 	public @ResponseBody
 	void add(@PathVariable String id, @RequestBody BufferedImage img) {
-
-		if(imageService.getImageMetadata(id)!=null){
-			logger.error("image exists "+id);
+		if(imageService.getImageMetadata(id) != null){
+			logger.error("Cannot add image: exists "+ id);
 			throw new CustomBadRequestException(
 					"An image with this name exists already. Image names are unique.");
 		}
@@ -81,7 +78,6 @@ public class ImageController {
 	@RequestMapping(value = "{id:.+}", method = RequestMethod.DELETE)
 	public @ResponseBody
 	void delete(@PathVariable String id) {
-
 		imageService.delete(id);
 	}
 	

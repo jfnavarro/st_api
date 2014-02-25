@@ -41,9 +41,8 @@ import com.spatialtranscriptomics.serviceImpl.GeneServiceImpl;
 @RequestMapping("/rest/gene")
 public class GeneController {
 
-	 @SuppressWarnings("unused")
-	private static final Logger logger =
-	 Logger.getLogger(GeneController.class);
+	@SuppressWarnings("unused")
+	private static final Logger logger = Logger.getLogger(GeneController.class);
 
 	@Autowired
 	GeneServiceImpl geneService;
@@ -67,7 +66,7 @@ public class GeneController {
 		HashMap<String, Gene> hm = new HashMap<String, Gene>();
 
 		for (Gene g : genes) {
-			hm.put(g.getGene(), g);
+			hm.put(g.getGeneNomenclature(), g);
 		}
 
 		Iterator<Entry<String, Gene>> it = hm.entrySet().iterator();

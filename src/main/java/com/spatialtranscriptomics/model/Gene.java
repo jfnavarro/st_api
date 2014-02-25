@@ -23,7 +23,7 @@ public class Gene implements IGene{
 	@Id
 	String id;
 	
-	String gene;
+	String gene_nomenclature;
 	
 	public String getId() {
 		return id;
@@ -33,16 +33,13 @@ public class Gene implements IGene{
 		this.id = id;
 	}
 
-	public String getGene() {
-		return gene;
+	public String getGeneNomenclature() {
+		return gene_nomenclature;
 	}
 
-	public void setGene(String gene) {
-		this.gene = gene;
+	public void setGeneNomenclature(String gene) {
+		this.gene_nomenclature = gene;
 	}
 
-
-	
-	
 
 }

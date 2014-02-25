@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 //import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -59,8 +60,15 @@ public class AccountController {
 	@RequestMapping(method = RequestMethod.GET)
 	public @ResponseBody
 	List<Account> list() {
-
 		return accountService.list();
+	}
+	
+	// list for dataset
+	@Secured({"ROLE_ADMIN", "ROLE_CM"})
+	@RequestMapping(method = RequestMethod.GET)
+	public @ResponseBody
+	List<Account> listForDataset(@RequestParam(value = "dataset", required = true) String datasetId) {
+		return accountService.findByDataset(datasetId);
 	}
 
 	// get by id
@@ -68,7 +76,6 @@ public class AccountController {
 	@RequestMapping(value = "{id}", method = RequestMethod.GET)
 	public @ResponseBody
 	Account get(@PathVariable String id) {
-
 		Account account = accountService.find(id);
 		if (account == null) {
 			throw new CustomNotFoundException(
@@ -82,17 +89,14 @@ public class AccountController {
 	@RequestMapping(value = "/current/user", method = RequestMethod.GET)
 	public @ResponseBody
 	Account getCurrent(Principal principal) {
-
 		if (principal == null) {
 			throw new CustomBadRequestException("You are not logged in.");
 		}
-
-		Account account = accountService.findByName(principal.getName());
-
+		Account account = accountService.findByEmail(principal.getName());
 		if (account == null) {
 			throw new CustomBadRequestException("Current user "
-					+ " currentUsername "
-					+ "could not be matched to an account.");
+					+ principal.getName()
+					+ " could not be matched to an account.");
 		}
 		return account;
 	}
@@ -102,25 +106,22 @@ public class AccountController {
 	@RequestMapping(method = RequestMethod.POST)
 	public @ResponseBody
 	Account add(@RequestBody @Valid Account account, BindingResult result) {
-
 		// Data model validation
 		if (result.hasErrors()) {
 			throw new CustomBadRequestException(
-					"Data model is invalid. Missing required fields?");
+					"Account is invalid. Missing required fields?");
 		}
-
 		// Checks
 		if (account.getId() != null) {
 			throw new CustomBadRequestException(
 					"An account must not have an ID. ID will be created automatically.");
 		}
-		if (accountService.findByName(account.getUsername()) != null) {
+		if (accountService.findByEmail(account.getEmail()) != null) {
 			throw new CustomBadRequestException(
 					"An account with this username already exists. Usernames are unique.");
 		}
 		// Encode Password
 		account.setPassword(passwordEncoder.encode(account.getPassword()));
-
 		return accountService.add(account);
 	}
 
@@ -128,32 +129,26 @@ public class AccountController {
 	@Secured("ROLE_ADMIN")
 	@RequestMapping(value = "{id}", method = RequestMethod.PUT)
 	public @ResponseBody
-	void update(@PathVariable String id, @RequestBody @Valid Account account,
-			BindingResult result) {
-
+	void update(@PathVariable String id, @RequestBody @Valid Account account, BindingResult result) {
 		// Data model validation
 		if (result.hasErrors()) {
 			throw new CustomBadRequestException(
-					"Data model is invalid. Missing required fields?");
+					"Account is invalid. Missing required fields?");
 		}
-
 		if (!id.equals(account.getId())) {
 			throw new CustomBadRequestException(
-					"ID in request URL does not match ID in content body.");
+					"Account ID in request URL does not match ID in content body.");
 		} else if (accountService.find(id) == null) {
 			throw new CustomBadRequestException(
-					"An account with this id does not exist or you don't have permissions to access it.");
-		} else if (accountService.findByName(account.getUsername()) != null) {
-			if (!accountService.findByName(account.getUsername()).getId()
-					.equals(id)) {
+					"An account with this ID does not exist or you don't have permissions to access it.");
+		} else if (accountService.findByEmail(account.getEmail()) != null) {
+			if (!accountService.findByEmail(account.getEmail()).getId().equals(id)) {
 				// account with this name and another ID exists
 				throw new CustomBadRequestException(
 						"Another account with this username exists already. Usernames are unique.");
 			}
 		}
-
 		accountService.update(account);
-
 	}
 
 	// delete

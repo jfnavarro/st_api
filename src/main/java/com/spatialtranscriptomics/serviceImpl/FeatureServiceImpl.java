@@ -34,16 +34,14 @@ public class FeatureServiceImpl implements FeatureService {
 	MongoUserDetailsServiceImpl customUserDetailsService;
 
 	@Autowired
-	MongoOperations mongoTemplateFeature;
+	MongoOperations mongoTemplateFeatureDB;
 
 	public List<Feature> findByDatasetId(String datasetId) {
-
 		MongoUserDetails currentUser = customUserDetailsService
 				.loadCurrentUser();
-
 		if (currentUser.isContentManager() || currentUser.isAdmin()
 				|| currentUser.getGrantedDatasets().contains(datasetId)) {
-			return mongoTemplateFeature.findAll(Feature.class, datasetId);
+			return mongoTemplateFeatureDB.findAll(Feature.class, datasetId);
 		} else {
 			return null; // user has no permissions on dataset
 		}
@@ -51,14 +49,11 @@ public class FeatureServiceImpl implements FeatureService {
 	}
 
 	public List<Feature> findByGene(String datasetId, String gene) {
-
 		MongoUserDetails currentUser = customUserDetailsService
 				.loadCurrentUser();
-
 		if (currentUser.isContentManager() || currentUser.isAdmin()
 				|| currentUser.getGrantedDatasets().contains(datasetId)) {
-			return mongoTemplateFeature.find(new Query(Criteria.where("gene")
-					.is(gene)), Feature.class, datasetId);
+			return mongoTemplateFeatureDB.find(new Query(Criteria.where("gene").is(gene)), Feature.class, datasetId);
 		} else {
 			return null; // user has no permissions on dataset
 		}
@@ -70,7 +65,6 @@ public class FeatureServiceImpl implements FeatureService {
 
 		MongoUserDetails currentUser = customUserDetailsService
 				.loadCurrentUser();
-
 		if (currentUser.isContentManager() || currentUser.isAdmin()
 				|| currentUser.getGrantedDatasets().contains(datasetId)) {
 			return null;// TODO implement query
@@ -80,16 +74,27 @@ public class FeatureServiceImpl implements FeatureService {
 	}
 
 	public List<Feature> addAll(List<Feature> features, String datasetId) {
-
-		mongoTemplateFeature.insert(features, datasetId);
-		logger.debug("added Features: " + datasetId);
+		logger.debug("Adding features for dataset " + datasetId);
+		mongoTemplateFeatureDB.insert(features, datasetId);
 		return features;
 	}
 
+	
 	public void deleteAll(String datasetId) {
+		logger.debug("Deleting features for dataset " + datasetId);
+		mongoTemplateFeatureDB.dropCollection(datasetId);
+	}
 
-		mongoTemplateFeature.dropCollection(datasetId);
-		logger.debug("deleted Features: " + datasetId);
+	
+	public List<Feature> findByAnnotation(String datasetId, String annotation) {
+		MongoUserDetails currentUser = customUserDetailsService
+				.loadCurrentUser();
+		if (currentUser.isContentManager() || currentUser.isAdmin()
+				|| currentUser.getGrantedDatasets().contains(datasetId)) {
+			return mongoTemplateFeatureDB.find(new Query(Criteria.where("annotation").is(annotation)), Feature.class, datasetId);
+		} else {
+			return null; // user has no permissions on dataset
+		}
 	}
 
 }

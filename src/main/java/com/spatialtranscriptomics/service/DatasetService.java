@@ -18,6 +18,8 @@ public interface DatasetService {
 	public Dataset find(String id);
 
 	public Dataset findByName(String name);
+	
+	public List<Dataset> findByAccount(String accountId);
 
 	public Dataset add(Dataset ds);
 
