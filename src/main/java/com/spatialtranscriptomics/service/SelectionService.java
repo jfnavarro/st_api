@@ -20,6 +20,10 @@ public interface SelectionService {
 	public Selection findByName(String name);
 
 	public List<Selection> list();
+	
+	public List<Selection> findByAccount(String accountId);
+	
+	public List<Selection> findByDataset(String datasetId);
 
 	public Selection add(Selection sel);
 

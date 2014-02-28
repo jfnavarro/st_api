@@ -35,14 +35,14 @@ public class MongoUserDetailsServiceImpl implements UserDetailsService {
 			.getLogger(MongoUserDetailsServiceImpl.class);
 
 	@Autowired
-	MongoOperations mongoTemplateUser;
+	MongoOperations mongoTemplateUserDB;
 
 	private final String DB_COLLECTION_NAME = "account";
 
 	public MongoUserDetails loadUserByUsername(String username)
 			throws UsernameNotFoundException {
 
-		MongoUserDetails result = mongoTemplateUser.findOne(new Query(Criteria
+		MongoUserDetails result = mongoTemplateUserDB.findOne(new Query(Criteria
 				.where("username").is(username)), MongoUserDetails.class,
 				DB_COLLECTION_NAME);
 

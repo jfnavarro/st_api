@@ -19,17 +19,17 @@
 //public class CredentialServiceImpl implements CredentialService {
 //
 //	@Autowired
-//	MongoOperations mongoTemplateUser;
+//	MongoOperations mongoTemplateUserDB;
 //
 //	private final String DB_COLLECTION_NAME = "account";
 //
 //	public Credential findByUsername(String username) {
-//		return mongoTemplateUser.findOne(new Query(Criteria.where("username")
+//		return mongoTemplateUserDB.findOne(new Query(Criteria.where("username")
 //				.is(username)), Credential.class, DB_COLLECTION_NAME);
 //	}
 //
 //	public void update(Credential credential) {
-//		mongoTemplateUser.save(credential, DB_COLLECTION_NAME);
+//		mongoTemplateUserDB.save(credential, DB_COLLECTION_NAME);
 //	}
 //
 //}

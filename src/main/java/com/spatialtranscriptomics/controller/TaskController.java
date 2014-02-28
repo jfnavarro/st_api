@@ -48,12 +48,17 @@ public class TaskController {
 	@Autowired
 	TaskServiceImpl taskService;
 
-	// list
+	// list / list for account
 	@Secured({"ROLE_CM","ROLE_ADMIN"})
 	@RequestMapping(method = RequestMethod.GET)
 	public @ResponseBody
-	List<Task> list() {
-		List<Task> tasks = taskService.list();
+	List<Task> list(@RequestParam(value = "account", required = false) String accountId) {
+		List<Task> tasks = null;
+		if (accountId != null) {
+			tasks = taskService.findByAccount(accountId);
+		} else {
+			tasks = taskService.list();
+		}
 		if (tasks == null) {
 			throw new CustomNotFoundException(
 					"No tasks found or you dont have permissions to access them.");
@@ -111,7 +116,7 @@ public class TaskController {
 		}
 		if (!id.equals(task.getId())) {
 			throw new CustomBadRequestException(
-					"ID in request URL does not match ID in content body.");
+					"Task ID in request URL does not match ID in content body.");
 		} else if (taskService.find(id) == null) {
 			throw new CustomBadRequestException(
 					"A task with this ID does not exist or you don't have permissions to access it.");
@@ -126,14 +131,6 @@ public class TaskController {
 	public @ResponseBody
 	void delete(@PathVariable String id) {
 		taskService.delete(id);
-	}
-	
-	// list for account
-	@Secured({"ROLE_ADMIN", "ROLE_CM"})
-	@RequestMapping(method = RequestMethod.GET)
-	public @ResponseBody
-	List<Task> listForAccount(@RequestParam(value = "account", required = true) String accountId) {
-		return taskService.findByAccount(accountId);
 	}
 
 	@ExceptionHandler(CustomNotFoundException.class)

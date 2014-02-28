@@ -49,20 +49,15 @@ public class DatasetController {
 	@Autowired
 	DatasetServiceImpl datasetService;
 
-	// list
+	// list / list for account
 	@Secured({"ROLE_CM","ROLE_USER","ROLE_ADMIN"})
 	@RequestMapping(method = RequestMethod.GET)
 	public @ResponseBody
-	List<Dataset> list() {
+	List<Dataset> list(@RequestParam(value = "account", required = false) String accountId) {
+		if (accountId != null) {
+			return datasetService.findByAccount(accountId);
+		}
 		return datasetService.list();
-	}
-	
-	// list for account
-	@Secured({"ROLE_ADMIN", "ROLE_CM"})
-	@RequestMapping(method = RequestMethod.GET)
-	public @ResponseBody
-	List<Dataset> listForAccount(@RequestParam(value = "account", required = true) String accountId) {
-		return datasetService.findByAccount(accountId);
 	}
 
 	// get

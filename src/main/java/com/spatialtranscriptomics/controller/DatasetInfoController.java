@@ -48,44 +48,27 @@ public class DatasetInfoController {
 	@Autowired
 	DatasetInfoServiceImpl datasetinfoService;
 
-	// list
+	// list / list by account / list by dataset
 	@Secured({"ROLE_CM","ROLE_ADMIN"})
 	@RequestMapping(method = RequestMethod.GET)
 	public @ResponseBody
-	List<DatasetInfo> list() {
-		List<DatasetInfo> datasetinfos = datasetinfoService.list();
+	List<DatasetInfo> list(
+			@RequestParam(value = "account", required = false) String accountId,
+			@RequestParam(value = "dataset", required = false) String datasetId
+			) {
+		List<DatasetInfo> datasetinfos;
+		if (accountId != null) {
+			datasetinfos = datasetinfoService.findByAccount(accountId);
+		} else if (datasetId != null) {
+			datasetinfos = datasetinfoService.findByDataset(datasetId);
+		} else {
+			datasetinfos = datasetinfoService.list();
+		}
 		if (datasetinfos == null) {
 			throw new CustomNotFoundException("No DatasetInfos found or you dont have permissions to access them.");
 		}
 		return datasetinfos;
 	}
-	
-	
-	// list by account
-	@Secured({"ROLE_CM","ROLE_ADMIN"})
-	@RequestMapping(method = RequestMethod.GET)
-	public @ResponseBody
-	List<DatasetInfo> listByAccount(@RequestParam(value = "account", required = true) String accountId) {
-		List<DatasetInfo> datasetinfos = datasetinfoService.findByAccount(accountId);
-		if (datasetinfos == null) {
-			throw new CustomNotFoundException("No DatasetInfos found or you dont have permissions to access them.");
-		}
-		return datasetinfos;
-	}
-	
-	
-	// list by dataset
-	@Secured({"ROLE_CM","ROLE_ADMIN"})
-	@RequestMapping(method = RequestMethod.GET)
-	public @ResponseBody
-	List<DatasetInfo> listByDataset(@RequestParam(value = "dataset", required = true) String datasetId) {
-		List<DatasetInfo> datasetinfos = datasetinfoService.findByDataset(datasetId);
-		if (datasetinfos == null) {
-			throw new CustomNotFoundException("No DatasetInfos found or you dont have permissions to access them.");
-		}
-		return datasetinfos;
-	}
-	
 	
 
 	// get

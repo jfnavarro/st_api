@@ -19,6 +19,8 @@ public interface PipelineExperimentService {
 	
 	public PipelineExperiment findByName(String name);
 
+	public List<PipelineExperiment> findByAccount(String accountId);
+	
 	public List<PipelineExperiment> list();
 
 	public PipelineExperiment add(PipelineExperiment experiment);

@@ -26,7 +26,6 @@ import com.spatialtranscriptomics.service.SelectionService;
 @Service
 public class SelectionServiceImpl implements SelectionService {
 
-	@SuppressWarnings("unused")
 	private static final Logger logger = Logger
 			.getLogger(SelectionServiceImpl.class);
 
@@ -49,16 +48,27 @@ public class SelectionServiceImpl implements SelectionService {
 	}
 
 	public Selection add(Selection selection) {
+		logger.debug("Adding Selection");
 		mongoTemplateExperimentDB.insert(selection);
 		return selection;
 	}
 
 	public void update(Selection selection) {
+		logger.debug("Updating Selection " + selection.getId());
 		mongoTemplateExperimentDB.save(selection);
 	}
 
 	public void delete(String id) {
+		logger.debug("Deleing Selection " + id);
 		mongoTemplateExperimentDB.remove(find(id));
+	}
+
+	public List<Selection> findByAccount(String accountId) {
+		return mongoTemplateExperimentDB.find(new Query(Criteria.where("account_id").is(accountId)), Selection.class);
+	}
+
+	public List<Selection> findByDataset(String datasetId) {
+		return mongoTemplateExperimentDB.find(new Query(Criteria.where("dataset_id").is(datasetId)), Selection.class);
 	}
 
 }

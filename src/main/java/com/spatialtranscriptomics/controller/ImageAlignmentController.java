@@ -48,12 +48,17 @@ public class ImageAlignmentController {
 	@Autowired
 	ImageAlignmentServiceImpl imagealignmentService;
 
-	// list
+	// list / list for chip
 	@Secured({"ROLE_CM","ROLE_ADMIN"})
 	@RequestMapping(method = RequestMethod.GET)
 	public @ResponseBody
-	List<ImageAlignment> list() {
-		List<ImageAlignment> imagealignments = imagealignmentService.list();
+	List<ImageAlignment> list(@RequestParam(value = "chip", required = false) String chipId) {
+		List<ImageAlignment> imagealignments = null;
+		if (chipId != null) {
+			imagealignmentService.findByChip(chipId);
+		} else {
+			imagealignments = imagealignmentService.list();
+		}
 		if (imagealignments == null) {
 			throw new CustomNotFoundException(
 					"No imagealignments found or you dont have permissions to access them.");
@@ -125,14 +130,6 @@ public class ImageAlignmentController {
 	public @ResponseBody
 	void delete(@PathVariable String id) {
 		imagealignmentService.delete(id);
-	}
-	
-	// list for chip
-	@Secured({"ROLE_ADMIN", "ROLE_CM"})
-	@RequestMapping(method = RequestMethod.GET)
-	public @ResponseBody
-	List<ImageAlignment> listFoChip(@RequestParam(value = "chip", required = true) String chipId) {
-		return imagealignmentService.findByChip(chipId);
 	}
 
 	@ExceptionHandler(CustomNotFoundException.class)

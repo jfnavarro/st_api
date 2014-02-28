@@ -48,12 +48,22 @@ public class SelectionController {
 	@Autowired
 	SelectionServiceImpl selectionService;
 
-	// list
+	// list / list for account / list for dataset
 	@Secured({"ROLE_CM","ROLE_ADMIN"})
 	@RequestMapping(method = RequestMethod.GET)
 	public @ResponseBody
-	List<Selection> list() {
-		List<Selection> selections = selectionService.list();
+	List<Selection> list(
+			@RequestParam(value = "account", required = false) String accountId,
+			@RequestParam(value = "dataset", required = false) String datasetId
+			) {
+		List<Selection> selections = null;
+		if (accountId != null) {
+			selections = selectionService.findByAccount(accountId);
+		} else if (datasetId != null) {
+			selections = selectionService.findByDataset(datasetId);
+		} else {
+			selections = selectionService.list();
+		}
 		if (selections == null) {
 			throw new CustomNotFoundException(
 					"No selections found or you dont have permissions to access them.");
@@ -111,7 +121,7 @@ public class SelectionController {
 		}
 		if (!id.equals(selection.getId())) {
 			throw new CustomBadRequestException(
-					"ID in request URL does not match ID in content body.");
+					"Selection ID in request URL does not match ID in content body.");
 		} else if (selectionService.find(id) == null) {
 			throw new CustomBadRequestException(
 					"A selection with this ID does not exist or you don't have permissions to access it.");

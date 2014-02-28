@@ -26,7 +26,6 @@ import com.spatialtranscriptomics.service.TaskService;
 @Service
 public class TaskServiceImpl implements TaskService {
 
-	@SuppressWarnings("unused")
 	private static final Logger logger = Logger
 			.getLogger(TaskServiceImpl.class);
 
@@ -34,35 +33,38 @@ public class TaskServiceImpl implements TaskService {
 	MongoUserDetailsServiceImpl customUserDetailsService;
 
 	@Autowired
-	MongoOperations mongoTemplateExperiment;
+	MongoOperations mongoTemplateExperimentDB;
 
 	public Task find(String id) {
-		return mongoTemplateExperiment.findOne(new Query(Criteria.where("id").is(id)), Task.class);
+		return mongoTemplateExperimentDB.findOne(new Query(Criteria.where("id").is(id)), Task.class);
 	}
 
 	public Task findByName(String name) {
-		return mongoTemplateExperiment.findOne(new Query(Criteria.where("name").is(name)), Task.class);
+		return mongoTemplateExperimentDB.findOne(new Query(Criteria.where("name").is(name)), Task.class);
 	}
 
 	public List<Task> list() {
-		return mongoTemplateExperiment.findAll(Task.class);
+		return mongoTemplateExperimentDB.findAll(Task.class);
 	}
 
 	public Task add(Task task) {
-		mongoTemplateExperiment.insert(task);
+		logger.debug("Adding Task");
+		mongoTemplateExperimentDB.insert(task);
 		return task;
 	}
 
 	public void update(Task task) {
-		mongoTemplateExperiment.save(task);
+		logger.debug("Updating Task");
+		mongoTemplateExperimentDB.save(task);
 	}
 
 	public void delete(String id) {
-		mongoTemplateExperiment.remove(find(id));
+		logger.debug("Deleting Task " + id);
+		mongoTemplateExperimentDB.remove(find(id));
 	}
 
 	public List<Task> findByAccount(String accountId) {
-		return mongoTemplateExperiment.find(new Query(Criteria.where("account_id").is(accountId)), Task.class);
+		return mongoTemplateExperimentDB.find(new Query(Criteria.where("account_id").is(accountId)), Task.class);
 	}
 
 }

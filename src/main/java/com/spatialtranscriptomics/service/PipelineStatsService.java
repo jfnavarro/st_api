@@ -18,7 +18,7 @@ public interface PipelineStatsService {
 	public PipelineStats find(String id);
 	
 	public PipelineStats findByExperiment(String experimentId);
-
+	
 	public List<PipelineStats> list();
 
 	public PipelineStats add(PipelineStats stats);

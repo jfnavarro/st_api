@@ -26,7 +26,6 @@ import com.spatialtranscriptomics.service.PipelineExperimentService;
 @Service
 public class PipelineExperimentServiceImpl implements PipelineExperimentService {
 
-	@SuppressWarnings("unused")
 	private static final Logger logger = Logger
 			.getLogger(PipelineExperimentServiceImpl.class);
 
@@ -34,37 +33,40 @@ public class PipelineExperimentServiceImpl implements PipelineExperimentService 
 	MongoUserDetailsServiceImpl customUserDetailsService;
 
 	@Autowired
-	MongoOperations mongoTemplatePipelineExperimentDB;
+	MongoOperations mongoTemplateExperimentDB;
 
 	public PipelineExperiment find(String id) {
-		return mongoTemplatePipelineExperimentDB.findOne(new Query(Criteria.where("id")
+		return mongoTemplateExperimentDB.findOne(new Query(Criteria.where("id")
 				.is(id)), PipelineExperiment.class);
 	}
 
 	public PipelineExperiment findByName(String name) {
-		return mongoTemplatePipelineExperimentDB.findOne(new Query(Criteria.where("name")
+		return mongoTemplateExperimentDB.findOne(new Query(Criteria.where("name")
 				.is(name)), PipelineExperiment.class);
 	}
 
 	public List<PipelineExperiment> list() {
-		return mongoTemplatePipelineExperimentDB.findAll(PipelineExperiment.class);
+		return mongoTemplateExperimentDB.findAll(PipelineExperiment.class);
 	}
 
 	public PipelineExperiment add(PipelineExperiment experiment) {
-		mongoTemplatePipelineExperimentDB.insert(experiment);
+		logger.debug("Adding PipelineExperiment");
+		mongoTemplateExperimentDB.insert(experiment);
 		return experiment;
 	}
 
 	public void update(PipelineExperiment experiment) {
-		mongoTemplatePipelineExperimentDB.save(experiment);
+		logger.debug("Updating PipelineExperiment " + experiment.getId());
+		mongoTemplateExperimentDB.save(experiment);
 	}
 
 	public void delete(String id) {
-		mongoTemplatePipelineExperimentDB.remove(find(id));
+		logger.debug("Deleting PipelineExperiment " + id);
+		mongoTemplateExperimentDB.remove(find(id));
 	}
 
 	public List<PipelineExperiment> findByAccount(String accountId) {
-		return mongoTemplatePipelineExperimentDB.find(new Query(Criteria.where("account_id")
+		return mongoTemplateExperimentDB.find(new Query(Criteria.where("account_id")
 				.is(accountId)), PipelineExperiment.class);
 	}
 

@@ -55,20 +55,15 @@ public class AccountController {
 	@Autowired
 	PasswordEncoder passwordEncoder;
 
-	// list
+	// list / list for dataset
 	@Secured("ROLE_ADMIN")
 	@RequestMapping(method = RequestMethod.GET)
 	public @ResponseBody
-	List<Account> list() {
+	List<Account> list(@RequestParam(value = "dataset", required = false) String datasetId) {
+		if (datasetId != null) {
+			return accountService.findByDataset(datasetId);
+		}
 		return accountService.list();
-	}
-	
-	// list for dataset
-	@Secured({"ROLE_ADMIN", "ROLE_CM"})
-	@RequestMapping(method = RequestMethod.GET)
-	public @ResponseBody
-	List<Account> listForDataset(@RequestParam(value = "dataset", required = true) String datasetId) {
-		return accountService.findByDataset(datasetId);
 	}
 
 	// get by id

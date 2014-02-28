@@ -26,7 +26,6 @@ import com.spatialtranscriptomics.service.PipelineStatsService;
 @Service
 public class PipelineStatsServiceImpl implements PipelineStatsService {
 
-	@SuppressWarnings("unused")
 	private static final Logger logger = Logger
 			.getLogger(PipelineStatsServiceImpl.class);
 
@@ -49,15 +48,18 @@ public class PipelineStatsServiceImpl implements PipelineStatsService {
 	}
 
 	public PipelineStats add(PipelineStats experiment) {
+		logger.debug("Adding PipelineStats");
 		mongoTemplateExperimentDB.insert(experiment);
 		return experiment;
 	}
 
 	public void update(PipelineStats experiment) {
+		logger.debug("Updating PipelineStats " + experiment.getId());
 		mongoTemplateExperimentDB.save(experiment);
 	}
 
 	public void delete(String id) {
+		logger.debug("Deleting PipelineStats " + id);
 		mongoTemplateExperimentDB.remove(find(id));
 	}
 
