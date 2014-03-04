@@ -39,8 +39,8 @@ public class AccountServiceImpl implements AccountService {
 				new Query(Criteria.where("id").is(id)), Account.class);
 	}
 
-	public Account findByEmail(String email) {
-		return mongoTemplateUserDB.findOne(new Query(Criteria.where("email").is(email)), Account.class);
+	public Account findByUsername(String username) {
+		return mongoTemplateUserDB.findOne(new Query(Criteria.where("username").is(username)), Account.class);
 	}
 
 	public List<Account> list() {

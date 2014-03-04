@@ -6,7 +6,6 @@
 
 package com.spatialtranscriptomics.controller;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -53,23 +52,26 @@ public class FeatureController {
 	List<Feature> list(
 			@RequestParam(value = "dataset", required = true) String datasetId,
 			@RequestParam(value = "gene", required = false) String gene,
-			@RequestParam(value = "annotation", required = false) String annotation,
-			@RequestParam(value = "x1", required = false) Integer x1,
-			@RequestParam(value = "y1", required = false) Integer y1,
-			@RequestParam(value = "x2", required = false) Integer x2,
-			@RequestParam(value = "y2", required = false) Integer y2) {
+			@RequestParam(value = "annotation", required = false) String annotation)
+//			@RequestParam(value = "x1", required = false) Integer x1,
+//			@RequestParam(value = "y1", required = false) Integer y1,
+//			@RequestParam(value = "x2", required = false) Integer x2,
+//			@RequestParam(value = "y2", required = false) Integer y2)
+	{
 
 		if (annotation != null) {
 			return featureService.findByAnnotation(datasetId, annotation);
 		} else if (gene != null) {
 			return featureService.findByGene(datasetId, gene);
-		} else if ((x1 != null) || (x2 != null) || (y1 != null) || (y2 != null)) {
-			List<Integer> coords = Arrays.asList(x1, y1, x2, y2);
-			if (coords.contains(null)) {
-				throw new CustomBadRequestException("One or more coordinates missing.");
-			}
-			return featureService.findBy2DCoords(datasetId, x1, y1, x2, y2);
-		} else {
+		}
+//		else if ((x1 != null) || (x2 != null) || (y1 != null) || (y2 != null)) {
+//			List<Integer> coords = Arrays.asList(x1, y1, x2, y2);
+//			if (coords.contains(null)) {
+//				throw new CustomBadRequestException("One or more coordinates missing.");
+//			}
+//			return featureService.findBy2DCoords(datasetId, x1, y1, x2, y2);
+//		}
+		else {
 			return featureService.findByDatasetId(datasetId);
 		}
 	}

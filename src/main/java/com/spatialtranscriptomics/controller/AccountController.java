@@ -87,7 +87,7 @@ public class AccountController {
 		if (principal == null) {
 			throw new CustomBadRequestException("You are not logged in.");
 		}
-		Account account = accountService.findByEmail(principal.getName());
+		Account account = accountService.findByUsername(principal.getName());
 		if (account == null) {
 			throw new CustomBadRequestException("Current user "
 					+ principal.getName()
@@ -111,7 +111,7 @@ public class AccountController {
 			throw new CustomBadRequestException(
 					"An account must not have an ID. ID will be created automatically.");
 		}
-		if (accountService.findByEmail(account.getEmail()) != null) {
+		if (accountService.findByUsername(account.getUsername()) != null) {
 			throw new CustomBadRequestException(
 					"An account with this username already exists. Usernames are unique.");
 		}
@@ -136,8 +136,8 @@ public class AccountController {
 		} else if (accountService.find(id) == null) {
 			throw new CustomBadRequestException(
 					"An account with this ID does not exist or you don't have permissions to access it.");
-		} else if (accountService.findByEmail(account.getEmail()) != null) {
-			if (!accountService.findByEmail(account.getEmail()).getId().equals(id)) {
+		} else if (accountService.findByUsername(account.getUsername()) != null) {
+			if (!accountService.findByUsername(account.getUsername()).getId().equals(id)) {
 				// account with this name and another ID exists
 				throw new CustomBadRequestException(
 						"Another account with this username exists already. Usernames are unique.");

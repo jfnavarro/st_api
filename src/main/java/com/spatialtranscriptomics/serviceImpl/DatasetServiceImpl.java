@@ -51,13 +51,22 @@ public class DatasetServiceImpl implements DatasetService {
 	
 	public Dataset find(String id) {
 		MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-		if (currentUser.isContentManager() || currentUser.isAdmin()
-				|| currentUser.getGrantedDatasets().contains(id)) {
+		if (currentUser.isContentManager() || currentUser.isAdmin() || datasetIsGranted(id, currentUser)) {
 			return mongoTemplateAnalysisDB.findOne(new Query(Criteria.where("id").is(id)), Dataset.class);
 		}
 		return null;
 	}
 
+	
+	public boolean datasetIsGranted(String id, MongoUserDetails user) {
+		List<DatasetInfo> dsis = mongoTemplateUserDB.find(new Query(Criteria.where("dataset_id").is(id)), DatasetInfo.class);
+		for (DatasetInfo dsi : dsis) {
+			if (dsi.getAccount_id().equals(user.getId())) {
+				return true;
+			}
+		}
+		return false;
+	}
 	
 	// required for check to ensure unique dataset names
 	public Dataset findByName(String name) {
@@ -70,9 +79,7 @@ public class DatasetServiceImpl implements DatasetService {
 		if (currentUser.isContentManager() || currentUser.isAdmin()) {
 			return mongoTemplateAnalysisDB.findAll(Dataset.class);
 		}
-		return mongoTemplateAnalysisDB.find(
-				new Query(Criteria.where("id").in(
-						currentUser.getGrantedDatasets())), Dataset.class);
+		return this.findByAccount(currentUser.getId());
 	}
 
 	
@@ -98,8 +105,7 @@ public class DatasetServiceImpl implements DatasetService {
 			for (DatasetInfo dsi : dsis) {
 				strs.add(dsi.getDataset_id());
 			}
-			return mongoTemplateAnalysisDB.find(
-					new Query(Criteria.where("id").in(strs)), Dataset.class);
+			return mongoTemplateAnalysisDB.find(new Query(Criteria.where("id").in(strs)), Dataset.class);
 		}
 		return null;
 	}

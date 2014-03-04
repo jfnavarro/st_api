@@ -17,7 +17,7 @@ public interface AccountService {
 
 	public Account find(String id);
 
-	public Account findByEmail(String email);
+	public Account findByUsername(String username);
 
 	public List<Account> findByDataset(String datasetId);
 	

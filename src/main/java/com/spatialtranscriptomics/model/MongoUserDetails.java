@@ -8,9 +8,6 @@ package com.spatialtranscriptomics.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-
-import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
@@ -27,72 +24,14 @@ import org.springframework.security.core.userdetails.UserDetails;
  */
 
 @Document
-public class MongoUserDetails implements UserDetails {
+public class MongoUserDetails extends Account implements UserDetails {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 6756025876358143006L;
 
-	@Id
-	String id;
-
-	String username;
-	String password;
-	String role;
-	List<String> grantedDatasets;
-	boolean enabled;
-
-	// id is set automatically by MongoDB
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
-
-	public String getUsername() {
-		return this.username;
-	}
-
-	public void setUsername(String username) {
-		this.username = username;
-	}
-
-	public String getPassword() {
-		return this.password;
-	}
-
-	public void setPassword(String password) {
-		this.password = password;
-	}
-
-	public String getRole() {
-		return this.role;
-	}
-
-	public void setRole(String role) { // role must be "ROLE_USER", "ROLE_CM" or
-										// "ROLE_ADMIN"
-		this.role = role;
-	}
-
-	public List<String> getGrantedDatasets() {
-		return this.grantedDatasets;
-	}
-
-	public void setGrantedDatasets(List<String> grantedDatasets) {
-		this.grantedDatasets = grantedDatasets;
-	}
-
-	public boolean isEnabled() {
-		return this.enabled;
-	}
-
-	public void isEnabled(boolean enabled) {
-		this.enabled = enabled;
-	}
-
+	
 	/*
 	 * Methods for the Interface
 	 * org.springframework.security.core.userdetails.UserDetails. These are not
@@ -101,7 +40,6 @@ public class MongoUserDetails implements UserDetails {
 
 	@Transient
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-
 		Collection<GrantedAuthority> grantedAuthorities = new ArrayList<GrantedAuthority>();
 		grantedAuthorities.add(new SimpleGrantedAuthority(getRole()));
 		return grantedAuthorities;

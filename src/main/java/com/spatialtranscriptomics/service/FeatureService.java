@@ -23,7 +23,7 @@ public interface FeatureService {
 
 	public List<Feature> findByGene(String datasetId, String gene);
 
-	public List<Feature> findBy2DCoords(String datasetId, int x1, int y1,
-			int x2, int y2);
+//	public List<Feature> findBy2DCoords(String datasetId, int x1, int y1,
+//			int x2, int y2);
 
 }

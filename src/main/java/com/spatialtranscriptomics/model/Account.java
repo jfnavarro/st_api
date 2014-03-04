@@ -7,6 +7,8 @@
 package com.spatialtranscriptomics.model;
 
 import java.util.Date;
+
+import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.data.annotation.Id;
@@ -27,7 +29,8 @@ public class Account implements IAccount {
 	public String id;
 	
 	@NotBlank
-	public String email;
+	@Email(message = "Username must be a valid email address.")
+	public String username;
 	
 	@Length(min = 4, message = "Password must have at least 4 characters.")
 	public String password;
@@ -86,12 +89,12 @@ public class Account implements IAccount {
 		this.role = role;
 	}
 	
-	public String getEmail() {
-		return this.email;
+	public String getUsername() {
+		return this.username;
 	}
 
-	public void setEmail(String email) {
-		this.email = email;
+	public void setUsername(String username) {
+		this.username = username;
 	}
 	
 	public String getInstitution() {

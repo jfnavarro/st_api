@@ -18,9 +18,9 @@ public interface IAccount {
 
 	public void setId(String id);
 	
-	public String getEmail();
+	public String getUsername();
 
-	public void setEmail(String email);
+	public void setUsername(String username);
 	
 	public String getPassword();
 

@@ -42,9 +42,7 @@ public class MongoUserDetailsServiceImpl implements UserDetailsService {
 	public MongoUserDetails loadUserByUsername(String username)
 			throws UsernameNotFoundException {
 
-		MongoUserDetails result = mongoTemplateUserDB.findOne(new Query(Criteria
-				.where("username").is(username)), MongoUserDetails.class,
-				DB_COLLECTION_NAME);
+		MongoUserDetails result = mongoTemplateUserDB.findOne(new Query(Criteria.where("username").is(username)), MongoUserDetails.class, DB_COLLECTION_NAME);
 
 		if (result == null) {
 			throw new UsernameNotFoundException(username);
@@ -53,11 +51,8 @@ public class MongoUserDetailsServiceImpl implements UserDetailsService {
 	}
 
 	public MongoUserDetails loadCurrentUser() {
-		Authentication a = SecurityContextHolder.getContext()
-				.getAuthentication();
-
+		Authentication a = SecurityContextHolder.getContext().getAuthentication();
 		return loadUserByUsername(a.getName());
-
 	}
 
 }
