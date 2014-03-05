@@ -48,18 +48,18 @@ public class PipelineStatsServiceImpl implements PipelineStatsService {
 	}
 
 	public PipelineStats add(PipelineStats experiment) {
-		logger.debug("Adding PipelineStats");
+		logger.info("Adding PipelineStats");
 		mongoTemplateExperimentDB.insert(experiment);
 		return experiment;
 	}
 
 	public void update(PipelineStats experiment) {
-		logger.debug("Updating PipelineStats " + experiment.getId());
+		logger.info("Updating PipelineStats " + experiment.getId());
 		mongoTemplateExperimentDB.save(experiment);
 	}
 
 	public void delete(String id) {
-		logger.debug("Deleting PipelineStats " + id);
+		logger.info("Deleting PipelineStats " + id);
 		mongoTemplateExperimentDB.remove(find(id));
 	}
 

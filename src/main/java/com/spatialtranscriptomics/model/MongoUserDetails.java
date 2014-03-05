@@ -18,7 +18,8 @@ import org.springframework.security.core.userdetails.UserDetails;
  * This class maps the Spring Security interface UserDetails.class to a MongoDB document
  * It contains information required for authentication and authorization by Spring Security
  * We use the @Document annotation of Spring Data for the mapping.
- * There are some fields required by Spring Security interface UserDetails.class that we don't want to store in our MongoDB. These fields are annotated as @Transient. 
+ * There are some fields required by Spring Security interface UserDetails.class that we don't
+ * want to store in our MongoDB. These fields are annotated as @Transient. 
  * See also class MongoUserDetailsServiceImpl.
  * 
  */

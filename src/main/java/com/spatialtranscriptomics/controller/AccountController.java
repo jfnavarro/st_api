@@ -45,7 +45,6 @@ import javax.validation.Valid;
 @RequestMapping("/rest/account")
 public class AccountController {
 
-	@SuppressWarnings("unused")
 	private static final Logger logger = Logger
 			.getLogger(AccountController.class);
 
@@ -85,13 +84,17 @@ public class AccountController {
 	public @ResponseBody
 	Account getCurrent(Principal principal) {
 		if (principal == null) {
+			logger.info("Denied account for user not logged in.");
 			throw new CustomBadRequestException("You are not logged in.");
 		}
-		Account account = accountService.findByUsername(principal.getName());
+		String name = principal.getName();
+		logger.info("Attempting to acquire account for user " + name);
+		Account account = accountService.findByUsername(name);
 		if (account == null) {
-			throw new CustomBadRequestException("Current user "
-					+ principal.getName()
-					+ " could not be matched to an account.");
+			logger.info("Denied account for unmatched user " + name);
+			throw new CustomBadRequestException("Current user " + name + " could not be matched to an account.");
+		} else {
+			logger.info("Returning account for approved user " + name);
 		}
 		return account;
 	}

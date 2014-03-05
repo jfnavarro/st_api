@@ -52,18 +52,18 @@ public class ImageAlignmentServiceImpl implements ImageAlignmentService {
 	}
 
 	public ImageAlignment add(ImageAlignment imal) {
-		logger.debug("Adding ImageAlignment");
+		logger.info("Adding ImageAlignment");
 		mongoTemplateAnalysisDB.insert(imal);
 		return imal;
 	}
 
 	public void update(ImageAlignment imal) {
-		logger.debug("Updating imagealignment " + imal.getId());
+		logger.info("Updating imagealignment " + imal.getId());
 		mongoTemplateAnalysisDB.save(imal);
 	}
 
 	public void delete(String id) {
-		logger.debug("Deleting imagealignment " + id);
+		logger.info("Deleting imagealignment " + id);
 		mongoTemplateAnalysisDB.remove(find(id));
 	}
 

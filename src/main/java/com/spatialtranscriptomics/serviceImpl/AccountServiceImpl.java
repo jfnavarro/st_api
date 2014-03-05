@@ -48,19 +48,19 @@ public class AccountServiceImpl implements AccountService {
 	}
 
 	public Account add(Account account) {
-		logger.debug("Adding account");
+		logger.info("Adding account");
 		mongoTemplateUserDB.insert(account);
 		return account;
 	}
 
 	public void update(Account account) {
-		logger.debug("Updating account " + account.getId());
+		logger.info("Updating account " + account.getId());
 		mongoTemplateUserDB.save(account);
 
 	}
 
 	public void delete(String id) {
-		logger.debug("Removing account " + id);
+		logger.info("Removing account " + id);
 		mongoTemplateUserDB.remove(find(id));
 	}
 

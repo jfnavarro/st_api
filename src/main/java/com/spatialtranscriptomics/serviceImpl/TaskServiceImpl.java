@@ -48,18 +48,18 @@ public class TaskServiceImpl implements TaskService {
 	}
 
 	public Task add(Task task) {
-		logger.debug("Adding Task");
+		logger.info("Adding Task");
 		mongoTemplateExperimentDB.insert(task);
 		return task;
 	}
 
 	public void update(Task task) {
-		logger.debug("Updating Task");
+		logger.info("Updating Task");
 		mongoTemplateExperimentDB.save(task);
 	}
 
 	public void delete(String id) {
-		logger.debug("Deleting Task " + id);
+		logger.info("Deleting Task " + id);
 		mongoTemplateExperimentDB.remove(find(id));
 	}
 

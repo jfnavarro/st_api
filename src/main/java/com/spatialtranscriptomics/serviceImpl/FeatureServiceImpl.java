@@ -87,14 +87,14 @@ public class FeatureServiceImpl implements FeatureService {
 //	}
 
 	public List<Feature> addAll(List<Feature> features, String datasetId) {
-		logger.debug("Adding features for dataset " + datasetId);
+		logger.info("Adding features for dataset " + datasetId);
 		mongoTemplateFeatureDB.insert(features, datasetId);
 		return features;
 	}
 
 	
 	public void deleteAll(String datasetId) {
-		logger.debug("Deleting features for dataset " + datasetId);
+		logger.info("Deleting features for dataset " + datasetId);
 		mongoTemplateFeatureDB.dropCollection(datasetId);
 	}
 

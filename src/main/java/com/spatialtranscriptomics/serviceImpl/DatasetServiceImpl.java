@@ -43,7 +43,7 @@ public class DatasetServiceImpl implements DatasetService {
 	MongoOperations mongoTemplateUserDB;
 	
 	public Dataset add(Dataset ds) {
-		logger.debug("Adding dataset");
+		logger.info("Adding dataset");
 		mongoTemplateAnalysisDB.insert(ds);
 		return ds;
 	}
@@ -84,13 +84,13 @@ public class DatasetServiceImpl implements DatasetService {
 
 	
 	public void update(Dataset ds) {
-		logger.debug("Updating dataset " + ds.getId());
+		logger.info("Updating dataset " + ds.getId());
 		mongoTemplateAnalysisDB.save(ds);
 	}
 
 	
 	public void delete(String id) {
-		logger.debug("Deleting dataset " + id);
+		logger.info("Deleting dataset " + id);
 		mongoTemplateAnalysisDB.remove(find(id));
 	}
 

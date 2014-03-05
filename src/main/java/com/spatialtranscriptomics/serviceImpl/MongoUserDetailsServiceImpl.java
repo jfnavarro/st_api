@@ -30,7 +30,6 @@ import com.spatialtranscriptomics.model.MongoUserDetails;
 @Service
 public class MongoUserDetailsServiceImpl implements UserDetailsService {
 
-	@SuppressWarnings("unused")
 	private static final Logger logger = Logger
 			.getLogger(MongoUserDetailsServiceImpl.class);
 
@@ -41,11 +40,13 @@ public class MongoUserDetailsServiceImpl implements UserDetailsService {
 
 	public MongoUserDetails loadUserByUsername(String username)
 			throws UsernameNotFoundException {
-
+		logger.info("Attempting to load user " + username);
 		MongoUserDetails result = mongoTemplateUserDB.findOne(new Query(Criteria.where("username").is(username)), MongoUserDetails.class, DB_COLLECTION_NAME);
-
 		if (result == null) {
+			logger.info("Failed loading user " + username);
 			throw new UsernameNotFoundException(username);
+		} else {
+			logger.info("Succeeded loading user " + username);
 		}
 		return result;
 	}

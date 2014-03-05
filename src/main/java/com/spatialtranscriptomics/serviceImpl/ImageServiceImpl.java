@@ -92,7 +92,7 @@ public class ImageServiceImpl implements ImageService {
 	
 	public void add(String filename, BufferedImage img) {
 		try {
-			logger.debug("Adding image " + filename);
+			logger.info("Adding image " + filename);
 			ObjectMetadata om = new ObjectMetadata();
 			om.setContentType("image/jpeg");
 
@@ -110,7 +110,7 @@ public class ImageServiceImpl implements ImageService {
 
 	
 	public void delete(String filename) {
-		logger.debug("Deleting image " + filename);
+		logger.info("Deleting image " + filename);
 		s3Client.deleteObject(imageBucket, filename);
 	}
 

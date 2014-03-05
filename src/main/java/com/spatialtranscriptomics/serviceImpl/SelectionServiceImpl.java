@@ -48,18 +48,18 @@ public class SelectionServiceImpl implements SelectionService {
 	}
 
 	public Selection add(Selection selection) {
-		logger.debug("Adding Selection");
+		logger.info("Adding Selection");
 		mongoTemplateExperimentDB.insert(selection);
 		return selection;
 	}
 
 	public void update(Selection selection) {
-		logger.debug("Updating Selection " + selection.getId());
+		logger.info("Updating Selection " + selection.getId());
 		mongoTemplateExperimentDB.save(selection);
 	}
 
 	public void delete(String id) {
-		logger.debug("Deleing Selection " + id);
+		logger.info("Deleing Selection " + id);
 		mongoTemplateExperimentDB.remove(find(id));
 	}
 

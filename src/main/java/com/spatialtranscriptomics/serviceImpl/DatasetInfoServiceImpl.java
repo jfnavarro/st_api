@@ -38,13 +38,13 @@ public class DatasetInfoServiceImpl implements DatasetInfoService {
 	}
 
 	public DatasetInfo add(DatasetInfo dsi) {
-		logger.debug("Adding datasetinfo");
+		logger.info("Adding datasetinfo");
 		mongoTemplateUserDB.insert(dsi);
 		return dsi;
 	}
 
 	public void update(DatasetInfo dsi) {
-		logger.debug("Updating datasetino " + dsi.getId());
+		logger.info("Updating datasetino " + dsi.getId());
 		mongoTemplateUserDB.save(dsi);
 	}
 

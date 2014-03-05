@@ -50,18 +50,18 @@ public class ChipServiceImpl implements ChipService {
 	}
 
 	public Chip add(Chip chip) {
-		logger.debug("Adding chip");
+		logger.info("Adding chip");
 		mongoTemplateAnalysisDB.insert(chip);
 		return chip;
 	}
 
 	public void update(Chip chip) {
-		logger.debug("Updating chip " + chip.getId());
+		logger.info("Updating chip " + chip.getId());
 		mongoTemplateAnalysisDB.save(chip);
 	}
 
 	public void delete(String id) {
-		logger.debug("Deleting chip " + id);
+		logger.info("Deleting chip " + id);
 		mongoTemplateAnalysisDB.remove(find(id));
 	}
 

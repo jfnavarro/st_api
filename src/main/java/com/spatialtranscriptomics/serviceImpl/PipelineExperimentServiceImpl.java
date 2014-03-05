@@ -50,18 +50,18 @@ public class PipelineExperimentServiceImpl implements PipelineExperimentService 
 	}
 
 	public PipelineExperiment add(PipelineExperiment experiment) {
-		logger.debug("Adding PipelineExperiment");
+		logger.info("Adding PipelineExperiment");
 		mongoTemplateExperimentDB.insert(experiment);
 		return experiment;
 	}
 
 	public void update(PipelineExperiment experiment) {
-		logger.debug("Updating PipelineExperiment " + experiment.getId());
+		logger.info("Updating PipelineExperiment " + experiment.getId());
 		mongoTemplateExperimentDB.save(experiment);
 	}
 
 	public void delete(String id) {
-		logger.debug("Deleting PipelineExperiment " + id);
+		logger.info("Deleting PipelineExperiment " + id);
 		mongoTemplateExperimentDB.remove(find(id));
 	}
 
