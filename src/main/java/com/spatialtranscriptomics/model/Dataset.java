@@ -40,6 +40,7 @@ public class Dataset implements IDataset{
 	int overall_hit_count;
 	double[] overall_hit_quartiles;
 	double[] gene_pooled_hit_quartiles;
+	String[] obo_foundry_terms;
 	String comment;
 	Date last_modified;	
 	
@@ -138,6 +139,15 @@ public class Dataset implements IDataset{
 
 	public void setGene_pooled_hit_quartiles(double[] quartiles) {
 		this.gene_pooled_hit_quartiles = quartiles;
+	}
+
+		
+	public String[] getObo_foundry_terms() {
+		return obo_foundry_terms;
+	}
+
+	public void setObo_foundry_terms(String[] obo_foundry_terms) {
+		this.obo_foundry_terms = obo_foundry_terms;
 	}
 
 	public String getComment() {
