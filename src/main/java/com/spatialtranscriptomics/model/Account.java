@@ -22,7 +22,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
  * 
  * */
 
-@Document
+@Document(collection="account")
 public class Account implements IAccount {
 
 	@Id
@@ -50,7 +50,7 @@ public class Account implements IAccount {
 	
 	public String city;
 	
-	public int postcode;
+	public String postcode;
 	
 	public String country;
 	
@@ -137,11 +137,11 @@ public class Account implements IAccount {
 		this.city = city;
 	}
 
-	public int getPostcode() {
+	public String getPostcode() {
 		return postcode;
 	}
 
-	public void setPostcode(int postcode) {
+	public void setPostcode(String postcode) {
 		this.postcode = postcode;
 	}
 

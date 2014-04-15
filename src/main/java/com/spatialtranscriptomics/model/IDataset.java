@@ -11,7 +11,6 @@ import java.util.Date;
 /**
  * This interface defines the Dataset model. Applications that use the API must implement the same model.
  */
-
 public interface IDataset {
 
 	public String getId();

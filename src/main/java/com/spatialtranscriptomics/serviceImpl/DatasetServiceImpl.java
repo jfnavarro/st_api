@@ -96,8 +96,7 @@ public class DatasetServiceImpl implements DatasetService {
 
 
 	public List<Dataset> findByAccount(String accountId) {
-		MongoUserDetails currentUser = customUserDetailsService
-				.loadCurrentUser();
+		MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
 		if (currentUser.isContentManager() || currentUser.isAdmin()) {
 			List<DatasetInfo> dsis = mongoTemplateUserDB.find(new Query(Criteria.where("account_id").is(accountId)), DatasetInfo.class);
 			if (dsis == null) { return null; }

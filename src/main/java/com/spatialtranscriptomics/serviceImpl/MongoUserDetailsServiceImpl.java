@@ -36,8 +36,10 @@ public class MongoUserDetailsServiceImpl implements UserDetailsService {
 	@Autowired
 	MongoOperations mongoTemplateUserDB;
 
+	
 	private final String DB_COLLECTION_NAME = "account";
 
+	
 	public MongoUserDetails loadUserByUsername(String username)
 			throws UsernameNotFoundException {
 		logger.info("Attempting to load user " + username);
@@ -51,6 +53,7 @@ public class MongoUserDetailsServiceImpl implements UserDetailsService {
 		return result;
 	}
 
+	
 	public MongoUserDetails loadCurrentUser() {
 		Authentication a = SecurityContextHolder.getContext().getAuthentication();
 		return loadUserByUsername(a.getName());

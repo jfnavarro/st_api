@@ -18,9 +18,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
  * We use the @Document annotation of Spring Data for the mapping.
  * We also do data validation using Hibernate validator constraints.
  * 
- * */
-
-@Document
+ */
+@Document(collection="dataset")
 public class Dataset implements IDataset{
 
 	@Id

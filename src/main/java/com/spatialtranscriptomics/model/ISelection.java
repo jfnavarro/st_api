@@ -37,6 +37,10 @@ public interface ISelection {
 	public void setComment(String comment);
 
 	public Date getLast_modified();
+	
+	public String[] getObo_foundry_terms();
+	
+	public void setObo_foundry_terms(String[] obo_foundry_terms);
 
 	public void setLast_modified(Date last_modified);
 }

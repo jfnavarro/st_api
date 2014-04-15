@@ -20,7 +20,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
  * 
  * */
 
-@Document
+@Document(collection="pipelineexperiment")
 public class PipelineExperiment implements IPipelineExperiment {
 
 	@Id

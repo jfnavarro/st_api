@@ -6,6 +6,7 @@
 
 package com.spatialtranscriptomics.serviceImpl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import com.spatialtranscriptomics.model.DatasetInfo;
 import com.spatialtranscriptomics.model.Feature;
 import com.spatialtranscriptomics.model.MongoUserDetails;
+import com.spatialtranscriptomics.model.Selection;
 import com.spatialtranscriptomics.service.FeatureService;
 
 /**
@@ -37,6 +39,9 @@ public class FeatureServiceImpl implements FeatureService {
 	@Autowired
 	MongoOperations mongoTemplateFeatureDB;
 
+	@Autowired
+	MongoOperations mongoTemplateExperimentDB;
+	
 	@Autowired
 	MongoOperations mongoTemplateUserDB;
 	
@@ -75,6 +80,29 @@ public class FeatureServiceImpl implements FeatureService {
 
 	}
 
+	public List<Feature> findBySelectionId(String selectionId) {
+		Selection sel = mongoTemplateExperimentDB.findOne(new Query(Criteria.where("id").is(selectionId)), Selection.class);
+		if (sel == null || sel.getDataset_id() == null || sel.getFeature_ids() == null) {
+			System.out.println("Null!!!");
+			return null;
+		}
+		MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+		String dsid = sel.getDataset_id();
+		System.out.println("Dataset ID: " + dsid);
+		if (currentUser.isContentManager() || currentUser.isAdmin() || datasetIsGranted(dsid, currentUser)) {
+			List<String> strs = new ArrayList<String>(sel.getFeature_ids().length);
+			for (String fid : sel.getFeature_ids()) {
+				strs.add(fid);
+			}
+			System.out.println("Found " + strs.size() + " items");
+			return mongoTemplateFeatureDB.find(new Query(Criteria.where("id").in(strs)), Feature.class, dsid);
+		} else {
+			System.out.println("Null again");
+			return null; // user has no permissions on dataset.
+		}
+
+	}
+	
 	// TODO: Implement if needed.
 //	public List<Feature> findBy2DCoords(String datasetId, int x1, int y1, int x2, int y2) {
 //		MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();

@@ -50,15 +50,22 @@ public class FeatureController {
 	@RequestMapping(method = RequestMethod.GET)
 	public @ResponseBody
 	List<Feature> list(
-			@RequestParam(value = "dataset", required = true) String datasetId,
+			@RequestParam(value = "dataset", required = false) String datasetId,
 			@RequestParam(value = "gene", required = false) String gene,
-			@RequestParam(value = "annotation", required = false) String annotation)
+			@RequestParam(value = "annotation", required = false) String annotation,
+			@RequestParam(value = "selection", required = false) String selectionId
+			)
 //			@RequestParam(value = "x1", required = false) Integer x1,
 //			@RequestParam(value = "y1", required = false) Integer y1,
 //			@RequestParam(value = "x2", required = false) Integer x2,
 //			@RequestParam(value = "y2", required = false) Integer y2)
 	{
-
+		if (selectionId != null) {
+			return featureService.findBySelectionId(selectionId);
+		} else if (datasetId == null) {
+			throw new CustomBadRequestException("Need to specify either dataset or selection to acquire features.");
+		}
+		
 		if (annotation != null) {
 			return featureService.findByAnnotation(datasetId, annotation);
 		} else if (gene != null) {

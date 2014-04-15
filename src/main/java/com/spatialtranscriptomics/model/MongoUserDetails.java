@@ -24,7 +24,7 @@ import org.springframework.security.core.userdetails.UserDetails;
  * 
  */
 
-@Document
+@Document(collection="account")
 public class MongoUserDetails extends Account implements UserDetails {
 
 	/**

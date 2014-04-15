@@ -54,9 +54,9 @@ public interface IAccount {
 
 	public void setCity(String city);
 
-	public int getPostcode();
+	public String getPostcode();
 
-	public void setPostcode(int postcode);
+	public void setPostcode(String postcode);
 
 	public String getCountry();
 

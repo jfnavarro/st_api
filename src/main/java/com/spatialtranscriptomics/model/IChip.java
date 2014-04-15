@@ -11,7 +11,6 @@ import java.util.Date;
 /**
  * This interface defines the Chip model. Applications that use the API must implement the same model.
  */
-
 public interface IChip {
 
 	public String getId();

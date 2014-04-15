@@ -6,7 +6,7 @@ import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document
+@Document(collection="selection")
 public class Selection implements ISelection {
 
 	@Id
@@ -26,6 +26,8 @@ public class Selection implements ISelection {
 	String status;
 	
 	String comment;
+	
+	String[] obo_foundry_terms;
 	
 	Date last_modified;
 
@@ -101,6 +103,12 @@ public class Selection implements ISelection {
 		this.last_modified = last_modified;
 	}
 	
-	
+	public String[] getObo_foundry_terms() {
+		return obo_foundry_terms;
+	}
+
+	public void setObo_foundry_terms(String[] obo_foundry_terms) {
+		this.obo_foundry_terms = obo_foundry_terms;
+	}
 	
 }
