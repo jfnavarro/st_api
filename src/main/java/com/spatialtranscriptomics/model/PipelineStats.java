@@ -1,9 +1,8 @@
 package com.spatialtranscriptomics.model;
 
-import java.util.Date;
-
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection="pipelinestats")
@@ -12,6 +11,7 @@ public class PipelineStats implements IPipelineStats {
 	@Id
 	String id;
 	
+	@Indexed(unique = true)
 	@NotBlank(message = "experiment_id must not be blank.")
 	String experiment_id;
 	
@@ -52,8 +52,6 @@ public class PipelineStats implements IPipelineStats {
 	String quality_plots_file;
 	
 	String log_file;
-	
-	Date last_modified;
 	
 	public String getId() {
 		return id;
@@ -222,14 +220,6 @@ public class PipelineStats implements IPipelineStats {
 
 	public void setLog_file(String log_file) {
 		this.log_file = log_file;
-	}
-
-	public Date getLast_modified() {
-		return last_modified;
-	}
-
-	public void setLast_modified(Date last_modified) {
-		this.last_modified = last_modified;
 	}
 	
 }

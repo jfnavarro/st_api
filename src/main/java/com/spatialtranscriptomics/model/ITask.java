@@ -36,7 +36,4 @@ public interface ITask {
 
 	public void setParameters(String parameters);
 
-	public Date getLast_modified();
-
-	public void setLast_modified(Date last_modified);
 }

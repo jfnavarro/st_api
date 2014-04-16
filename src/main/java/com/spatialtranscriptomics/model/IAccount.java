@@ -6,8 +6,6 @@
 
 package com.spatialtranscriptomics.model;
 
-import java.util.Date;
-
 /**
  * This interface defines the Account model. Applications that use the API must implement the same model.
  */
@@ -61,9 +59,5 @@ public interface IAccount {
 	public String getCountry();
 
 	public void setCountry(String country);
-
-	public Date getLast_modified();
-
-	public void setLast_modified(Date lastModified);	
 		
 }

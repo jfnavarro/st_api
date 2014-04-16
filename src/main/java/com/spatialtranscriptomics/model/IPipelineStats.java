@@ -1,7 +1,5 @@
 package com.spatialtranscriptomics.model;
 
-import java.util.Date;
-
 public interface IPipelineStats {
 
 	public String getId();
@@ -88,9 +86,5 @@ public interface IPipelineStats {
 	public String getLog_file();
 
 	public void setLog_file(String log_file);
-
-	public Date getLast_modified();
-
-	public void setLast_modified(Date last_modified);
 	
 }

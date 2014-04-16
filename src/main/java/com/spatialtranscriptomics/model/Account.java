@@ -12,6 +12,7 @@ import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 
@@ -28,6 +29,7 @@ public class Account implements IAccount {
 	@Id
 	public String id;
 	
+	@Indexed(unique = true)
 	@NotBlank
 	@Email(message = "Username must be a valid email address.")
 	public String username;
@@ -38,6 +40,7 @@ public class Account implements IAccount {
 	@NotBlank
 	public String role;
 
+	@NotBlank
 	public boolean enabled;
 	
 	public String institution;
@@ -53,8 +56,6 @@ public class Account implements IAccount {
 	public String postcode;
 	
 	public String country;
-	
-	public Date last_modified;
 	
 	// id is set automatically by MongoDB
 	public String getId() {
@@ -151,14 +152,6 @@ public class Account implements IAccount {
 
 	public void setCountry(String country) {
 		this.country = country;
-	}
-
-	public Date getLast_modified() {
-		return last_modified;
-	}
-
-	public void setLast_modified(Date last_modified) {
-		this.last_modified = last_modified;
 	}
 
 }

@@ -1,7 +1,5 @@
 package com.spatialtranscriptomics.model;
 
-import java.util.Date;
-
 /**
  * This interface defines the ImageAlignment model. Applications that use the API must implement the same model.
  */
@@ -31,8 +29,5 @@ public interface IImageAlignment {
 	
 	public void setAlignment_matrix(double[] arr);
 	
-	public Date getLast_modified();
-	
-	public void setLast_modified(Date d);
 }
 

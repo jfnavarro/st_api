@@ -6,10 +6,9 @@
 
 package com.spatialtranscriptomics.model;
 
-import java.util.Date;
-
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 
@@ -24,10 +23,11 @@ public class Chip implements IChip {
 	@Id
 	String id;
 
-	int barcodes;
-	
+	@Indexed(unique = true)
 	@NotBlank(message = "Name must not be blank.")
 	String name;
+	
+	int barcodes;
 	
 	int x1;
 	int x1_border;
@@ -41,8 +41,6 @@ public class Chip implements IChip {
 	int y2;
 	int y2_border;
 	int y2_total;
-	
-	Date last_modified;
 
 	// id is set automatically by MongoDB
 	public String getId() {
@@ -163,14 +161,6 @@ public class Chip implements IChip {
 
 	public void setY2_total(int y2_total) {
 		this.y2_total = y2_total;
-	}
-
-	public Date getLast_modified() {
-		return this.last_modified;
-	}
-
-	public void setLast_modified(Date lastModified) {
-		this.last_modified = lastModified;
 	}
 
 }

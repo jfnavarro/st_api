@@ -1,26 +1,30 @@
 package com.spatialtranscriptomics.model;
 
-import java.util.Date;
-
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection="datasetinfo")
+@CompoundIndexes({
+    @CompoundIndex(name = "account_id_1_dataset_id_1", def = "{'account_id': 1, 'dataset_id': 1}")
+})
 public class DatasetInfo implements IDatasetInfo {
 
 	@Id
 	String id;
 	
+	@Indexed(unique = false)
 	@NotBlank(message = "account_id must not be blank.")
 	String account_id;
 	
+	@Indexed(unique = false)
 	@NotBlank(message = "dataset_id must not be blank.")
 	String dataset_id;
 	
 	String comment;
-	
-	Date last_modified;
 	
 	public String getId() {
 		return id;
@@ -53,12 +57,4 @@ public class DatasetInfo implements IDatasetInfo {
 	public void setComment(String comment) {
 		this.comment = comment;
 	}
-
-	public Date getLast_modified() {
-		return last_modified;
-	}
-
-	public void setLast_modified(Date last_modified) {
-		this.last_modified = last_modified;
-	}	
 }

@@ -6,10 +6,9 @@
 
 package com.spatialtranscriptomics.model;
 
-import java.util.Date;
-
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 
@@ -26,12 +25,16 @@ public class PipelineExperiment implements IPipelineExperiment {
 	@Id
 	String id;
 	
+	@Indexed(unique = true)
 	@NotBlank(message = "Name must not be blank.")
 	String name;
 	
-	String emr_jobflow_id;
+	@NotBlank(message = "Account must not be blank.")
+	@Indexed(unique = false)
 	String account_id;
-	Date last_modified;
+	
+	@NotBlank(message = "EMR job ID must not be blank.")
+	String emr_jobflow_id;
 
 	// id is set automatically by MongoDB
 	public String getId() {
@@ -67,14 +70,5 @@ public class PipelineExperiment implements IPipelineExperiment {
 	public void setAccount_id(String id) {
 		this.account_id = id;
 	}
-
-	public Date getLast_modified() {
-		return this.last_modified;
-	}
-
-	public void setLast_modified(Date date) {
-		this.last_modified = date;
-	}
-
 	
 }

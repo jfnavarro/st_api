@@ -4,6 +4,7 @@ import java.util.Date;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection="task")
@@ -12,8 +13,13 @@ public class Task implements ITask {
 	@Id
 	String id;
 	
-	@NotBlank(message = "name must not be blank.")
+	@Indexed(unique = true)
+	@NotBlank(message = "Name must not be blank.")
 	String name;
+	
+	@Indexed(unique = false)
+	@NotBlank(message = "Account must not be blank.")
+	String account_id;
 	
 	String status;
 	
@@ -23,11 +29,7 @@ public class Task implements ITask {
 	
 	String[] selection_ids;
 	
-	String account_id;
-	
 	String parameters;
-	
-	Date last_modified;
 
 	public String getId() {
 		return id;
@@ -91,16 +93,6 @@ public class Task implements ITask {
 
 	public void setParameters(String parameters) {
 		this.parameters = parameters;
-	}
-
-	public Date getLast_modified() {
-		return last_modified;
-	}
-
-	public void setLast_modified(Date last_modified) {
-		this.last_modified = last_modified;
-	}
-	
-	
+	}	
 	
 }

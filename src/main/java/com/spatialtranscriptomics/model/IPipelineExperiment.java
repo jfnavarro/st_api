@@ -6,8 +6,6 @@
 
 package com.spatialtranscriptomics.model;
 
-import java.util.Date;
-
 /**
  * This interface defines the PipelineExperiment model. Applications that use the API must implement the same model.
  */
@@ -29,8 +27,4 @@ public interface IPipelineExperiment {
 	public String getAccount_id();
 
 	public void setAccount_id(String id);
-
-	public Date getLast_modified();
-
-	public void setLast_modified(Date date);
 }

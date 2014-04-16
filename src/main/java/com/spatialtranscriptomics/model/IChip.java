@@ -6,8 +6,6 @@
 
 package com.spatialtranscriptomics.model;
 
-import java.util.Date;
-
 /**
  * This interface defines the Chip model. Applications that use the API must implement the same model.
  */
@@ -73,7 +71,4 @@ public interface IChip {
 
 	public void setY2_total(int y2_total);
 	
-	public Date getLast_modified();
-	
-	public void setLast_modified(Date lastModified);
 }

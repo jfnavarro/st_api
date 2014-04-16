@@ -1,7 +1,5 @@
 package com.spatialtranscriptomics.model;
 
-import java.util.Date;
-
 /**
  * This interface defines the DatasetInfo model. Applications that use the API must implement the same model.
  */
@@ -21,11 +19,6 @@ public interface IDatasetInfo {
 	
 	public String getComment();
 	
-	public void setComment(String id);
-	
-	public Date getLast_modified();
-	
-	public void setLast_modified(Date d);
-	
+	public void setComment(String id);	
 	
 }

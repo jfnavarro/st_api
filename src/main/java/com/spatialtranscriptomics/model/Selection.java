@@ -1,9 +1,8 @@
 package com.spatialtranscriptomics.model;
 
-import java.util.Date;
-
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection="selection")
@@ -12,14 +11,20 @@ public class Selection implements ISelection {
 	@Id
 	String id;
 	
-	String[] feature_ids;
+	@Indexed(unique = true)
+	@NotBlank(message = "Name must not be blank.")
+	String name;
 	
+	@Indexed(unique = false)
+	@NotBlank(message = "Dataset must not be blank.")
 	String dataset_id;
 	
+	@Indexed(unique = false)
+	@NotBlank(message = "Account must not be blank.")
 	String account_id;
 	
-	@NotBlank(message = "name must not be blank.")
-	String name;
+	@NotBlank(message = "Features must not be blank.")
+	String[] feature_ids;
 	
 	String type;
 	
@@ -28,8 +33,6 @@ public class Selection implements ISelection {
 	String comment;
 	
 	String[] obo_foundry_terms;
-	
-	Date last_modified;
 
 	public String getId() {
 		return id;
@@ -93,14 +96,6 @@ public class Selection implements ISelection {
 
 	public void setComment(String comment) {
 		this.comment = comment;
-	}
-
-	public Date getLast_modified() {
-		return last_modified;
-	}
-
-	public void setLast_modified(Date last_modified) {
-		this.last_modified = last_modified;
 	}
 	
 	public String[] getObo_foundry_terms() {
