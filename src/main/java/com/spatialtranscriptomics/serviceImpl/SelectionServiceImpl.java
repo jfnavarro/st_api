@@ -6,6 +6,7 @@
 
 package com.spatialtranscriptomics.serviceImpl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -16,6 +17,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import com.spatialtranscriptomics.model.Selection;
+import com.spatialtranscriptomics.model.Task;
 import com.spatialtranscriptomics.service.SelectionService;
 
 /**
@@ -69,6 +71,18 @@ public class SelectionServiceImpl implements SelectionService {
 
 	public List<Selection> findByDataset(String datasetId) {
 		return mongoTemplateExperimentDB.find(new Query(Criteria.where("dataset_id").is(datasetId)), Selection.class);
+	}
+	
+	public List<Selection> findByTask(String taskId) {
+		Task t = mongoTemplateExperimentDB.findOne(new Query(Criteria.where("id").is(taskId)), Task.class);
+		if (t == null) { return null; }
+		String[] selids = t.getSelection_ids();
+		if (selids == null) { return null; }
+		ArrayList<String> ls = new ArrayList<String>(selids.length);
+		for (String id : selids) {
+			ls.add(id);
+		}
+		return mongoTemplateExperimentDB.find(new Query(Criteria.where("id").in(ls)), Selection.class);
 	}
 
 }

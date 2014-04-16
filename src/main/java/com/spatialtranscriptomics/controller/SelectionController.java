@@ -54,13 +54,16 @@ public class SelectionController {
 	public @ResponseBody
 	List<Selection> list(
 			@RequestParam(value = "account", required = false) String accountId,
-			@RequestParam(value = "dataset", required = false) String datasetId
+			@RequestParam(value = "dataset", required = false) String datasetId,
+			@RequestParam(value = "task", required = false) String taskId
 			) {
 		List<Selection> selections = null;
 		if (accountId != null) {
 			selections = selectionService.findByAccount(accountId);
 		} else if (datasetId != null) {
 			selections = selectionService.findByDataset(datasetId);
+		} else if (taskId != null) {
+			selections = selectionService.findByTask(taskId);
 		} else {
 			selections = selectionService.list();
 		}

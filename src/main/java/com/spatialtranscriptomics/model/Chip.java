@@ -17,9 +17,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
  * This class maps the Chip data model object into a MongoDB Document
  * We use the @Document annotation of Spring Data for the mapping.
  * We also do data validation using Hibernate validator constraints.
- * 
- * */
-
+ */
 @Document(collection="chip")
 public class Chip implements IChip {
 

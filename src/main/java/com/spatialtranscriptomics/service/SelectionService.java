@@ -25,6 +25,8 @@ public interface SelectionService {
 	
 	public List<Selection> findByDataset(String datasetId);
 
+	public List<Selection> findByTask(String taskId);
+	
 	public Selection add(Selection sel);
 
 	public void update(Selection sel);
