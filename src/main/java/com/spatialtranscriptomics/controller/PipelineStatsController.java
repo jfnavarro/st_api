@@ -53,11 +53,15 @@ public class PipelineStatsController {
 	@Secured({"ROLE_CM","ROLE_ADMIN"})
 	@RequestMapping(method = RequestMethod.GET)
 	public @ResponseBody
-	List<PipelineStats> list(@RequestParam(value = "experiment_id", required = false) String experimentId) {
+	List<PipelineStats> list(@RequestParam(value = "pipelineexperiment", required = false) String experimentId) {
 		List<PipelineStats> pipelinestats = null;
 		if (experimentId != null) {
 			pipelinestats = new ArrayList<PipelineStats>(1);
-			pipelinestats.add(pipelinestatsService.findByExperiment(experimentId));
+			PipelineStats stats = pipelinestatsService.findByExperiment(experimentId);
+			if (stats != null) {
+				//System.out.println("Adding stats");
+				pipelinestats.add(stats);
+			}
 		} else {
 			pipelinestats = pipelinestatsService.list();
 		}
