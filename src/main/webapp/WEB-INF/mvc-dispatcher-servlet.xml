@@ -18,10 +18,17 @@
         http://www.springframework.org/schema/security
         http://www.springframework.org/schema/security/spring-security-3.1.xsd
         http://www.springframework.org/schema/data/mongo
-      	http://www.springframework.org/schema/data/mongo/spring-mongo-1.0.xsd">
+      	http://www.springframework.org/schema/data/mongo/spring-mongo-1.4.xsd
+      	http://www.springframework.org/schema/data/repository
+        http://www.springframework.org/schema/data/repository/spring-repository-1.5.xsd">
 
 
 	<mvc:default-servlet-handler />
+
+	<!--  Enable startup bean. -->
+	
+	<bean id="startupHousekeeper" class="com.spatialtranscriptomics.StartupHousekeeper"/>
+	
 
 	<!-- Enable Image uploads (used in ImageController.class) -->
 
@@ -67,7 +74,9 @@
 		mongoTemplate instances are Autowired and used in the classes in package 
 		com.spatialtranscriptomics.serviceImpl -->
 
-	<mongo:mongo host="${mongodb.host}"/>
+	<mongo:auditing />
+	
+	<mongo:mongo host="${mongodb.host}" id="mongo"/>
 
 	<bean id="mongoCredentials" class="org.springframework.data.authentication.UserCredentials">
 		<constructor-arg name="username" value="${mongodb.user}" />

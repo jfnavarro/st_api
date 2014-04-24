@@ -14,7 +14,8 @@
 		<spring.version>3.2.2.RELEASE</spring.version>
 		<spring.security.version>3.1.3.RELEASE</spring.security.version>
 		<spring.security.oauth.version>1.0.2.RELEASE</spring.security.oauth.version>
-		<spring.data.mongo.version>1.3.1.RELEASE</spring.data.mongo.version>
+		<spring.data.mongo.version>1.4.2.RELEASE</spring.data.mongo.version>
+		<spring.data.commons.version>1.7.2.RELEASE</spring.data.commons.version>
 		<spring.osgi.range>[3.1.0,4.0.0)</spring.osgi.range>
 		<security.osgi.range>[3.1.0,4.0.0)</security.osgi.range>
 	</properties>
@@ -223,7 +224,20 @@
 			<artifactId>spring-data-mongodb</artifactId>
 			<version>${spring.data.mongo.version}</version>
 		</dependency>
+		
+		<!-- Spring Data Commons -->
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-commons</artifactId>
+			<version>${spring.data.commons.version}</version>
+		</dependency>
 
+		<!-- JODA -->
+		<dependency>
+			<groupId>joda-time</groupId>
+			<artifactId>joda-time</artifactId>
+			<version>2.2</version>
+		</dependency>
 
 		<!-- Json Parser-->
 		<dependency>
@@ -266,6 +280,11 @@
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.11</version>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-annotations</artifactId>
+			<version>3.5.6-Final</version>
 		</dependency>
 	</dependencies>
 

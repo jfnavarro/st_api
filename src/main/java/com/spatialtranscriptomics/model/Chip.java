@@ -7,7 +7,10 @@
 package com.spatialtranscriptomics.model;
 
 import org.hibernate.validator.constraints.NotBlank;
+import org.joda.time.DateTime;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -41,6 +44,13 @@ public class Chip implements IChip {
 	int y2;
 	int y2_border;
 	int y2_total;
+	
+
+	@CreatedDate
+	private DateTime created_at;
+	
+    @LastModifiedDate
+    private DateTime last_modified;
 
 	// id is set automatically by MongoDB
 	public String getId() {
@@ -163,4 +173,16 @@ public class Chip implements IChip {
 		this.y2_total = y2_total;
 	}
 
+	public DateTime getCreated_at() {
+		return created_at;
+	}
+	
+	public void setCreated_at(DateTime created) {
+		this.created_at = created;
+	}
+
+	public DateTime getLast_modified() {
+		return last_modified;
+	}
+	
 }
