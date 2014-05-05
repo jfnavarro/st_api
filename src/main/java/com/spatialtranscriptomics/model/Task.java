@@ -30,6 +30,8 @@ public class Task implements ITask {
 	String[] selection_ids;
 	
 	String parameters;
+	
+	String result_file;
 
 	public String getId() {
 		return id;
@@ -93,6 +95,14 @@ public class Task implements ITask {
 
 	public void setParameters(String parameters) {
 		this.parameters = parameters;
+	}
+
+	public String getResultFile() {
+		return result_file;
+	}
+
+	public void setResultFile(String file) {
+		this.result_file = file;
 	}	
 	
 }

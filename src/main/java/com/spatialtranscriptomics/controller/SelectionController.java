@@ -6,6 +6,8 @@
 
 package com.spatialtranscriptomics.controller;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -30,7 +32,13 @@ import com.spatialtranscriptomics.exceptions.BadRequestResponse;
 import com.spatialtranscriptomics.exceptions.CustomBadRequestException;
 import com.spatialtranscriptomics.exceptions.CustomNotFoundException;
 import com.spatialtranscriptomics.exceptions.NotFoundResponse;
+import com.spatialtranscriptomics.model.Account;
+import com.spatialtranscriptomics.model.Dataset;
+import com.spatialtranscriptomics.model.MongoUserDetails;
 import com.spatialtranscriptomics.model.Selection;
+import com.spatialtranscriptomics.serviceImpl.AccountServiceImpl;
+import com.spatialtranscriptomics.serviceImpl.DatasetServiceImpl;
+import com.spatialtranscriptomics.serviceImpl.MongoUserDetailsServiceImpl;
 import com.spatialtranscriptomics.serviceImpl.SelectionServiceImpl;
 
 /**
@@ -46,10 +54,19 @@ public class SelectionController {
 	private static final Logger logger = Logger.getLogger(SelectionController.class);
 
 	@Autowired
+	MongoUserDetailsServiceImpl customUserDetailsService;
+	
+	@Autowired
 	SelectionServiceImpl selectionService;
+	
+	@Autowired
+	AccountServiceImpl accountService;
+	
+	@Autowired
+	DatasetServiceImpl datasetService;
 
 	// list / list for account / list for dataset
-	@Secured({"ROLE_CM","ROLE_ADMIN"})
+	@Secured({"ROLE_USER","ROLE_CM","ROLE_ADMIN"})
 	@RequestMapping(method = RequestMethod.GET)
 	public @ResponseBody
 	List<Selection> list(
@@ -67,29 +84,46 @@ public class SelectionController {
 		} else {
 			selections = selectionService.list();
 		}
+		
+		// Filter based on user.
+		MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+		if (currentUser.isContentManager() || currentUser.isAdmin()) {
+		} else {
+			List<Dataset> datasets = datasetService.findByAccount(currentUser.getId());
+			HashMap<String, Dataset> hash = new HashMap<String, Dataset>(datasets.size());
+			for (Dataset d : datasets) {
+				hash.put(d.getId(), d);
+			}
+			ArrayList<Selection> filtered = new ArrayList<Selection>(selections.size());
+			for (Selection sel : selections) {
+				if (sel.getAccount_id().equals(currentUser.getId()) || hash.containsKey(sel.getDataset_id())) {
+					filtered.add(sel);
+				}
+			}
+			selections = filtered;
+		}
 		if (selections == null) {
-			throw new CustomNotFoundException(
-					"No selections found or you dont have permissions to access them.");
+			throw new CustomNotFoundException("No selections found or you dont have permissions to access them.");
 		}
 		return selections;
 	}
 
 	// get
-	@Secured({"ROLE_CM","ROLE_ADMIN"})
+	@Secured({"ROLE_USER","ROLE_CM","ROLE_ADMIN"})
 	@RequestMapping(value = "{id}", method = RequestMethod.GET)
 	public @ResponseBody
 	Selection get(@PathVariable String id) {
 		Selection selection = selectionService.find(id);
+		selection = checkCredentials(selection);
 		if (selection == null) {
 			throw new CustomNotFoundException(
 					"A selection with this ID does not exist or you dont have permissions to access it.");
 		}
-
 		return selection;
 	}
 
 	// add
-	@Secured({"ROLE_CM","ROLE_ADMIN"})
+	@Secured({"ROLE_USER","ROLE_CM","ROLE_ADMIN"})
 	@RequestMapping(method = RequestMethod.POST)
 	public @ResponseBody
 	Selection add(@RequestBody @Valid Selection selection, BindingResult result) {
@@ -107,11 +141,17 @@ public class SelectionController {
 			throw new CustomBadRequestException(
 					"An selection with this name already exists. Selection names are unique.");
 		}
-		return selectionService.add(selection);
+		selection = checkCredentials(selection);
+		if (selection != null) {
+			return selectionService.add(selection);
+		} else {
+			throw new CustomBadRequestException(
+					"User lacks authorization to add the selection.");
+		}
 	}
 
 	// update
-	@Secured({"ROLE_CM","ROLE_ADMIN"})
+	@Secured({"ROLE_USER","ROLE_CM","ROLE_ADMIN"})
 	@RequestMapping(value = "{id}", method = RequestMethod.PUT)
 	public @ResponseBody
 	void update(@PathVariable String id, @RequestBody @Valid Selection selection,
@@ -128,17 +168,45 @@ public class SelectionController {
 		} else if (selectionService.find(id) == null) {
 			throw new CustomBadRequestException(
 					"A selection with this ID does not exist or you don't have permissions to access it.");
-		} else {
+		}
+		selection = checkCredentials(selection);
+		if (selection != null) {
 			selectionService.update(selection);
+		} else {
+			throw new CustomBadRequestException(
+					"User lacks authorization to update the selection.");
 		}
 	}
 
 	// delete
-	@Secured({"ROLE_CM","ROLE_ADMIN"})
+	@Secured({"ROLE_USER","ROLE_CM","ROLE_ADMIN"})
 	@RequestMapping(value = "{id}", method = RequestMethod.DELETE)
 	public @ResponseBody
 	void delete(@PathVariable String id) {
-		selectionService.delete(id);
+		Selection selection = get(id);
+		if (selection != null) {
+			selectionService.delete(id);
+		} else {
+			throw new CustomBadRequestException("User lacks authorization to delete the selection.");
+		}
+	}
+	
+	private Selection checkCredentials(Selection sel) {
+		MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+		if (currentUser.isContentManager() || currentUser.isAdmin()) {
+			return sel;
+		} else {
+			if (currentUser.getId().equals(sel.getAccount_id())) {
+				return sel;
+			}
+			List<Account> accounts = accountService.findByDataset(sel.getDataset_id());
+			for (Account acc : accounts) {
+				if (currentUser.getId().equals(acc.getId())) {
+					return sel;
+				}
+			}
+		}
+		return null;
 	}
 
 	@ExceptionHandler(CustomNotFoundException.class)

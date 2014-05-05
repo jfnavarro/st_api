@@ -49,7 +49,7 @@ public class TaskController {
 	TaskServiceImpl taskService;
 
 	// list / list for account
-	@Secured({"ROLE_CM","ROLE_ADMIN"})
+	@Secured({"ROLE_USER", "ROLE_CM","ROLE_ADMIN"})
 	@RequestMapping(method = RequestMethod.GET)
 	public @ResponseBody
 	List<Task> list(@RequestParam(value = "account", required = false) String accountId) {

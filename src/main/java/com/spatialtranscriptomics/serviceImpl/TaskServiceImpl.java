@@ -15,6 +15,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
+import com.spatialtranscriptomics.model.MongoUserDetails;
 import com.spatialtranscriptomics.model.Task;
 import com.spatialtranscriptomics.service.TaskService;
 
@@ -35,32 +36,70 @@ public class TaskServiceImpl implements TaskService {
 	@Autowired
 	MongoOperations mongoTemplateExperimentDB;
 
+	@Autowired
+	AccountServiceImpl accountService;
+	
+	@Autowired
+	DatasetServiceImpl datasetService;
+	
 	public Task find(String id) {
-		return mongoTemplateExperimentDB.findOne(new Query(Criteria.where("id").is(id)), Task.class);
+		Task t = mongoTemplateExperimentDB.findOne(new Query(Criteria.where("id").is(id)), Task.class);
+		return checkCredentials(t);
+	}
+	
+	private Task checkCredentials(Task t) {
+		if (t == null) { return null; }
+ 		MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+		if (currentUser.isContentManager() || currentUser.isAdmin() || currentUser.getId().equals(t.getAccount_id())) {
+			return t;
+		}
+		return null;
 	}
 
 	public Task findByName(String name) {
-		return mongoTemplateExperimentDB.findOne(new Query(Criteria.where("name").is(name)), Task.class);
+		Task t = mongoTemplateExperimentDB.findOne(new Query(Criteria.where("name").is(name)), Task.class);
+		return checkCredentials(t);
 	}
 
 	public List<Task> list() {
-		return mongoTemplateExperimentDB.findAll(Task.class);
+		MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+		if (currentUser.isContentManager() || currentUser.isAdmin()) {
+			return mongoTemplateExperimentDB.findAll(Task.class);
+		}
+		return mongoTemplateExperimentDB.find(new Query(Criteria.where("account_id").is(currentUser.getId())), Task.class);
 	}
 
 	public Task add(Task task) {
 		logger.info("Adding Task");
-		mongoTemplateExperimentDB.insert(task);
-		return task;
+		MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+		if (currentUser.isContentManager() || currentUser.isAdmin() || currentUser.getId().equals(task.getAccount_id())) {
+			mongoTemplateExperimentDB.insert(task);
+			return task;
+		} else {
+			logger.info("Failed to add Task -- user lacking access.");
+			return null;
+		}
 	}
 
 	public void update(Task task) {
 		logger.info("Updating Task");
-		mongoTemplateExperimentDB.save(task);
+		MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+		if (currentUser.isContentManager() || currentUser.isAdmin() || currentUser.getId().equals(task.getAccount_id())) {
+			mongoTemplateExperimentDB.save(task);
+		} else {
+			logger.info("Failed to update Task -- user lacking access.");
+		}
 	}
 
 	public void delete(String id) {
 		logger.info("Deleting Task " + id);
-		mongoTemplateExperimentDB.remove(find(id));
+		MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+		Task t = find(id);
+		if (currentUser.isContentManager() || currentUser.isAdmin() || currentUser.getId().equals(t.getAccount_id())) {
+			mongoTemplateExperimentDB.remove(t);
+		} else {
+			logger.info("Failed to delete Task -- user lacking access.");
+		}
 	}
 
 	public List<Task> findByAccount(String accountId) {
