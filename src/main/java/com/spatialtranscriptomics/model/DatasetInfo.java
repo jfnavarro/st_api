@@ -26,6 +26,15 @@ public class DatasetInfo implements IDatasetInfo {
 	
 	String comment;
 	
+	public DatasetInfo() {}
+	
+	// HACK. Only for admin editing.
+	public DatasetInfo(String accountId, String datasetId, String comment) {
+		this.account_id = accountId;
+		this.dataset_id = datasetId;
+		this.comment = comment;
+	}
+	
 	public String getId() {
 		return id;
 	}

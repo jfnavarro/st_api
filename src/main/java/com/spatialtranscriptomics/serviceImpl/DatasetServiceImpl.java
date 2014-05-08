@@ -96,8 +96,15 @@ public class DatasetServiceImpl implements DatasetService {
 
 
 	public List<Dataset> findByAccount(String accountId) {
+		if (!customUserDetailsService.isProperlyLoaded()) {
+			return null;
+		}
+		
+		if (customUserDetailsService == null) { return null; }   // In case of pre-login calls.
 		MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+		if (currentUser == null) { return null; }                // In case of pre-login calls.
 		if (currentUser.isContentManager() || currentUser.isAdmin()) {
+			try {
 			List<DatasetInfo> dsis = mongoTemplateUserDB.find(new Query(Criteria.where("account_id").is(accountId)), DatasetInfo.class);
 			if (dsis == null) { return null; }
 			List<String> strs = new ArrayList<String>(dsis.size());
@@ -105,6 +112,9 @@ public class DatasetServiceImpl implements DatasetService {
 				strs.add(dsi.getDataset_id());
 			}
 			return mongoTemplateAnalysisDB.find(new Query(Criteria.where("id").in(strs)), Dataset.class);
+			} catch (Exception e) {
+				return null;
+			}
 		}
 		return null;
 	}

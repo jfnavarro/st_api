@@ -1,4 +1,4 @@
-package com.spatialtranscriptomics;
+package com.spatialtranscriptomics.component;
 
 import org.joda.time.DateTimeZone;
 import org.springframework.context.ApplicationListener;

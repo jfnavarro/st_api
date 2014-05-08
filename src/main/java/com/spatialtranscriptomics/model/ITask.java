@@ -36,8 +36,8 @@ public interface ITask {
 
 	public void setParameters(String parameters);
 	
-	public String getResultFile();
+	public String getResult_file();
 
-	public void setResultFile(String file);
+	public void setResult_file(String file);
 
 }

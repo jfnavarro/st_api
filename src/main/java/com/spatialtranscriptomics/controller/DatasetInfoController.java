@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import com.spatialtranscriptomics.component.StaticContextAccessor;
 import com.spatialtranscriptomics.exceptions.BadRequestResponse;
 import com.spatialtranscriptomics.exceptions.CustomBadRequestException;
 import com.spatialtranscriptomics.exceptions.CustomNotFoundException;
@@ -148,4 +149,12 @@ public class DatasetInfoController {
 		return new BadRequestResponse(ex.getMessage());
 	}
 
+	public static DatasetInfoServiceImpl getStaticDatasetInfoService() {
+		return StaticContextAccessor.getBean(DatasetInfoController.class).getDatasetInfoService();
+	}
+	
+	public DatasetInfoServiceImpl getDatasetInfoService() {
+		return this.datasetinfoService;
+	}
+	
 }

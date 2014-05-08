@@ -97,11 +97,11 @@ public class Task implements ITask {
 		this.parameters = parameters;
 	}
 
-	public String getResultFile() {
+	public String getResult_file() {
 		return result_file;
 	}
 
-	public void setResultFile(String file) {
+	public void setResult_file(String file) {
 		this.result_file = file;
 	}	
 	

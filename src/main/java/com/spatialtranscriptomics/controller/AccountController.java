@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import com.spatialtranscriptomics.component.StaticContextAccessor;
 import com.spatialtranscriptomics.exceptions.BadRequestResponse;
 import com.spatialtranscriptomics.exceptions.CustomBadRequestException;
 import com.spatialtranscriptomics.exceptions.CustomNotFoundException;
@@ -181,6 +182,14 @@ public class AccountController {
 	public @ResponseBody
 	BadRequestResponse handleNotFoundException(CustomBadRequestException ex) {
 		return new BadRequestResponse(ex.getMessage());
+	}
+	
+	public static AccountServiceImpl getStaticAccountService() {
+        return StaticContextAccessor.getBean(AccountController.class).getAccountService();
+   }
+	
+	public AccountServiceImpl getAccountService() {
+		return this.accountService;
 	}
 
 }

@@ -6,12 +6,22 @@
 
 package com.spatialtranscriptomics.model;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import com.spatialtranscriptomics.controller.DatasetController;
+import com.spatialtranscriptomics.controller.DatasetInfoController;
+import com.spatialtranscriptomics.serviceImpl.DatasetInfoServiceImpl;
+import com.spatialtranscriptomics.serviceImpl.DatasetServiceImpl;
 
 
 /**
@@ -38,7 +48,7 @@ public class Account implements IAccount {
 	@NotBlank
 	public String role;
 
-	@NotBlank
+	//@NotBlank // not possible...
 	public boolean enabled;
 	
 	public String institution;
@@ -54,6 +64,9 @@ public class Account implements IAccount {
 	public String postcode;
 	
 	public String country;
+	
+	@Transient
+	public List<String> granted_datasets;
 	
 	// id is set automatically by MongoDB
 	public String getId() {
@@ -150,6 +163,38 @@ public class Account implements IAccount {
 
 	public void setCountry(String country) {
 		this.country = country;
+	}
+	
+	@Transient
+	public List<String> getGranted_datasets() {
+		if (this.id == null) { return null; }
+		DatasetServiceImpl service = DatasetController.getStaticDatasetService();
+		List<Dataset> alreadyInThere = service.findByAccount(this.id);
+		if (alreadyInThere == null) { return null; }
+		granted_datasets = new ArrayList<String>(alreadyInThere.size());
+		for (Dataset d : alreadyInThere) {
+			granted_datasets.add(d.getId());
+		}
+		return granted_datasets;
+	}
+
+	@Transient
+	public void setGranted_datasets(List<String> grantedDatasets) {
+		this.granted_datasets = grantedDatasets;
+		DatasetInfoServiceImpl datasetinfoService = DatasetInfoController.getStaticDatasetInfoService();
+		// Remove existing datasets.
+		List<DatasetInfo> dsis = datasetinfoService.findByAccount(this.id);
+		for (DatasetInfo dsi : dsis) {
+			datasetinfoService.delete(dsi.getId());
+		}
+		if (grantedDatasets == null) { return; }
+		for (String did : grantedDatasets) {
+			try {
+				Date d = new Date();
+				datasetinfoService.add(new DatasetInfo(this.id, did, "Created " + d.toString()));
+			} catch (Exception e) {
+			}
+		}
 	}
 
 }

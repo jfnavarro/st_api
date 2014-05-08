@@ -25,10 +25,10 @@
 
 	<mvc:default-servlet-handler />
 
-	<!--  Enable startup bean. -->
+	<!--  Enable startup bean, etc. -->
 	
-	<bean id="startupHousekeeper" class="com.spatialtranscriptomics.StartupHousekeeper"/>
-	
+	<bean id="startupHousekeeper" class="com.spatialtranscriptomics.component.StartupHousekeeper"/>
+	<bean id="staticContextAccessor" class="com.spatialtranscriptomics.component.StaticContextAccessor"/>
 
 	<!-- Enable Image uploads (used in ImageController.class) -->
 

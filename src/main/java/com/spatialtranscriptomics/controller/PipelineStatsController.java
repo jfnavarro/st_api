@@ -59,7 +59,6 @@ public class PipelineStatsController {
 			pipelinestats = new ArrayList<PipelineStats>(1);
 			PipelineStats stats = pipelinestatsService.findByExperiment(experimentId);
 			if (stats != null) {
-				//System.out.println("Adding stats");
 				pipelinestats.add(stats);
 			}
 		} else {

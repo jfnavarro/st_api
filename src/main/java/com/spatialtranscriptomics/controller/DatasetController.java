@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 
+import com.spatialtranscriptomics.component.StaticContextAccessor;
 import com.spatialtranscriptomics.exceptions.BadRequestResponse;
 import com.spatialtranscriptomics.exceptions.CustomBadRequestException;
 import com.spatialtranscriptomics.exceptions.CustomNotFoundException;
@@ -146,6 +147,17 @@ public class DatasetController {
 	public @ResponseBody
 	BadRequestResponse handleNotFoundException(CustomBadRequestException ex) {
 		return new BadRequestResponse(ex.getMessage());
+	}
+	
+	
+	public static DatasetServiceImpl getStaticDatasetService() {
+		DatasetServiceImpl b = StaticContextAccessor.getBean(DatasetController.class).getDatasetService();
+		return b;
+	}
+	
+	
+	public DatasetServiceImpl getDatasetService() {
+		return this.datasetService;
 	}
 
 }
