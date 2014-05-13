@@ -6,10 +6,20 @@
 
 package com.spatialtranscriptomics.model;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import com.spatialtranscriptomics.controller.AccountController;
+import com.spatialtranscriptomics.controller.DatasetInfoController;
+import com.spatialtranscriptomics.serviceImpl.AccountServiceImpl;
+import com.spatialtranscriptomics.serviceImpl.DatasetInfoServiceImpl;
 
 
 /**
@@ -46,6 +56,9 @@ public class Dataset implements IDataset{
 	double[] gene_pooled_hit_quartiles;
 	String[] obo_foundry_terms;
 	String comment;
+	
+	@Transient
+	public List<String> granted_accounts;
 	
 	public String getId() {
 		return id;
@@ -160,5 +173,37 @@ public class Dataset implements IDataset{
 	public void setComment(String comm) {
 		this.comment = comm;
 	}
-		
+	
+	
+	@Transient
+	public List<String> getGranted_accounts() {
+		if (this.id == null) { return null; }
+		AccountServiceImpl service = AccountController.getStaticAccountService();
+		List<Account> alreadyInThere = service.findByDataset(this.id);
+		if (alreadyInThere == null) { return null; }
+		granted_accounts = new ArrayList<String>(alreadyInThere.size());
+		for (Account d : alreadyInThere) {
+			granted_accounts.add(d.getId());
+		}
+		return granted_accounts;
+	}
+
+	@Transient
+	public void setGranted_accounts(List<String> grantedAccounts) {
+		this.granted_accounts = grantedAccounts;
+		DatasetInfoServiceImpl datasetinfoService = DatasetInfoController.getStaticDatasetInfoService();
+		// Remove existing accounts.
+		List<DatasetInfo> dsis = datasetinfoService.findByDataset(this.id);
+		for (DatasetInfo dsi : dsis) {
+			datasetinfoService.delete(dsi.getId());
+		}
+		if (grantedAccounts == null) { return; }
+		for (String did : grantedAccounts) {
+			try {
+				Date d = new Date();
+				datasetinfoService.add(new DatasetInfo(did, this.id, "Created " + d.toString()));
+			} catch (Exception e) {
+			}
+		}
+	}
 }
