@@ -6,6 +6,7 @@ import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.format.annotation.DateTimeFormat;
 
 @Document(collection="task")
 public class Task implements ITask {
@@ -23,8 +24,10 @@ public class Task implements ITask {
 	
 	String status;
 	
+	@DateTimeFormat
 	Date start;
 	
+	@DateTimeFormat
 	Date end;
 	
 	String[] selection_ids;

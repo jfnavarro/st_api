@@ -1,6 +1,7 @@
 package com.spatialtranscriptomics.model;
 
 import org.hibernate.validator.constraints.NotBlank;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -23,7 +24,7 @@ public class Selection implements ISelection {
 	@NotBlank(message = "Account must not be blank.")
 	String account_id;
 	
-	@NotBlank(message = "Features must not be blank.")
+	@NotEmpty(message = "Features must not be empty.")
 	String[] feature_ids;
 	
 	String type;

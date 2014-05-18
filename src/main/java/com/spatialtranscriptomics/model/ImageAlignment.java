@@ -1,6 +1,7 @@
 package com.spatialtranscriptomics.model;
 
 import org.hibernate.validator.constraints.NotBlank;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -25,7 +26,7 @@ public class ImageAlignment implements IImageAlignment {
 	@NotBlank(message = "Figure blue must not be blank.")
 	String figure_blue;
 	
-	@NotBlank(message = "Alignment matrix must not be blank.")
+	@NotEmpty(message = "Alignment matrix must not be empty.")
 	double[] alignment_matrix;
 	
 	public String getId() {
