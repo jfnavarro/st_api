@@ -26,8 +26,7 @@ import com.spatialtranscriptomics.service.ImageAlignmentService;
 @Service
 public class ImageAlignmentServiceImpl implements ImageAlignmentService {
 
-	private static final Logger logger = Logger
-			.getLogger(ImageAlignmentServiceImpl.class);
+	private static final Logger logger = Logger.getLogger(ImageAlignmentServiceImpl.class);
 
 	@Autowired
 	MongoUserDetailsServiceImpl customUserDetailsService;
@@ -35,33 +34,54 @@ public class ImageAlignmentServiceImpl implements ImageAlignmentService {
 	@Autowired
 	MongoOperations mongoTemplateAnalysisDB;
 
+	// ROLE_ADMIN: ok.
+	// ROLE_CM:    ok.
+	// ROLE_USER:  ok.
 	public ImageAlignment find(String id) {
 		return mongoTemplateAnalysisDB.findOne(new Query(Criteria.where("id").is(id)), ImageAlignment.class);
 	}
 	
+	// ROLE_ADMIN: ok.
+	// ROLE_CM:    ok.
+	// ROLE_USER:  ok.
 	public ImageAlignment findByName(String name) {
 		return mongoTemplateAnalysisDB.findOne(new Query(Criteria.where("name").is(name)), ImageAlignment.class);
 	}
 
+	// ROLE_ADMIN: ok.
+	// ROLE_CM:    ok.
+	// ROLE_USER:  ok.
 	public List<ImageAlignment> findByChip(String chipId) {
 		return mongoTemplateAnalysisDB.find(new Query(Criteria.where("chip_id").is(chipId)), ImageAlignment.class);
 	}
 
+	// ROLE_ADMIN: ok.
+	// ROLE_CM:    ok.
+	// ROLE_USER:  nope.
 	public List<ImageAlignment> list() {
 		return mongoTemplateAnalysisDB.findAll(ImageAlignment.class);
 	}
 
+	// ROLE_ADMIN: ok.
+	// ROLE_CM:    ok.
+	// ROLE_USER:  nope.
 	public ImageAlignment add(ImageAlignment imal) {
 		logger.info("Adding ImageAlignment");
 		mongoTemplateAnalysisDB.insert(imal);
 		return imal;
 	}
 
+	// ROLE_ADMIN: ok.
+	// ROLE_CM:    ok.
+	// ROLE_USER:  nope.
 	public void update(ImageAlignment imal) {
 		logger.info("Updating imagealignment " + imal.getId());
 		mongoTemplateAnalysisDB.save(imal);
 	}
 
+	// ROLE_ADMIN: ok.
+	// ROLE_CM:    ok.
+	// ROLE_USER:  nope.
 	public void delete(String id) {
 		logger.info("Deleting imagealignment " + id);
 		mongoTemplateAnalysisDB.remove(find(id));

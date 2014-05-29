@@ -16,9 +16,9 @@ public interface IFeature {
 
 	public void setId(String id);
 
-	public String getGene_nomenclature();
+	public String getGene();
 
-	public void setGene_nomenclature(String gene);
+	public void setGene(String gene);
 	
 	public String getAnnotation();
 	

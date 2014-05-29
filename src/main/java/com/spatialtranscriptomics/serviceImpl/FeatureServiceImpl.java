@@ -6,7 +6,6 @@
 
 package com.spatialtranscriptomics.serviceImpl;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -19,7 +18,6 @@ import org.springframework.stereotype.Service;
 import com.spatialtranscriptomics.model.DatasetInfo;
 import com.spatialtranscriptomics.model.Feature;
 import com.spatialtranscriptomics.model.MongoUserDetails;
-import com.spatialtranscriptomics.model.Selection;
 import com.spatialtranscriptomics.service.FeatureService;
 
 /**
@@ -46,21 +44,16 @@ public class FeatureServiceImpl implements FeatureService {
 	MongoOperations mongoTemplateUserDB;
 	
 	public boolean datasetIsGranted(String datasetId, MongoUserDetails user) {
-		List<DatasetInfo> dsis = mongoTemplateUserDB.find(new Query(Criteria.where("dataset_id").is(datasetId)), DatasetInfo.class);
-		for (DatasetInfo dsi : dsis) {
-			if (dsi.getAccount_id().equals(user.getId())) {
-				return true;
-			}
-		}
-		return false;
+		List<DatasetInfo> dsis = mongoTemplateUserDB.find(new Query(Criteria.where("dataset_id").is(datasetId).and("account_id").is(user.getId())), DatasetInfo.class);
+		return (dsis != null && dsis.size() > 0);
 	}
 	
-	
+	// ROLE_ADMIN: all.
+	// ROLE_CM:    all.
+	// ROLE_USER:  granted datasets.
 	public List<Feature> findByDatasetId(String datasetId) {
-		MongoUserDetails currentUser = customUserDetailsService
-				.loadCurrentUser();
-		if (currentUser.isContentManager() || currentUser.isAdmin()
-				|| datasetIsGranted(datasetId, currentUser)) {
+		MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+		if (currentUser.isContentManager() || currentUser.isAdmin() || datasetIsGranted(datasetId, currentUser)) {
 			return mongoTemplateFeatureDB.findAll(Feature.class, datasetId);
 		} else {
 			return null; // user has no permissions on dataset
@@ -68,11 +61,12 @@ public class FeatureServiceImpl implements FeatureService {
 
 	}
 
+	// ROLE_ADMIN: all.
+	// ROLE_CM:    all.
+	// ROLE_USER:  granted datasets.
 	public List<Feature> findByGene(String datasetId, String gene) {
-		MongoUserDetails currentUser = customUserDetailsService
-				.loadCurrentUser();
-		if (currentUser.isContentManager() || currentUser.isAdmin()
-				|| datasetIsGranted(datasetId, currentUser)) {
+		MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+		if (currentUser.isContentManager() || currentUser.isAdmin() || datasetIsGranted(datasetId, currentUser)) {
 			return mongoTemplateFeatureDB.find(new Query(Criteria.where("gene").is(gene)), Feature.class, datasetId);
 		} else {
 			return null; // user has no permissions on dataset
@@ -80,24 +74,23 @@ public class FeatureServiceImpl implements FeatureService {
 
 	}
 
-	public List<Feature> findBySelectionId(String selectionId) {
-		Selection sel = mongoTemplateExperimentDB.findOne(new Query(Criteria.where("id").is(selectionId)), Selection.class);
-		if (sel == null || sel.getDataset_id() == null || sel.getFeature_ids() == null) {
-			return null;
-		}
-		MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-		String dsid = sel.getDataset_id();
-		if (currentUser.isContentManager() || currentUser.isAdmin() || datasetIsGranted(dsid, currentUser)) {
-			List<String> strs = new ArrayList<String>(sel.getFeature_ids().length);
-			for (String fid : sel.getFeature_ids()) {
-				strs.add(fid);
-			}
-			return mongoTemplateFeatureDB.find(new Query(Criteria.where("id").in(strs)), Feature.class, dsid);
-		} else {
-			return null; // user has no permissions on dataset.
-		}
-
-	}
+//	public List<Feature> findBySelectionId(String selectionId) {
+//		Selection sel = mongoTemplateExperimentDB.findOne(new Query(Criteria.where("id").is(selectionId)), Selection.class);
+//		if (sel == null || sel.getDataset_id() == null || sel.getFeature_ids() == null) {
+//			return null;
+//		}
+//		MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+//		String dsid = sel.getDataset_id();
+//		if (currentUser.isContentManager() || currentUser.isAdmin() || datasetIsGranted(dsid, currentUser)) {
+//			List<String> strs = new ArrayList<String>(sel.getFeature_ids().length);
+//			for (String fid : sel.getFeature_ids()) {
+//				strs.add(fid);
+//			}
+//			return mongoTemplateFeatureDB.find(new Query(Criteria.where("id").in(strs)), Feature.class, dsid);
+//		} else {
+//			return null; // user has no permissions on dataset.
+//		}
+//	}
 	
 	// TODO: Implement if needed.
 //	public List<Feature> findBy2DCoords(String datasetId, int x1, int y1, int x2, int y2) {
@@ -110,24 +103,29 @@ public class FeatureServiceImpl implements FeatureService {
 //		}
 //	}
 
+	// ROLE_ADMIN: ok.
+	// ROLE_CM:    ok.
+	// ROLE_USER:  nope.
 	public List<Feature> addAll(List<Feature> features, String datasetId) {
 		logger.info("Adding features for dataset " + datasetId);
 		mongoTemplateFeatureDB.insert(features, datasetId);
 		return features;
 	}
 
-	
+	// ROLE_ADMIN: ok.
+	// ROLE_CM:    ok.
+	// ROLE_USER:  nope.
 	public void deleteAll(String datasetId) {
 		logger.info("Deleting features for dataset " + datasetId);
 		mongoTemplateFeatureDB.dropCollection(datasetId);
 	}
 
-	
+	// ROLE_ADMIN: all.
+	// ROLE_CM:    all.
+	// ROLE_USER:  granted datasets.
 	public List<Feature> findByAnnotation(String datasetId, String annotation) {
-		MongoUserDetails currentUser = customUserDetailsService
-				.loadCurrentUser();
-		if (currentUser.isContentManager() || currentUser.isAdmin()
-				|| datasetIsGranted(datasetId, currentUser)) {
+		MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+		if (currentUser.isContentManager() || currentUser.isAdmin() || datasetIsGranted(datasetId, currentUser)) {
 			return mongoTemplateFeatureDB.find(new Query(Criteria.where("annotation").is(annotation)), Feature.class, datasetId);
 		} else {
 			return null; // user has no permissions on dataset

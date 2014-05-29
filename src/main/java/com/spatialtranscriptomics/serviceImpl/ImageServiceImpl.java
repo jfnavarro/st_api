@@ -48,6 +48,9 @@ public class ImageServiceImpl implements ImageService {
 			.getLogger(ImageServiceImpl.class);
 
 	
+	// ROLE_ADMIN: ok.
+	// ROLE_CM:    ok.
+	// ROLE_USER:  nope.
 	public List<ImageMetadata> list() {
 		ObjectListing objects = s3Client.listObjects(imageBucket);
 
@@ -63,7 +66,9 @@ public class ImageServiceImpl implements ImageService {
 		return imageMetadataList;
 	}
 
-	
+	// ROLE_ADMIN: ok.
+	// ROLE_CM:    ok.
+	// ROLE_USER:  ok.
 	public ImageMetadata getImageMetadata(String filename) {
 		List<ImageMetadata> imList = this.list();
 
@@ -75,7 +80,9 @@ public class ImageServiceImpl implements ImageService {
 		return null;
 	}
 
-	
+	// ROLE_ADMIN: ok.
+	// ROLE_CM:    ok.
+	// ROLE_USER:  ok.
 	public BufferedImage getBufferedImage(String filename) {
 		try {
 			S3ObjectInputStream in = s3Client.getObject(imageBucket, filename)
@@ -89,7 +96,9 @@ public class ImageServiceImpl implements ImageService {
 
 	}
 
-	
+	// ROLE_ADMIN: ok.
+	// ROLE_CM:    ok.
+	// ROLE_USER:  nope.
 	public void add(String filename, BufferedImage img) {
 		try {
 			logger.info("Adding image " + filename);
@@ -108,7 +117,9 @@ public class ImageServiceImpl implements ImageService {
 
 	}
 
-	
+	// ROLE_ADMIN: ok.
+	// ROLE_CM:    ok.
+	// ROLE_USER:  nope.
 	public void delete(String filename) {
 		logger.info("Deleting image " + filename);
 		s3Client.deleteObject(imageBucket, filename);

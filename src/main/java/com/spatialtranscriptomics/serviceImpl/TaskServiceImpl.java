@@ -42,37 +42,49 @@ public class TaskServiceImpl implements TaskService {
 	@Autowired
 	DatasetServiceImpl datasetService;
 	
-	public Task find(String id) {
-		Task t = mongoTemplateExperimentDB.findOne(new Query(Criteria.where("id").is(id)), Task.class);
-		return checkCredentials(t);
-	}
-	
 	private Task checkCredentials(Task t) {
 		if (t == null) { return null; }
  		MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-		if (currentUser.isContentManager() || currentUser.isAdmin() || currentUser.getId().equals(t.getAccount_id())) {
+		if (currentUser.isAdmin() || currentUser.getId().equals(t.getAccount_id())) {
 			return t;
 		}
 		return null;
 	}
+	
+	// ROLE_ADMIN: all.
+	// ROLE_CM:    own account.
+	// ROLE_USER:  none.
+	public Task find(String id) {
+		Task t = mongoTemplateExperimentDB.findOne(new Query(Criteria.where("id").is(id)), Task.class);
+		return checkCredentials(t);
+	}
 
+	// ROLE_ADMIN: all.
+	// ROLE_CM:    own account.
+	// ROLE_USER:  none.
 	public Task findByName(String name) {
 		Task t = mongoTemplateExperimentDB.findOne(new Query(Criteria.where("name").is(name)), Task.class);
 		return checkCredentials(t);
 	}
 
+	// ROLE_ADMIN: all.
+	// ROLE_CM:    own account.
+	// ROLE_USER:  none.
 	public List<Task> list() {
 		MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-		if (currentUser.isContentManager() || currentUser.isAdmin()) {
+		if (currentUser.isAdmin()) {
 			return mongoTemplateExperimentDB.findAll(Task.class);
 		}
 		return mongoTemplateExperimentDB.find(new Query(Criteria.where("account_id").is(currentUser.getId())), Task.class);
 	}
 
+	// ROLE_ADMIN: ok.
+	// ROLE_CM:    own account.
+	// ROLE_USER:  nope.
 	public Task add(Task task) {
 		logger.info("Adding Task");
 		MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-		if (currentUser.isContentManager() || currentUser.isAdmin() || currentUser.getId().equals(task.getAccount_id())) {
+		if (currentUser.isAdmin() || currentUser.getId().equals(task.getAccount_id())) {
 			mongoTemplateExperimentDB.insert(task);
 			return task;
 		} else {
@@ -81,29 +93,42 @@ public class TaskServiceImpl implements TaskService {
 		}
 	}
 
+	// ROLE_ADMIN: ok.
+	// ROLE_CM:    own account.
+	// ROLE_USER:  nope.
 	public void update(Task task) {
 		logger.info("Updating Task");
 		MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-		if (currentUser.isContentManager() || currentUser.isAdmin() || currentUser.getId().equals(task.getAccount_id())) {
+		if (currentUser.isAdmin() || currentUser.getId().equals(task.getAccount_id())) {
 			mongoTemplateExperimentDB.save(task);
 		} else {
 			logger.info("Failed to update Task -- user lacking access.");
 		}
 	}
 
+	// ROLE_ADMIN: ok.
+	// ROLE_CM:    own account.
+	// ROLE_USER:  nope.
 	public void delete(String id) {
 		logger.info("Deleting Task " + id);
 		MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
 		Task t = find(id);
-		if (currentUser.isContentManager() || currentUser.isAdmin() || currentUser.getId().equals(t.getAccount_id())) {
+		if (currentUser.isAdmin() || currentUser.getId().equals(t.getAccount_id())) {
 			mongoTemplateExperimentDB.remove(t);
 		} else {
 			logger.info("Failed to delete Task -- user lacking access.");
 		}
 	}
 
+	// ROLE_ADMIN: all.
+	// ROLE_CM:    own account.
+	// ROLE_USER:  none.
 	public List<Task> findByAccount(String accountId) {
-		return mongoTemplateExperimentDB.find(new Query(Criteria.where("account_id").is(accountId)), Task.class);
+		MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+		if (currentUser.isAdmin() || currentUser.getId().equals(accountId)) {
+			return mongoTemplateExperimentDB.find(new Query(Criteria.where("account_id").is(accountId)), Task.class);
+		}
+		return null;
 	}
 
 }

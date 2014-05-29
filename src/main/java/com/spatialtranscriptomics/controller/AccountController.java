@@ -56,7 +56,7 @@ public class AccountController {
 	PasswordEncoder passwordEncoder;
 
 	// list / list for dataset
-	@Secured("ROLE_ADMIN")
+	@Secured({ "ROLE_CM", "ROLE_USER", "ROLE_ADMIN" })
 	@RequestMapping(method = RequestMethod.GET)
 	public @ResponseBody
 	List<Account> list(@RequestParam(value = "dataset", required = false) String datasetId) {
@@ -67,14 +67,13 @@ public class AccountController {
 	}
 
 	// get by id
-	@Secured("ROLE_ADMIN")
+	@Secured({ "ROLE_CM", "ROLE_USER", "ROLE_ADMIN" })
 	@RequestMapping(value = "{id}", method = RequestMethod.GET)
 	public @ResponseBody
 	Account get(@PathVariable String id) {
 		Account account = accountService.find(id);
 		if (account == null) {
-			throw new CustomNotFoundException(
-					"An account with this ID does not exist or you dont have permissions to access it.");
+			throw new CustomNotFoundException("An account with this ID does not exist or you dont have permissions to access it.");
 		}
 		return account;
 	}
@@ -128,7 +127,7 @@ public class AccountController {
 	}
 
 	// update account
-	@Secured("ROLE_ADMIN")
+	@Secured({ "ROLE_CM", "ROLE_USER", "ROLE_ADMIN" })
 	@RequestMapping(value = "{id}", method = RequestMethod.PUT)
 	public @ResponseBody
 	void update(@PathVariable String id, @RequestBody @Valid Account account, BindingResult result) {

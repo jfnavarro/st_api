@@ -47,7 +47,7 @@ public class AnnotationController {
 
 	@Autowired
 	AnnotationServiceImpl annotationService;
-
+	
 	// list, filtered by datasetId (required)
 	@Secured({"ROLE_CM","ROLE_USER","ROLE_ADMIN"})
 	@RequestMapping(method = RequestMethod.GET)

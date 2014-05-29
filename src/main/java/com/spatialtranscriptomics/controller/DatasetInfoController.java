@@ -50,7 +50,7 @@ public class DatasetInfoController {
 	DatasetInfoServiceImpl datasetinfoService;
 
 	// list / list by account / list by dataset
-	@Secured({"ROLE_CM","ROLE_ADMIN"})
+	@Secured({"ROLE_USER", "ROLE_CM","ROLE_ADMIN"})
 	@RequestMapping(method = RequestMethod.GET)
 	public @ResponseBody
 	List<DatasetInfo> list(
@@ -73,7 +73,7 @@ public class DatasetInfoController {
 	
 
 	// get
-	@Secured({"ROLE_CM", "ROLE_ADMIN"})
+	@Secured({"ROLE_USER", "ROLE_CM","ROLE_ADMIN"})
 	@RequestMapping(value = "{id}", method = RequestMethod.GET)
 	public @ResponseBody
 	DatasetInfo get(@PathVariable String id) {

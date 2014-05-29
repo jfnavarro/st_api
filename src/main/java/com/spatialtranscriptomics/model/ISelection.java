@@ -1,14 +1,16 @@
 package com.spatialtranscriptomics.model;
 
+import java.util.LinkedHashMap;
+
 public interface ISelection {
 
 	public String getId();
 
 	public void setId(String id);
 
-	public String[] getFeature_ids();
+	public LinkedHashMap<String, Integer> getGene_hits();
 
-	public void setFeature_ids(String[] feature_ids);
+	public void setGene_hits(LinkedHashMap<String,Integer> gene_hits);
 
 	public String getDataset_id();
 

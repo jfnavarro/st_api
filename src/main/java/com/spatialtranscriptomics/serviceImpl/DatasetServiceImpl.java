@@ -42,76 +42,108 @@ public class DatasetServiceImpl implements DatasetService {
 	@Autowired
 	MongoOperations mongoTemplateUserDB;
 	
+	// ROLE_ADMIN: ok.
+	// ROLE_CM:    ok.
+	// ROLE_USER:  none.
 	public Dataset add(Dataset ds) {
-		logger.info("Adding dataset");
-		mongoTemplateAnalysisDB.insert(ds);
-		return ds;
-	}
-
-	
-	public Dataset find(String id) {
 		MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-		if (currentUser.isContentManager() || currentUser.isAdmin() || datasetIsGranted(id, currentUser)) {
-			return mongoTemplateAnalysisDB.findOne(new Query(Criteria.where("id").is(id)), Dataset.class);
+		if (currentUser.isAdmin() || currentUser.isContentManager()) {
+			logger.info("Adding dataset");
+			mongoTemplateAnalysisDB.insert(ds);
+			return ds;
 		}
 		return null;
 	}
 
-	
-	public boolean datasetIsGranted(String id, MongoUserDetails user) {
-		List<DatasetInfo> dsis = mongoTemplateUserDB.find(new Query(Criteria.where("dataset_id").is(id)), DatasetInfo.class);
-		for (DatasetInfo dsi : dsis) {
-			if (dsi.getAccount_id().equals(user.getId())) {
-				return true;
-			}
+	// ROLE_ADMIN: all datasets.
+	// ROLE_CM:    granted datasets.
+	// ROLE_USER:  granted datasets.
+	public Dataset find(String id) {
+		MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+		if (currentUser.isAdmin() || datasetIsGranted(id, currentUser)) {
+			return mongoTemplateAnalysisDB.findOne(new Query(Criteria.where("id").is(id)), Dataset.class);
 		}
-		return false;
+		return null;
 	}
 	
-	// required for check to ensure unique dataset names
-	public Dataset findByName(String name) {
+	public boolean datasetIsGranted(String datasetId, MongoUserDetails user) {
+		List<DatasetInfo> dsis = mongoTemplateUserDB.find(new Query(Criteria.where("dataset_id").is(datasetId).and("account_id").is(user.getId())), DatasetInfo.class);
+		return (dsis != null && dsis.size() > 0);
+	}
+	
+	// required for check to ensure unique dataset names.
+	// No user check.
+	public Dataset findByNameInternal(String name) {
 		return mongoTemplateAnalysisDB.findOne(new Query(Criteria.where("name").is(name)), Dataset.class);
 	}
-
 	
+	// ROLE_ADMIN: all datasets.
+	// ROLE_CM:    granted datasets.
+	// ROLE_USER:  granted datasets.
+	public Dataset findByName(String name) {
+		Dataset ds = mongoTemplateAnalysisDB.findOne(new Query(Criteria.where("name").is(name)), Dataset.class);
+		if (ds == null) {
+			return null;
+		}
+		MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+		if (currentUser.isAdmin() || datasetIsGranted(ds.getId(), currentUser)) {
+			return ds;
+		}
+		return null;
+	}
+
+	// ROLE_ADMIN: all datasets.
+	// ROLE_CM:    granted datasets.
+	// ROLE_USER:  granted datasets.
 	public List<Dataset> list() {
 		MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-		if (currentUser.isContentManager() || currentUser.isAdmin()) {
+		if (currentUser.isAdmin()) {
 			return mongoTemplateAnalysisDB.findAll(Dataset.class);
 		}
 		return this.findByAccount(currentUser.getId());
 	}
 
-	
+	// ROLE_ADMIN: all datasets.
+	// ROLE_CM:    granted datasets.
+	// ROLE_USER:  none
 	public void update(Dataset ds) {
-		logger.info("Updating dataset " + ds.getId());
-		mongoTemplateAnalysisDB.save(ds);
-	}
-
-	
-	public void delete(String id) {
-		logger.info("Deleting dataset " + id);
-		mongoTemplateAnalysisDB.remove(find(id));
-	}
-
-
-	public List<Dataset> findByAccount(String accountId) {
-		if (!customUserDetailsService.isProperlyLoaded()) {
-			return null;
+		MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+		if (currentUser.isAdmin() || (currentUser.isContentManager() && datasetIsGranted(ds.getId(), currentUser))) {
+			logger.info("Updating dataset " + ds.getId());
+			mongoTemplateAnalysisDB.save(ds);
 		}
+	}
+
+	// ROLE_ADMIN: all datasets.
+	// ROLE_CM:    granted datasets.
+	// ROLE_USER:  none.
+	public void delete(String id) {
+		MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+		if (currentUser.isAdmin() || (currentUser.isContentManager() && datasetIsGranted(id, currentUser))) {
+			logger.info("Deleting dataset " + id);
+			mongoTemplateAnalysisDB.remove(find(id));
+		}
+	}
+
+	// ROLE_ADMIN: all datasets.
+	// ROLE_CM:    granted datasets.
+	// ROLE_USER:  granted datasets.
+	public List<Dataset> findByAccount(String accountId) {
 		
+		if (!customUserDetailsService.isProperlyLoaded()) { return null; } // In case of pre-login calls.
 		if (customUserDetailsService == null) { return null; }   // In case of pre-login calls.
 		MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
 		if (currentUser == null) { return null; }                // In case of pre-login calls.
-		if (currentUser.isContentManager() || currentUser.isAdmin()) {
+		
+		if (currentUser.isAdmin() || currentUser.getId().equals(accountId)) {
 			try {
-			List<DatasetInfo> dsis = mongoTemplateUserDB.find(new Query(Criteria.where("account_id").is(accountId)), DatasetInfo.class);
-			if (dsis == null) { return null; }
-			List<String> strs = new ArrayList<String>(dsis.size());
-			for (DatasetInfo dsi : dsis) {
-				strs.add(dsi.getDataset_id());
-			}
-			return mongoTemplateAnalysisDB.find(new Query(Criteria.where("id").in(strs)), Dataset.class);
+				List<DatasetInfo> dsis = mongoTemplateUserDB.find(new Query(Criteria.where("account_id").is(accountId)), DatasetInfo.class);
+				if (dsis == null) { return null; }
+				List<String> strs = new ArrayList<String>(dsis.size());
+				for (DatasetInfo dsi : dsis) {
+					strs.add(dsi.getDataset_id());
+				}
+				return mongoTemplateAnalysisDB.find(new Query(Criteria.where("id").in(strs)), Dataset.class);
 			} catch (Exception e) {
 				return null;
 			}

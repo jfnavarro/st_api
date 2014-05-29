@@ -29,7 +29,7 @@ public class Feature implements IFeature {
 	
 	String barcode;
 
-	String gene_nomenclature;
+	String gene;
 	
 	int hits;
 	
@@ -80,12 +80,12 @@ public class Feature implements IFeature {
 		this.y = y;
 	}
 
-	public String getGene_nomenclature() {
-		return this.gene_nomenclature;
+	public String getGene() {
+		return this.gene;
 	}
 
-	public void setGene_nomenclature(String gene) {
-		this.gene_nomenclature = gene;
+	public void setGene(String gene) {
+		this.gene = gene;
 	}
 
 	public String getAnnotation() {

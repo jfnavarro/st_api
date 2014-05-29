@@ -35,31 +35,47 @@ public class ChipServiceImpl implements ChipService {
 	@Autowired
 	MongoOperations mongoTemplateAnalysisDB;
 
+	// ROLE_ADMIN: ok.
+	// ROLE_CM:    ok.
+	// ROLE_USER:  ok.
 	public Chip find(String id) {
-		return mongoTemplateAnalysisDB.findOne(
-				new Query(Criteria.where("id").is(id)), Chip.class);
+		return mongoTemplateAnalysisDB.findOne(new Query(Criteria.where("id").is(id)), Chip.class);
 	}
 
+	// ROLE_ADMIN: ok.
+	// ROLE_CM:    ok.
+	// ROLE_USER:  ok.
 	public Chip findByName(String name) {
-		return mongoTemplateAnalysisDB.findOne(new Query(Criteria.where("name")
-				.is(name)), Chip.class);
+		return mongoTemplateAnalysisDB.findOne(new Query(Criteria.where("name").is(name)), Chip.class);
 	}
 
+	// ROLE_ADMIN: ok.
+	// ROLE_CM:    ok.
+	// ROLE_USER:  nope.
 	public List<Chip> list() {
 		return mongoTemplateAnalysisDB.findAll(Chip.class);
 	}
 
+	// ROLE_ADMIN: ok.
+	// ROLE_CM:    ok.
+	// ROLE_USER:  nope.
 	public Chip add(Chip chip) {
 		logger.info("Adding chip");
 		mongoTemplateAnalysisDB.insert(chip);
 		return chip;
 	}
 
+	// ROLE_ADMIN: ok.
+	// ROLE_CM:    ok.
+	// ROLE_USER:  nope.
 	public void update(Chip chip) {
 		logger.info("Updating chip " + chip.getId());
 		mongoTemplateAnalysisDB.save(chip);
 	}
 
+	// ROLE_ADMIN: ok.
+	// ROLE_CM:    ok.
+	// ROLE_USER:  nope.
 	public void delete(String id) {
 		logger.info("Deleting chip " + id);
 		mongoTemplateAnalysisDB.remove(find(id));
