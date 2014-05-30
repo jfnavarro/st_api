@@ -46,7 +46,7 @@ public class Dataset implements IDataset {
 	@NotBlank(message = "Species must not be blank.")
 	String species;
 	
-	@NotBlank(message = "Image alignment must not be blank.")
+	//@NotBlank(message = "Image alignment must not be blank.")
 	String image_alignment_id;
 	
 	int overall_feature_count;

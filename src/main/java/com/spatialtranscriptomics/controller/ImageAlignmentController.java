@@ -55,7 +55,7 @@ public class ImageAlignmentController {
 	List<ImageAlignment> list(@RequestParam(value = "chip", required = false) String chipId) {
 		List<ImageAlignment> imagealignments = null;
 		if (chipId != null) {
-			imagealignmentService.findByChip(chipId);
+			imagealignments = imagealignmentService.findByChip(chipId);
 		} else {
 			imagealignments = imagealignmentService.list();
 		}

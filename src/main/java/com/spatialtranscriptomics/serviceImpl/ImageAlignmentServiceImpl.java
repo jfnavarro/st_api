@@ -52,7 +52,10 @@ public class ImageAlignmentServiceImpl implements ImageAlignmentService {
 	// ROLE_CM:    ok.
 	// ROLE_USER:  ok.
 	public List<ImageAlignment> findByChip(String chipId) {
-		return mongoTemplateAnalysisDB.find(new Query(Criteria.where("chip_id").is(chipId)), ImageAlignment.class);
+		//System.out.println("Finding for chip");
+		List<ImageAlignment> imals = mongoTemplateAnalysisDB.find(new Query(Criteria.where("chip_id").is(chipId)), ImageAlignment.class);
+		//System.out.println("Found " + (imals == null ? 0 :  imals.size()));
+		return imals;
 	}
 
 	// ROLE_ADMIN: ok.
