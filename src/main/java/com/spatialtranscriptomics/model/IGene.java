@@ -16,8 +16,8 @@ public interface IGene {
 
 	public void setId(String id);
 
-	public String getGeneNomenclature();
+	public String getGene();
 
-	public void setGeneNomenclature(String gene);
+	public void setGene(String gene);
 
 }

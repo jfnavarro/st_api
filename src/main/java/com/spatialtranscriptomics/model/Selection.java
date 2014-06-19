@@ -1,6 +1,7 @@
 package com.spatialtranscriptomics.model;
 
-import java.util.LinkedHashMap;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
@@ -26,8 +27,8 @@ public class Selection implements ISelection {
 	@NotBlank(message = "Account must not be blank.")
 	String account_id;
 	
-	@NotEmpty(message = "Gene nomenclatures with hit counts must not be empty.")
-	LinkedHashMap<String, Integer> gene_hits;
+	@NotEmpty(message = "Gene nomenclatures with stats must not be empty.")
+	List<SelectionHits> gene_hits = new ArrayList<SelectionHits>();
 	
 	String type;
 	
@@ -45,11 +46,11 @@ public class Selection implements ISelection {
 		this.id = id;
 	}
 
-	public LinkedHashMap<String, Integer> getGene_hits() {
+	public List<SelectionHits> getGene_hits() {
 		return gene_hits;
 	}
 
-	public void setGene_hits(LinkedHashMap<String,Integer> gene_hits) {
+	public void setGene_hits(List<SelectionHits> gene_hits) {
 		this.gene_hits = gene_hits;
 	}
 

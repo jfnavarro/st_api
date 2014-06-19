@@ -16,6 +16,7 @@ import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import com.spatialtranscriptomics.model.IDataset;
 import com.spatialtranscriptomics.controller.AccountController;
 import com.spatialtranscriptomics.controller.DatasetInfoController;
 import com.spatialtranscriptomics.serviceImpl.AccountServiceImpl;

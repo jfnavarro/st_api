@@ -1,6 +1,6 @@
 package com.spatialtranscriptomics.model;
 
-import java.util.LinkedHashMap;
+import java.util.List;
 
 public interface ISelection {
 
@@ -8,9 +8,9 @@ public interface ISelection {
 
 	public void setId(String id);
 
-	public LinkedHashMap<String, Integer> getGene_hits();
+	public List<SelectionHits> getGene_hits();
 
-	public void setGene_hits(LinkedHashMap<String,Integer> gene_hits);
+	public void setGene_hits(List<SelectionHits> selection_hits);
 
 	public String getDataset_id();
 

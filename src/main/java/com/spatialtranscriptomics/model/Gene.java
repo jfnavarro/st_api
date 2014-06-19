@@ -18,12 +18,12 @@ import org.springframework.data.mongodb.core.mapping.Document;
  * */
 
 @Document
-public class Gene implements IGene{
+public class Gene implements IGene {
 
 	@Id
 	String id;
 	
-	String gene_nomenclature;
+	String gene;
 	
 	public String getId() {
 		return id;
@@ -33,12 +33,12 @@ public class Gene implements IGene{
 		this.id = id;
 	}
 
-	public String getGeneNomenclature() {
-		return gene_nomenclature;
+	public String getGene() {
+		return gene;
 	}
 
-	public void setGeneNomenclature(String gene) {
-		this.gene_nomenclature = gene;
+	public void setGene(String gene) {
+		this.gene = gene;
 	}
 
 

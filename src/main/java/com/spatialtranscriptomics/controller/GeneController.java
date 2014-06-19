@@ -66,7 +66,7 @@ public class GeneController {
 		HashMap<String, Gene> hm = new HashMap<String, Gene>();
 
 		for (Gene g : genes) {
-			hm.put(g.getGeneNomenclature(), g);
+			hm.put(g.getGene(), g);
 		}
 
 		Iterator<Entry<String, Gene>> it = hm.entrySet().iterator();

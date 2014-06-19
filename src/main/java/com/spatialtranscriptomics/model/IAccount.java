@@ -6,8 +6,9 @@
 
 package com.spatialtranscriptomics.model;
 
-import java.beans.Transient;
 import java.util.List;
+
+import org.springframework.data.annotation.Transient;
 
 /**
  * This interface defines the Account model. Applications that use the API must implement the same model.
