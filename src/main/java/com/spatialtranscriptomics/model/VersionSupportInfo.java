@@ -13,8 +13,6 @@ package com.spatialtranscriptomics.model;
  * VersionSupportInfo is not mapped to a MongoDB document. Instead, it is being instantiated in VersionSupportInfoController.class
  * 
  * */
-
-
 public class VersionSupportInfo implements IVersionSupportInfo {
 
 	String minSupportedClientVersion;

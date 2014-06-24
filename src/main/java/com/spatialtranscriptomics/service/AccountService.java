@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 
 import com.spatialtranscriptomics.model.Account;
 
+/**
+ * Interface for the account service.
+ */
 @Service
 public interface AccountService {
 

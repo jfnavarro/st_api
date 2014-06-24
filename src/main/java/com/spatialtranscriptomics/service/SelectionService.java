@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 
 import com.spatialtranscriptomics.model.Selection;
 
+/**
+ * Interface for the selection service.
+ */
 @Service
 public interface SelectionService {
 

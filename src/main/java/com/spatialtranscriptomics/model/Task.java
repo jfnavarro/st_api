@@ -1,3 +1,9 @@
+/*
+ * Copyright (C) 2012 Spatial Transcriptomics AB
+ * Read LICENSE for more information about licensing terms
+ * Contact: Jose Fernandez Navarro <jose.fernandez.navarro@scilifelab.se>
+ */
+
 package com.spatialtranscriptomics.model;
 
 import java.util.Date;
@@ -8,6 +14,9 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.format.annotation.DateTimeFormat;
 
+/**
+ * This interface defines the Task model. Applications that use the API must implement the same model.
+ */
 @Document(collection="task")
 public class Task implements ITask {
 

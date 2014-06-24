@@ -144,13 +144,13 @@ public class DatasetController {
 		return new BadRequestResponse(ex.getMessage());
 	}
 	
-	
+	// static access to dataset service
 	public static DatasetServiceImpl getStaticDatasetService() {
 		DatasetServiceImpl b = StaticContextAccessor.getBean(DatasetController.class).getDatasetService();
 		return b;
 	}
 	
-	
+	// access to dataset service
 	public DatasetServiceImpl getDatasetService() {
 		return this.datasetService;
 	}

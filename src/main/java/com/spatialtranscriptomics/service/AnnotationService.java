@@ -12,6 +12,10 @@ import org.springframework.stereotype.Service;
 
 import com.spatialtranscriptomics.model.Annotation;
 
+/**
+ * Interface for the annotation service.
+ */
+
 @Service
 public interface AnnotationService {
 

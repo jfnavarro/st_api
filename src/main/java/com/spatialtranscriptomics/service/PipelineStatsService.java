@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 
 import com.spatialtranscriptomics.model.PipelineStats;
 
+/**
+ * Interface for the pipelinestats service.
+ */
 @Service
 public interface PipelineStatsService {
 

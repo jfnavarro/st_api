@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 
 import com.spatialtranscriptomics.model.Dataset;
 
+/**
+ * Interface for the dataset service.
+ */
 @Service
 public interface DatasetService {
 

@@ -1,3 +1,9 @@
+/*
+ * Copyright (C) 2012 Spatial Transcriptomics AB
+ * Read LICENSE for more information about licensing terms
+ * Contact: Jose Fernandez Navarro <jose.fernandez.navarro@scilifelab.se>
+ */
+
 package com.spatialtranscriptomics.serviceImpl;
 
 import java.util.List;
@@ -13,6 +19,10 @@ import com.spatialtranscriptomics.model.DatasetInfo;
 import com.spatialtranscriptomics.model.MongoUserDetails;
 import com.spatialtranscriptomics.service.DatasetInfoService;
 
+/**
+ * This class implements the store/retrieve logic to MongoDB for the data model class "DatasetInfo".
+ * The DB connection is handled in a MongoOperations object, which is configured in mvc-dispather-servlet.xml
+ */
 @Service
 public class DatasetInfoServiceImpl implements DatasetInfoService {
 

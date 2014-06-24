@@ -186,10 +186,12 @@ public class AccountController {
 		return new BadRequestResponse(ex.getMessage());
 	}
 	
+        // Static access to account service.
 	public static AccountServiceImpl getStaticAccountService() {
-        return StaticContextAccessor.getBean(AccountController.class).getAccountService();
-   }
+            return StaticContextAccessor.getBean(AccountController.class).getAccountService();
+        }
 	
+        // Access to account service.
 	public AccountServiceImpl getAccountService() {
 		return this.accountService;
 	}

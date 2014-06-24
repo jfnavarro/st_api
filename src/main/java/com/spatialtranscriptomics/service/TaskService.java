@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 
 import com.spatialtranscriptomics.model.Task;
 
+/**
+ * Interface for the task service.
+ */
 @Service
 public interface TaskService {
 

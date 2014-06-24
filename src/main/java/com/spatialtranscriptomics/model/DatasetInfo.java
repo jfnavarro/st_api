@@ -1,3 +1,9 @@
+/*
+ * Copyright (C) 2012 Spatial Transcriptomics AB
+ * Read LICENSE for more information about licensing terms
+ * Contact: Jose Fernandez Navarro <jose.fernandez.navarro@scilifelab.se>
+ */
+
 package com.spatialtranscriptomics.model;
 
 import org.hibernate.validator.constraints.NotBlank;
@@ -7,6 +13,12 @@ import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+/**
+ * This class maps the DatasetInfo data model object into a MongoDB Document
+ * We use the @Document annotation of Spring Data for the mapping.
+ * We also do data validation using Hibernate validator constraints.
+ * 
+ */
 @Document(collection="datasetinfo")
 @CompoundIndexes({
     @CompoundIndex(name = "account_id_1_dataset_id_1", def = "{'account_id': 1, 'dataset_id': 1}")

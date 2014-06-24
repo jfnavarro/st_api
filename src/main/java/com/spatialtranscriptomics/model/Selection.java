@@ -1,3 +1,9 @@
+/*
+ * Copyright (C) 2012 Spatial Transcriptomics AB
+ * Read LICENSE for more information about licensing terms
+ * Contact: Jose Fernandez Navarro <jose.fernandez.navarro@scilifelab.se>
+ */
+
 package com.spatialtranscriptomics.model;
 
 import java.util.ArrayList;
@@ -9,6 +15,9 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+/**
+ * This interface defines the Selection model. Applications that use the API must implement the same model.
+ */
 @Document(collection="selection")
 public class Selection implements ISelection {
 
@@ -28,7 +37,7 @@ public class Selection implements ISelection {
 	String account_id;
 	
 	@NotEmpty(message = "Gene nomenclatures with stats must not be empty.")
-	List<SelectionHits> gene_hits = new ArrayList<SelectionHits>();
+	List<String[]> gene_hits = new ArrayList<String[]>();
 	
 	String type;
 	
@@ -46,11 +55,11 @@ public class Selection implements ISelection {
 		this.id = id;
 	}
 
-	public List<SelectionHits> getGene_hits() {
+	public List<String[]> getGene_hits() {
 		return gene_hits;
 	}
 
-	public void setGene_hits(List<SelectionHits> gene_hits) {
+	public void setGene_hits(List<String[]> gene_hits) {
 		this.gene_hits = gene_hits;
 	}
 
@@ -108,6 +117,22 @@ public class Selection implements ISelection {
 
 	public void setObo_foundry_terms(String[] obo_foundry_terms) {
 		this.obo_foundry_terms = obo_foundry_terms;
+	}
+        
+        public String getGene(int i) {
+            return (String) (gene_hits.get(i)[0]);
+	}
+        
+	public int getHit_count(int i) {
+            return Integer.parseInt(gene_hits.get(i)[1]);
+	}
+
+	public double getNormalized_hit_count(int i) {
+            return Double.parseDouble(gene_hits.get(i)[2]);
+	}
+
+	public double getNormalized_pixel_intensity(int i) {
+            return Double.parseDouble(gene_hits.get(i)[3]);
 	}
 	
 }

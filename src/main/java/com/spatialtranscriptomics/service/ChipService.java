@@ -12,6 +12,10 @@ import org.springframework.stereotype.Service;
 
 import com.spatialtranscriptomics.model.Chip;
 
+/**
+ * Interface for the chip service.
+ */
+
 @Service
 public interface ChipService {
 

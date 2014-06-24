@@ -139,7 +139,13 @@ public class FeatureController {
 		return new BadRequestResponse(ex.getMessage());
 	}
 
-	
+	/**
+         * Helper. Computes feature stats.
+         * @param features
+         * @param overall_hit_quartiles
+         * @param gene_pooled_hit_quartiles
+         * @return [overall_feature_count, overall_hit_count, unique_gene_count, unique_barcode_count]
+         */
 	private int[] computeStats(List<Feature> features, double[] overall_hit_quartiles, double[] gene_pooled_hit_quartiles) {	
 		int n = features.size();
 		int sum = 0;
@@ -170,7 +176,11 @@ public class FeatureController {
 		return new int[] { n, sum, poolHits.size(), pooledBarcodes.size() };		
 	}
 	
-		
+	/**
+         * Helper. Computes quartiles of a sorted list.
+         * @param hits the sorted hit counts.
+         * @param q the quartiles to be computed.
+         */	
 	private void computeQuartiles(List<Integer> hits, double[] q) {
 		int n = hits.size();
 		if (n == 1) {

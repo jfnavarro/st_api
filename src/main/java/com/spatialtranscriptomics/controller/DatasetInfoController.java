@@ -149,10 +149,12 @@ public class DatasetInfoController {
 		return new BadRequestResponse(ex.getMessage());
 	}
 
+        // static access to datasetinfo service
 	public static DatasetInfoServiceImpl getStaticDatasetInfoService() {
 		return StaticContextAccessor.getBean(DatasetInfoController.class).getDatasetInfoService();
 	}
 	
+        // access to datasetinfo service
 	public DatasetInfoServiceImpl getDatasetInfoService() {
 		return this.datasetinfoService;
 	}

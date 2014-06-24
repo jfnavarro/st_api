@@ -1,3 +1,9 @@
+/**
+ * This class maps the Dataset data model object into a MongoDB Document
+ * We use the @Document annotation of Spring Data for the mapping.
+ * We also do data validation using Hibernate validator constraints.
+ * 
+ */
 package com.spatialtranscriptomics.model;
 
 /**

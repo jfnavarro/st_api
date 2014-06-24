@@ -11,6 +11,9 @@ import java.util.List;
 
 import com.spatialtranscriptomics.model.ImageMetadata;
 
+/**
+ * Interface for the image service.
+ */
 public interface ImageService {
 
 	public List<ImageMetadata> list();

@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 
 import com.spatialtranscriptomics.model.ImageAlignment;
 
+/**
+ * Interface for the imagealignment service.
+ */
 @Service
 public interface ImageAlignmentService {
 

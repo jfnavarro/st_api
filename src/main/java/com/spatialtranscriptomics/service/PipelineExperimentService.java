@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 
 import com.spatialtranscriptomics.model.PipelineExperiment;
 
+/**
+ * Interface for the pipelineexperiment service.
+ */
 @Service
 public interface PipelineExperimentService {
 

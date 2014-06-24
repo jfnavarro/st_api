@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 
 import com.spatialtranscriptomics.model.Gene;
 
+/**
+ * Interface for the gene service.
+ */
 @Service
 public interface GeneService {
 

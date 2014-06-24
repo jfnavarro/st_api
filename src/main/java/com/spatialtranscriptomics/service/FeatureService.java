@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 
 import com.spatialtranscriptomics.model.Feature;
 
+/**
+ * Interface for the feature service.
+ */
 @Service
 public interface FeatureService {
 

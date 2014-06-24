@@ -165,6 +165,7 @@ public class SelectionServiceImpl implements SelectionService {
 		return mongoTemplateExperimentDB.find(new Query(Criteria.where("id").in(ls)), Selection.class);
 	}
 	
+        // Helper.
 	private Selection checkCredentials(Selection sel) {
 		MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
 		if (currentUser.isAdmin() || sel == null) {
