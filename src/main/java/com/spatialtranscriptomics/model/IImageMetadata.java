@@ -17,5 +17,11 @@ public interface IImageMetadata {
 	public String getFilename();
 
 	public Date getLastModified();
+        
+        public Date getCreated();
+        
+        public void setLastModified(Date d);
+        
+        public void setCreated(Date d);
 
 }

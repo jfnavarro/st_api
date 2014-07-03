@@ -15,6 +15,7 @@ public class ImageMetadata implements IImageMetadata {
 
 	String filename;
 	Date lastModified;
+        Date created;
 
 	public String getFilename() {
 		return this.filename;
@@ -30,6 +31,14 @@ public class ImageMetadata implements IImageMetadata {
 
 	public void setLastModified(Date lastModified) {
 		this.lastModified = lastModified;
+	}
+        
+        public Date getCreated() {
+		return this.created;
+	}
+
+	public void setCreated(Date d) {
+		this.created = d;
 	}
 
 }

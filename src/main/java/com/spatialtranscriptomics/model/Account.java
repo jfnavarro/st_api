@@ -22,6 +22,9 @@ import com.spatialtranscriptomics.controller.DatasetController;
 import com.spatialtranscriptomics.controller.DatasetInfoController;
 import com.spatialtranscriptomics.serviceImpl.DatasetInfoServiceImpl;
 import com.spatialtranscriptomics.serviceImpl.DatasetServiceImpl;
+import org.joda.time.DateTime;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 
 /**
@@ -64,7 +67,13 @@ public class Account implements IAccount {
 	public String postcode;
 	
 	public String country;
+        
+        @CreatedDate
+	private DateTime created_at;
 	
+        @LastModifiedDate
+        private DateTime last_modified;
+        
 	@Transient
 	public List<String> granted_datasets;
 	
@@ -204,6 +213,18 @@ public class Account implements IAccount {
 			} catch (Exception e) {
 			}
 		}
+	}
+        
+        public DateTime getCreated_at() {
+		return created_at;
+	}
+	
+	public void setCreated_at(DateTime created) {
+		this.created_at = created;
+	}
+
+	public DateTime getLast_modified() {
+		return last_modified;
 	}
 
 }

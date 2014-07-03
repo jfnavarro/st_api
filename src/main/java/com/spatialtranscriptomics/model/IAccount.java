@@ -7,6 +7,7 @@
 package com.spatialtranscriptomics.model;
 
 import java.util.List;
+import org.joda.time.DateTime;
 
 import org.springframework.data.annotation.Transient;
 
@@ -64,6 +65,12 @@ public interface IAccount {
 
 	public void setCountry(String country);
 	
+        public DateTime getCreated_at();
+
+	public void setCreated_at(DateTime created);
+	
+	public DateTime getLast_modified();
+        
 	// HACK.
 	@Transient
 	public List<String> getGranted_datasets();

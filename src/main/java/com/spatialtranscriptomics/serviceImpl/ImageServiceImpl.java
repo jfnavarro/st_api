@@ -61,6 +61,7 @@ public class ImageServiceImpl implements ImageService {
 			ImageMetadata im = new ImageMetadata();
 			im.setFilename(o.getKey());
 			im.setLastModified(o.getLastModified());
+                        im.setCreated(o.getLastModified());
 			imageMetadataList.add(im);
 		}
 		return imageMetadataList;

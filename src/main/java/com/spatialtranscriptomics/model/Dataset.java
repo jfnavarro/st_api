@@ -21,6 +21,9 @@ import com.spatialtranscriptomics.controller.AccountController;
 import com.spatialtranscriptomics.controller.DatasetInfoController;
 import com.spatialtranscriptomics.serviceImpl.AccountServiceImpl;
 import com.spatialtranscriptomics.serviceImpl.DatasetInfoServiceImpl;
+import org.joda.time.DateTime;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 
 /**
@@ -59,6 +62,14 @@ public class Dataset implements IDataset {
 	String[] obo_foundry_terms;
 	String comment;
 	
+        public String created_by_account_id;
+        
+        @CreatedDate
+	private DateTime created_at;
+	
+        @LastModifiedDate
+        private DateTime last_modified;
+        
 	@Transient
 	public List<String> granted_accounts;
 	
@@ -176,6 +187,13 @@ public class Dataset implements IDataset {
 		this.enabled = b;
 	}
 
+        public String getCreated_by_account_id() {
+            return this.created_by_account_id;
+        }
+        
+        public void setCreated_by_account_id(String id) {
+            this.created_by_account_id = id;
+        }
 	
 	@Transient
 	public List<String> getGranted_accounts() {
@@ -223,5 +241,15 @@ public class Dataset implements IDataset {
 		}
 	}
 	
+	public DateTime getCreated_at() {
+            return created_at;
+	}
 	
+	public void setCreated_at(DateTime created) {
+            this.created_at = created;
+	}
+
+	public DateTime getLast_modified() {
+            return last_modified;
+	}
 }

@@ -7,6 +7,7 @@
 package com.spatialtranscriptomics.model;
 
 import java.util.List;
+import org.joda.time.DateTime;
 
 /**
  * This interface defines the Selection model. Applications that use the API must implement the same model.
@@ -17,6 +18,10 @@ public interface ISelection {
 
 	public void setId(String id);
 
+         public boolean getEnabled();
+        
+        public void setEnabled(boolean enabled);
+        
 	public List<String[]> getGene_hits();
 
 	public void setGene_hits(List<String[]> selection_hits);
@@ -56,4 +61,10 @@ public interface ISelection {
 	public double getNormalized_hit_count(int i);
 
 	public double getNormalized_pixel_intensity(int i);
+        
+        public DateTime getCreated_at();
+
+	public void setCreated_at(DateTime created);
+	
+	public DateTime getLast_modified();
 }

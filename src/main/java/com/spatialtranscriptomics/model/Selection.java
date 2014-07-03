@@ -11,7 +11,10 @@ import java.util.List;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
+import org.joda.time.DateTime;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -39,6 +42,8 @@ public class Selection implements ISelection {
 	@NotEmpty(message = "Gene nomenclatures with stats must not be empty.")
 	List<String[]> gene_hits = new ArrayList<String[]>();
 	
+        boolean enabled;
+        
 	String type;
 	
 	String status;
@@ -47,6 +52,12 @@ public class Selection implements ISelection {
 	
 	String[] obo_foundry_terms;
 
+        @CreatedDate
+	private DateTime created_at;
+	
+        @LastModifiedDate
+        private DateTime last_modified;
+        
 	public String getId() {
 		return id;
 	}
@@ -55,6 +66,14 @@ public class Selection implements ISelection {
 		this.id = id;
 	}
 
+         public boolean getEnabled() {
+            return this.enabled;
+        }
+        
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+        
 	public List<String[]> getGene_hits() {
 		return gene_hits;
 	}
@@ -135,4 +154,15 @@ public class Selection implements ISelection {
             return Double.parseDouble(gene_hits.get(i)[3]);
 	}
 	
+        public DateTime getCreated_at() {
+		return created_at;
+	}
+	
+	public void setCreated_at(DateTime created) {
+		this.created_at = created;
+	}
+
+	public DateTime getLast_modified() {
+		return last_modified;
+	}
 }

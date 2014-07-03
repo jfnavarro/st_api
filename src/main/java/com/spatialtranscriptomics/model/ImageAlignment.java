@@ -7,7 +7,10 @@
 package com.spatialtranscriptomics.model;
 
 import org.hibernate.validator.constraints.NotBlank;
+import org.joda.time.DateTime;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -37,6 +40,12 @@ public class ImageAlignment implements IImageAlignment {
 	//@NotEmpty(message = "Alignment matrix must not be empty.")
 	double[] alignment_matrix;
 	
+        @CreatedDate
+	private DateTime created_at;
+	
+        @LastModifiedDate
+        private DateTime last_modified;
+        
 	public String getId() {
 		return id;
 	}
@@ -85,4 +94,15 @@ public class ImageAlignment implements IImageAlignment {
 		this.alignment_matrix = arr;
 	}
 
+        public DateTime getCreated_at() {
+		return created_at;
+	}
+	
+	public void setCreated_at(DateTime created) {
+		this.created_at = created;
+	}
+
+	public DateTime getLast_modified() {
+		return last_modified;
+	}
 }

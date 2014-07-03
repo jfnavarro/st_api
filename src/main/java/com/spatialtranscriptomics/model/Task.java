@@ -9,7 +9,10 @@ package com.spatialtranscriptomics.model;
 import java.util.Date;
 
 import org.hibernate.validator.constraints.NotBlank;
+import org.joda.time.DateTime;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -45,6 +48,12 @@ public class Task implements ITask {
 	
 	String result_file;
 
+        @CreatedDate
+	private DateTime created_at;
+	
+        @LastModifiedDate
+        private DateTime last_modified;
+        
 	public String getId() {
 		return id;
 	}
@@ -117,4 +126,15 @@ public class Task implements ITask {
 		this.result_file = file;
 	}	
 	
+        public DateTime getCreated_at() {
+		return created_at;
+	}
+	
+	public void setCreated_at(DateTime created) {
+		this.created_at = created;
+	}
+
+	public DateTime getLast_modified() {
+		return last_modified;
+	}
 }

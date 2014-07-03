@@ -27,8 +27,7 @@ import com.spatialtranscriptomics.service.TaskService;
 @Service
 public class TaskServiceImpl implements TaskService {
 
-	private static final Logger logger = Logger
-			.getLogger(TaskServiceImpl.class);
+	private static final Logger logger = Logger.getLogger(TaskServiceImpl.class);
 
 	@Autowired
 	MongoUserDetailsServiceImpl customUserDetailsService;

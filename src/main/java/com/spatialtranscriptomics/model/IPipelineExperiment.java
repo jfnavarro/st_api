@@ -6,6 +6,8 @@
 
 package com.spatialtranscriptomics.model;
 
+import org.joda.time.DateTime;
+
 /**
  * This interface defines the PipelineExperiment model. Applications that use the API must implement the same model.
  */
@@ -27,4 +29,10 @@ public interface IPipelineExperiment {
 	public String getAccount_id();
 
 	public void setAccount_id(String id);
+        
+        public DateTime getCreated_at();
+
+	public void setCreated_at(DateTime created);
+	
+	public DateTime getLast_modified();
 }

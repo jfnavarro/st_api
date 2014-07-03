@@ -79,7 +79,9 @@ public class PipelineExperimentServiceImpl implements PipelineExperimentService 
 			logger.info("Adding PipelineExperiment");
 			mongoTemplateExperimentDB.insert(experiment);
 			return experiment;
-		}
+		} else {
+                    logger.info("Not adding PipelineExperiment - access mismatch.");
+                }
 		return null;
 	}
 
@@ -91,7 +93,9 @@ public class PipelineExperimentServiceImpl implements PipelineExperimentService 
 		if (currentUser.isAdmin() || currentUser.getId().equals(experiment.getAccount_id())) {
 			logger.info("Updating PipelineExperiment " + experiment.getId());
 			mongoTemplateExperimentDB.save(experiment);
-		}
+		} else {
+                    logger.info("Not updating PipelineExperiment - access mismatch.");
+                }
 	}
 
 	// ROLE_ADMIN: all.
@@ -104,7 +108,9 @@ public class PipelineExperimentServiceImpl implements PipelineExperimentService 
 		if (currentUser.isAdmin() || currentUser.getId().equals(exp.getId())) {
 			logger.info("Deleting PipelineExperiment " + id);
 			mongoTemplateExperimentDB.remove(exp);
-		}
+		} else {
+                    logger.info("Not deleting PipelineExperiment - access mismatch.");
+                }
 	}
 
 	// ROLE_ADMIN: all.

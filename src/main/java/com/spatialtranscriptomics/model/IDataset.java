@@ -7,6 +7,7 @@
 package com.spatialtranscriptomics.model;
 
 import java.util.List;
+import org.joda.time.DateTime;
 
 /**
  * This interface defines the Dataset model. Applications that use the API must implement the same model.
@@ -73,4 +74,9 @@ public interface IDataset {
 	
 	public void setGranted_accounts(List<String> grantedAccounts);
 	
+        public DateTime getCreated_at();
+
+	public void setCreated_at(DateTime created);
+	
+	public DateTime getLast_modified();
 }

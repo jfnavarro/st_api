@@ -7,6 +7,7 @@
 package com.spatialtranscriptomics.model;
 
 import java.util.Date;
+import org.joda.time.DateTime;
 
 /**
  * This interface defines the Task model. Applications that use the API must implement the same model.
@@ -48,5 +49,11 @@ public interface ITask {
 	public String getResult_file();
 
 	public void setResult_file(String file);
+        
+        public DateTime getCreated_at();
+
+	public void setCreated_at(DateTime created);
+	
+	public DateTime getLast_modified();
 
 }

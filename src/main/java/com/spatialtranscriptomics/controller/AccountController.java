@@ -149,6 +149,10 @@ public class AccountController {
 						"Another account with this username exists already. Usernames are unique.");
 			}
 		}
+                Account oldAcc = accountService.find(id);
+                if (!oldAcc.getPassword().equals(account.getPassword())) {
+                    account.setPassword(passwordEncoder.encode(account.getPassword()));
+                }
 		accountService.update(account);
 	}
 

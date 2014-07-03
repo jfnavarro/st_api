@@ -7,6 +7,8 @@
 
 package com.spatialtranscriptomics.model;
 
+import org.joda.time.DateTime;
+
 /**
  * This interface defines the ImageAlignment model. Applications that use the API must implement the same model.
  */
@@ -36,5 +38,10 @@ public interface IImageAlignment {
 	
 	public void setAlignment_matrix(double[] arr);
 	
+        public DateTime getCreated_at();
+
+	public void setCreated_at(DateTime created);
+	
+	public DateTime getLast_modified();
 }
 

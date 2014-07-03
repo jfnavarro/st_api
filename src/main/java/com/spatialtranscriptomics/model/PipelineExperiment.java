@@ -7,7 +7,10 @@
 package com.spatialtranscriptomics.model;
 
 import org.hibernate.validator.constraints.NotBlank;
+import org.joda.time.DateTime;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -36,6 +39,20 @@ public class PipelineExperiment implements IPipelineExperiment {
 	@NotBlank(message = "EMR job ID must not be blank.")
 	String emr_jobflow_id;
 
+	String emr_state;
+        
+        DateTime emr_creation_date_time;
+        
+        DateTime emr_end_date_time;
+        
+        String emr_last_state_change_reason;
+
+        @CreatedDate
+	private DateTime created_at;
+	
+        @LastModifiedDate
+        private DateTime last_modified;
+        
 	// id is set automatically by MongoDB
 	public String getId() {
 		return id;
@@ -70,5 +87,48 @@ public class PipelineExperiment implements IPipelineExperiment {
 	public void setAccount_id(String id) {
 		this.account_id = id;
 	}
+
+        public String getEmr_state() {
+            return this.emr_state;
+        }
+        
+        public void setEmr_state(String state) {
+            this.emr_state = state;
+        }
+
+        public DateTime getEmr_creation_date_time() {
+            return this.emr_creation_date_time;
+        }
+        
+        public void setEmr_creation_date_time(DateTime creationDateTime) {
+            this.emr_creation_date_time = creationDateTime;
+        }
+        
+        public DateTime getEmr_end_date_time() {
+            return this.emr_end_date_time;
+        }
+
+        public void setEmr_end_date_time(DateTime endDateTime) {
+            this.emr_end_date_time = endDateTime;
+        }
+        
+        public String getEmr_last_state_change_reason() {
+            return emr_last_state_change_reason;
+        }
+
+        public void setEmr_last_state_change_reason(String lastStateChangeReason) {
+            this.emr_last_state_change_reason = lastStateChangeReason;
+        }
 	
+        public DateTime getCreated_at() {
+		return created_at;
+	}
+	
+	public void setCreated_at(DateTime created) {
+		this.created_at = created;
+	}
+
+	public DateTime getLast_modified() {
+		return last_modified;
+	}
 }
