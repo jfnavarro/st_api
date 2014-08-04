@@ -20,9 +20,9 @@ public interface IFeature {
 
 	public void setGene(String gene);
 	
-	//public String getAnnotation();
+	public String getAnnotation();
 	
-	//public void setAnnotation(String ann);
+	public void setAnnotation(String ann);
 
 	public int getX();
 
