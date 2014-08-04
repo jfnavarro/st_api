@@ -37,7 +37,7 @@ public class Feature implements IFeature {
 	
 	int y;
 	
-	String annotation;
+	//String annotation;
 	
 	public String getId() {
 		return id;
@@ -88,12 +88,12 @@ public class Feature implements IFeature {
 		this.gene = gene;
 	}
 
-	public String getAnnotation() {
-		return this.annotation;
-	}
+	//public String getAnnotation() {
+	//	return this.annotation;
+	//}
 
-	public void setAnnotation(String ann) {
-		this.annotation = ann;
-	}
+	//public void setAnnotation(String ann) {
+	//	this.annotation = ann;
+	//}
 
 }

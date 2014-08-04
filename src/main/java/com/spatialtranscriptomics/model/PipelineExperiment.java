@@ -32,7 +32,7 @@ public class PipelineExperiment implements IPipelineExperiment {
 	@NotBlank(message = "Name must not be blank.")
 	String name;
 	
-	@NotBlank(message = "Account must not be blank.")
+	//@NotBlank(message = "Account must not be blank.")
 	@Indexed(unique = false)
 	String account_id;
 	
