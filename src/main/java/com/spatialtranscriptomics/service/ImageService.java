@@ -22,7 +22,11 @@ public interface ImageService {
 
 	public BufferedImage getBufferedImage(String filename);
 
+        public byte[] getCompressedImage(String filename);
+        
 	public void add(String filename, BufferedImage img);
+        
+        public void addCompressed(String filename, byte[] img);
 
 	public void delete(String filename);
 }

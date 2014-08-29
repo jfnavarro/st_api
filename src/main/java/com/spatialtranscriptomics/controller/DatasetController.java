@@ -100,7 +100,7 @@ public class DatasetController {
 	}
 
 	// update
-	@Secured({"ROLE_CM","ROLE_ADMIN"})
+	@Secured({"ROLE_CM","ROLE_ADMIN", "ROLE_USER"})
 	@RequestMapping(value = "{id}", method = RequestMethod.PUT)
 	public @ResponseBody
 	void update(@PathVariable String id, @RequestBody @Valid Dataset ds, BindingResult result) {

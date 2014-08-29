@@ -105,10 +105,10 @@ public class DatasetServiceImpl implements DatasetService {
 
 	// ROLE_ADMIN: all datasets.
 	// ROLE_CM:    granted datasets.
-	// ROLE_USER:  none
+	// ROLE_USER:  granted datasets
 	public void update(Dataset ds) {
 		MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-		if (currentUser.isAdmin() || (currentUser.isContentManager() && datasetIsGranted(ds.getId(), currentUser))) {
+		if (currentUser.isAdmin() || datasetIsGranted(ds.getId(), currentUser)) {
 			logger.info("Updating dataset " + ds.getId());
 			mongoTemplateAnalysisDB.save(ds);
 		}

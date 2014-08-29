@@ -32,12 +32,24 @@
 
 	<!-- Enable Image uploads (used in ImageController.class) -->
 
-	<mvc:annotation-driven>
+	<mvc:annotation-driven content-negotiation-manager="contentNegotiationManager">
 		<mvc:message-converters register-defaults="true">
-			<bean
-				class="org.springframework.http.converter.BufferedImageHttpMessageConverter" />
+                        <bean class="org.springframework.http.converter.ByteArrayHttpMessageConverter" >
+                            <property name="supportedMediaTypes" value="image/jpeg" />
+                        </bean>
+			<bean class="org.springframework.http.converter.BufferedImageHttpMessageConverter" />
 		</mvc:message-converters>
 	</mvc:annotation-driven>
+        
+        <bean id="contentNegotiationManager" class="org.springframework.web.accept.ContentNegotiationManagerFactoryBean">
+            <property name="favorPathExtension" value="false" />
+            <property name="mediaTypes" >
+                <value>
+                    json=application/json
+                    xml=application/xml
+                </value>
+            </property>
+        </bean>
 
 	<!-- Enable Annotations -->
 

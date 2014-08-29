@@ -6,21 +6,6 @@
 
 package com.spatialtranscriptomics.serviceImpl;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.imageio.ImageIO;
-
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -28,6 +13,19 @@ import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.spatialtranscriptomics.model.ImageMetadata;
 import com.spatialtranscriptomics.service.ImageService;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import javax.imageio.ImageIO;
+import org.apache.commons.io.IOUtils;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * This class retrieves/stores images and image metadata from Amazon S3.
@@ -51,6 +49,7 @@ public class ImageServiceImpl implements ImageService {
 	// ROLE_ADMIN: ok.
 	// ROLE_CM:    ok.
 	// ROLE_USER:  nope.
+        @Override
 	public List<ImageMetadata> list() {
 		ObjectListing objects = s3Client.listObjects(imageBucket);
 
@@ -70,6 +69,7 @@ public class ImageServiceImpl implements ImageService {
 	// ROLE_ADMIN: ok.
 	// ROLE_CM:    ok.
 	// ROLE_USER:  ok.
+        @Override
 	public ImageMetadata getImageMetadata(String filename) {
 		List<ImageMetadata> imList = this.list();
 
@@ -81,9 +81,27 @@ public class ImageServiceImpl implements ImageService {
 		return null;
 	}
 
+        // ROLE_ADMIN: ok.
+	// ROLE_CM:    ok.
+	// ROLE_USER:  ok.
+        @Override
+	public byte[] getCompressedImage(String filename) {
+		try {
+			S3ObjectInputStream in = s3Client.getObject(imageBucket, filename)
+					.getObjectContent();
+                        byte[] bytes = IOUtils.toByteArray(in);
+			return bytes;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+
+	}
+        
 	// ROLE_ADMIN: ok.
 	// ROLE_CM:    ok.
 	// ROLE_USER:  ok.
+        @Override
 	public BufferedImage getBufferedImage(String filename) {
 		try {
 			S3ObjectInputStream in = s3Client.getObject(imageBucket, filename)
@@ -100,6 +118,7 @@ public class ImageServiceImpl implements ImageService {
 	// ROLE_ADMIN: ok.
 	// ROLE_CM:    ok.
 	// ROLE_USER:  nope.
+        @Override
 	public void add(String filename, BufferedImage img) {
 		try {
 			logger.info("Adding image " + filename);
@@ -117,10 +136,23 @@ public class ImageServiceImpl implements ImageService {
 		}
 
 	}
+        
+        // ROLE_ADMIN: ok.
+	// ROLE_CM:    ok.
+	// ROLE_USER:  nope.
+        @Override
+	public void addCompressed(String filename, byte[] img) {
+            logger.info("Adding image " + filename);
+            ObjectMetadata om = new ObjectMetadata();
+            om.setContentType("image/jpeg");
+            InputStream is = new ByteArrayInputStream(img);
+            s3Client.putObject(imageBucket, filename, is, om);
+	}
 
 	// ROLE_ADMIN: ok.
 	// ROLE_CM:    ok.
 	// ROLE_USER:  nope.
+        @Override
 	public void delete(String filename) {
 		logger.info("Deleting image " + filename);
 		s3Client.deleteObject(imageBucket, filename);

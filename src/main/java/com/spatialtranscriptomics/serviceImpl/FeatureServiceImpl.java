@@ -19,6 +19,8 @@ import com.spatialtranscriptomics.model.DatasetInfo;
 import com.spatialtranscriptomics.model.Feature;
 import com.spatialtranscriptomics.model.MongoUserDetails;
 import com.spatialtranscriptomics.service.FeatureService;
+import java.util.ArrayList;
+import org.springframework.data.mongodb.core.query.BasicQuery;
 
 /**
  * This class implements the store/retrieve logic to MongoDB for the data model class "Feature".
@@ -54,11 +56,34 @@ public class FeatureServiceImpl implements FeatureService {
 	public List<Feature> findByDatasetId(String datasetId) {
 		MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
 		if (currentUser.isContentManager() || currentUser.isAdmin() || datasetIsGranted(datasetId, currentUser)) {
-			return mongoTemplateFeatureDB.findAll(Feature.class, datasetId);
+//                        long cnt = this.countByDatasetId(datasetId);
+//                        // Heap size splitting.
+//                        if (cnt > 200000) {
+//                            String[] start = new String[]{"AA", "AC", "AG", "AT",
+//                                "CA", "CC", "CG", "CT",
+//                                "GA", "GC", "GG", "GT",
+//                                "TA", "TC", "TG", "TT"};
+//                            List<Feature> allfeats = new ArrayList((int) cnt);
+//                            for (String st : start) {
+//                                System.out.println("Getting for " + st);
+//                                List<Feature> fs = mongoTemplateFeatureDB.find(new Query(Criteria.where("barcode").regex("^" + st + ".*")), Feature.class, datasetId);
+//                                System.out.println("Got " + fs.size());
+//                                allfeats.addAll(fs);
+//                            }
+//                            return allfeats;
+//                        } else {
+                            return mongoTemplateFeatureDB.findAll(Feature.class, datasetId);
+//                        }
 		} else {
 			return null; // user has no permissions on dataset
 		}
 
+	}
+       
+        
+        // Internal use.
+	public long countByDatasetId(String datasetId) {
+            return mongoTemplateFeatureDB.count(new BasicQuery("{}"), datasetId);
 	}
 
 	// ROLE_ADMIN: all.
