@@ -11,7 +11,11 @@ import com.spatialtranscriptomics.exceptions.CustomBadRequestException;
 import com.spatialtranscriptomics.exceptions.CustomNotFoundException;
 import com.spatialtranscriptomics.exceptions.NotFoundResponse;
 import com.spatialtranscriptomics.model.ImageAlignment;
+import com.spatialtranscriptomics.serviceImpl.DatasetServiceImpl;
 import com.spatialtranscriptomics.serviceImpl.ImageAlignmentServiceImpl;
+import com.spatialtranscriptomics.serviceImpl.S3ServiceImpl;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import javax.validation.Valid;
 import org.apache.log4j.Logger;
@@ -31,6 +35,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+
 /**
  * This class is Spring MVC controller class for the API endpoint "rest/imagealignment". It implements the methods available at this endpoint.
  */
@@ -45,6 +50,12 @@ public class ImageAlignmentController {
 
 	@Autowired
 	ImageAlignmentServiceImpl imagealignmentService;
+        
+        @Autowired
+	DatasetServiceImpl datasetService;
+        
+        @Autowired
+	S3ServiceImpl s3Service;
 
 	// list / list for chip
 	@Secured({"ROLE_CM","ROLE_ADMIN"})
@@ -130,9 +141,26 @@ public class ImageAlignmentController {
 	@Secured({"ROLE_CM","ROLE_ADMIN"})
 	@RequestMapping(value = "{id}", method = RequestMethod.DELETE)
 	public @ResponseBody
-	void delete(@PathVariable String id) {
-		imagealignmentService.delete(id);
-	}
+	void delete(@PathVariable String id,
+                @RequestParam(value="cascade", required = false, defaultValue = "true") boolean cascade) {
+        ImageAlignment imal = imagealignmentService.find(id);
+        imagealignmentService.delete(id);
+            if (cascade && imal != null) {
+                imagealignmentService.delete(id);
+                datasetService.setUnabledForImageAlignment(id);
+                HashSet<String> todel = new HashSet<String>(1024);
+                todel.add(imal.getFigure_blue());
+                todel.add(imal.getFigure_red());
+                List<ImageAlignment> imals = imagealignmentService.list();
+                for (ImageAlignment ia : imals) {
+                        if (!ia.getId().equals(id)) {
+                                todel.remove(ia.getFigure_blue());
+                                todel.remove(ia.getFigure_red());
+                        }
+                }
+                s3Service.deleteImageData(new ArrayList<String>(todel));
+            }
+        }
 
 	@ExceptionHandler(CustomNotFoundException.class)
 	@ResponseStatus(value = HttpStatus.NOT_FOUND)

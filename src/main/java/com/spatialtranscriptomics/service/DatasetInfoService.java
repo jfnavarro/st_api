@@ -31,5 +31,9 @@ public interface DatasetInfoService {
 	public void update(DatasetInfo dsi);
 
 	public void delete(String id);
+        
+        public void deleteForDataset(String datasetId);
+	
+	public void deleteForAccount(String accountId);
 	
 }

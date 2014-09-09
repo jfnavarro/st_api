@@ -6,11 +6,16 @@
 
 package com.spatialtranscriptomics.controller;
 
+import com.spatialtranscriptomics.component.StartupHousekeeper;
 import com.spatialtranscriptomics.exceptions.BadRequestResponse;
 import com.spatialtranscriptomics.exceptions.CustomBadRequestException;
 import com.spatialtranscriptomics.exceptions.CustomNotFoundException;
 import com.spatialtranscriptomics.exceptions.NotFoundResponse;
+import com.spatialtranscriptomics.model.Dataset;
+import com.spatialtranscriptomics.model.MongoUserDetails;
 import com.spatialtranscriptomics.model.Selection;
+import com.spatialtranscriptomics.serviceImpl.DatasetServiceImpl;
+import com.spatialtranscriptomics.serviceImpl.MongoUserDetailsServiceImpl;
 import com.spatialtranscriptomics.serviceImpl.SelectionServiceImpl;
 import java.util.Iterator;
 import java.util.List;
@@ -46,7 +51,13 @@ public class SelectionController {
 	
 	@Autowired
 	SelectionServiceImpl selectionService;
+        
+        @Autowired
+	DatasetServiceImpl datasetService;
 
+        @Autowired
+	MongoUserDetailsServiceImpl customUserDetailsService;
+        
 	// list / list for account / list for dataset
 	@Secured({"ROLE_USER","ROLE_CM","ROLE_ADMIN"})
 	@RequestMapping(method = RequestMethod.GET)
@@ -64,11 +75,21 @@ public class SelectionController {
 		} else if (taskId != null) {
 			selections = selectionService.findByTask(taskId);
 		} else {
-			selections = selectionService.list();
+                    // NOTE: Only current user's selections, even for admin.
+                    MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+                    selections = selectionService.findByAccount(currentUser.getId());
 		}
 		if (selections == null) {
-			throw new CustomNotFoundException("No selections found or you dont have permissions to access them.");
+                    throw new CustomNotFoundException("No selections found or you dont have permissions to access them.");
 		}
+                Iterator<Selection> i = selections.iterator();
+                while (i.hasNext()) {
+                   Selection sel = i.next(); // must be called before you can call i.remove()
+                   Dataset d = datasetService.find(sel.getDataset_id());
+                   if (!sel.getEnabled() || d == null || !d.getEnabled()) {
+                        i.remove();
+                   }
+                }
 		return selections;
 	}
         
@@ -81,27 +102,20 @@ public class SelectionController {
 			@RequestParam(value = "dataset", required = false) String datasetId,
 			@RequestParam(value = "task", required = false) String taskId
 			) {
-		List<Selection> selections = null;
-		if (accountId != null) {
-			selections = selectionService.findByAccount(accountId);
-		} else if (datasetId != null) {
-			selections = selectionService.findByDataset(datasetId);
-		} else if (taskId != null) {
-			selections = selectionService.findByTask(taskId);
-		} else {
-			selections = selectionService.list();
-		}
-		if (selections == null) {
-			throw new CustomNotFoundException("No selections found or you dont have permissions to access them.");
-		}
-                Iterator<Selection> i = selections.iterator();
-                while (i.hasNext()) {
-                   Selection sel = i.next(); // must be called before you can call i.remove()
-                   if (!sel.getEnabled()) {
-                        i.remove();
-                   }
-                }
-		return selections;
+            List<Selection> selections = null;
+            if (accountId != null) {
+                    selections = selectionService.findByAccount(accountId);
+            } else if (datasetId != null) {
+                    selections = selectionService.findByDataset(datasetId);
+            } else if (taskId != null) {
+                    selections = selectionService.findByTask(taskId);
+            } else {
+                    selections = selectionService.list();
+            }
+            if (selections == null) {
+                    throw new CustomNotFoundException("No selections found or you dont have permissions to access them.");
+            }
+            return selections;
 	}
 
 
@@ -111,8 +125,9 @@ public class SelectionController {
 	public @ResponseBody
 	Selection get(@PathVariable String id) {
 		Selection selection = selectionService.find(id);
-		if (selection == null || !selection.getEnabled()) {
-			throw new CustomNotFoundException("A selection with this ID does not exist, is disabled, or you dont have permissions to access it.");
+                Dataset d = datasetService.find(selection.getDataset_id());
+		if (selection == null || !selection.getEnabled() || d == null || !d.getEnabled()) {
+                    throw new CustomNotFoundException("A selection with this ID does not exist, is disabled, or you dont have permissions to access it.");
 		}
 		return selection;
 	}
@@ -136,7 +151,7 @@ public class SelectionController {
 	DateTime getLastModified(@PathVariable String id) {
 		Selection selection = selectionService.find(id);
 		if (selection == null) {
-			throw new CustomNotFoundException("A selection with this ID does not exist or you dont have permissions to access it.");
+                    throw new CustomNotFoundException("A selection with this ID does not exist or you dont have permissions to access it.");
 		}
 		return selection.getLast_modified();
 	}

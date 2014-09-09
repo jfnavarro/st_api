@@ -12,7 +12,10 @@ import com.spatialtranscriptomics.exceptions.CustomBadRequestException;
 import com.spatialtranscriptomics.exceptions.CustomNotFoundException;
 import com.spatialtranscriptomics.exceptions.NotFoundResponse;
 import com.spatialtranscriptomics.model.Dataset;
+import com.spatialtranscriptomics.serviceImpl.DatasetInfoServiceImpl;
 import com.spatialtranscriptomics.serviceImpl.DatasetServiceImpl;
+import com.spatialtranscriptomics.serviceImpl.FeatureServiceImpl;
+import com.spatialtranscriptomics.serviceImpl.SelectionServiceImpl;
 import java.util.Iterator;
 import java.util.List;
 import javax.validation.Valid;
@@ -48,6 +51,15 @@ public class DatasetController {
 
 	@Autowired
 	DatasetServiceImpl datasetService;
+        
+        @Autowired
+	FeatureServiceImpl featureService;
+        
+        @Autowired
+	SelectionServiceImpl selectionService;
+        
+        @Autowired
+	DatasetInfoServiceImpl datasetInfoService;
 
 	// list / list for account
 	@Secured({"ROLE_CM","ROLE_USER","ROLE_ADMIN"})
@@ -170,8 +182,17 @@ public class DatasetController {
 	@Secured({"ROLE_CM","ROLE_ADMIN"})
 	@RequestMapping(value = "{id}", method = RequestMethod.DELETE)
 	public @ResponseBody
-	void delete(@PathVariable String id) {
+	void delete(@PathVariable String id,
+                @RequestParam(value="cascade", required = false, defaultValue = "true") boolean cascade) {
+            if (cascade) {
+                featureService.deleteAll(id);
+            }
+            datasetService.delete(id);
+            if (cascade) {
 		datasetService.delete(id);
+		selectionService.deleteForDataset(id);
+		datasetInfoService.deleteForDataset(id);
+            }
 	}
 
 	@ExceptionHandler(CustomNotFoundException.class)

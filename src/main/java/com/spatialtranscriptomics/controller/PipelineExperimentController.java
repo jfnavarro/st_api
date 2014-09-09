@@ -12,6 +12,8 @@ import com.spatialtranscriptomics.exceptions.CustomNotFoundException;
 import com.spatialtranscriptomics.exceptions.NotFoundResponse;
 import com.spatialtranscriptomics.model.PipelineExperiment;
 import com.spatialtranscriptomics.serviceImpl.PipelineExperimentServiceImpl;
+import com.spatialtranscriptomics.serviceImpl.PipelineStatsServiceImpl;
+import com.spatialtranscriptomics.serviceImpl.S3ServiceImpl;
 import java.util.List;
 import javax.validation.Valid;
 import org.apache.log4j.Logger;
@@ -45,6 +47,12 @@ public class PipelineExperimentController {
 
 	@Autowired
 	PipelineExperimentServiceImpl pipelineexperimentService;
+        
+        @Autowired
+	PipelineStatsServiceImpl pipelinestatsService;
+        
+        @Autowired
+	S3ServiceImpl s3Service;
 
 	// list / list for account
 	@Secured({"ROLE_CM","ROLE_ADMIN"})
@@ -141,7 +149,9 @@ public class PipelineExperimentController {
 	@RequestMapping(value = "{id}", method = RequestMethod.DELETE)
 	public @ResponseBody
 	void delete(@PathVariable String id) {
-		pipelineexperimentService.delete(id);
+            s3Service.deleteExperimentData(id);
+            pipelineexperimentService.delete(id);
+            pipelinestatsService.deleteForExperiment(id);
 	}
 
 	@ExceptionHandler(CustomNotFoundException.class)

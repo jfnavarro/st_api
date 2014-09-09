@@ -30,4 +30,5 @@ public interface PipelineStatsService {
 
 	public void delete(String id);
 
+        public void deleteForExperiment(String experimentId);
 }

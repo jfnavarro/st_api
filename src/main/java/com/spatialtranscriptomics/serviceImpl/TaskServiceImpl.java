@@ -129,5 +129,14 @@ public class TaskServiceImpl implements TaskService {
 		}
 		return null;
 	}
+        
+        @Override
+	public void deleteForAccount(String accountId) {
+		List<Task> ts = findByAccount(accountId);
+		if (ts == null) { return; }
+		for (Task t : ts) {
+                    delete(t.getId());
+		}
+	}
 
 }

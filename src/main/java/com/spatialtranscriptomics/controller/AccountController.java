@@ -13,6 +13,11 @@ import com.spatialtranscriptomics.exceptions.CustomNotFoundException;
 import com.spatialtranscriptomics.exceptions.NotFoundResponse;
 import com.spatialtranscriptomics.model.Account;
 import com.spatialtranscriptomics.serviceImpl.AccountServiceImpl;
+import com.spatialtranscriptomics.serviceImpl.DatasetInfoServiceImpl;
+import com.spatialtranscriptomics.serviceImpl.DatasetServiceImpl;
+import com.spatialtranscriptomics.serviceImpl.PipelineExperimentServiceImpl;
+import com.spatialtranscriptomics.serviceImpl.SelectionServiceImpl;
+import com.spatialtranscriptomics.serviceImpl.TaskServiceImpl;
 import java.security.Principal;
 import java.util.Iterator;
 import java.util.List;
@@ -49,7 +54,22 @@ public class AccountController {
 
 	@Autowired
 	AccountServiceImpl accountService;
+        
+        @Autowired
+	DatasetInfoServiceImpl datasetinfoService;
+        
+        @Autowired
+	TaskServiceImpl taskService;
+        
+        @Autowired
+	SelectionServiceImpl selectionService;
 
+        @Autowired
+	DatasetServiceImpl datasetService;
+        
+        @Autowired
+	PipelineExperimentServiceImpl pipelineexperimentService;
+        
 	@Autowired
 	PasswordEncoder passwordEncoder;
 
@@ -203,8 +223,16 @@ public class AccountController {
 	@Secured("ROLE_ADMIN")
 	@RequestMapping(value = "{id}", method = RequestMethod.DELETE)
 	public @ResponseBody
-	void delete(@PathVariable String id) {
-		accountService.delete(id);
+	void delete(@PathVariable String id,
+                @RequestParam(value="cascade", required = false, defaultValue = "true") boolean cascade) {
+                accountService.delete(id);
+                if (cascade) {
+                    datasetinfoService.deleteForAccount(id);
+                    taskService.deleteForAccount(id);
+                    selectionService.deleteForAccount(id);
+                    datasetService.clearAccountCreator(id);
+                    pipelineexperimentService.clearAccount(id);
+                }
 	}
 
 	// // encode Password
