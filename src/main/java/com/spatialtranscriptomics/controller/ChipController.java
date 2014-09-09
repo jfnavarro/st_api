@@ -6,11 +6,16 @@
 
 package com.spatialtranscriptomics.controller;
 
+import com.spatialtranscriptomics.exceptions.BadRequestResponse;
+import com.spatialtranscriptomics.exceptions.CustomBadRequestException;
+import com.spatialtranscriptomics.exceptions.CustomNotFoundException;
+import com.spatialtranscriptomics.exceptions.NotFoundResponse;
+import com.spatialtranscriptomics.model.Chip;
+import com.spatialtranscriptomics.serviceImpl.ChipServiceImpl;
 import java.util.List;
-
 import javax.validation.Valid;
-
 import org.apache.log4j.Logger;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.annotation.Secured;
@@ -24,13 +29,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-
-import com.spatialtranscriptomics.exceptions.BadRequestResponse;
-import com.spatialtranscriptomics.exceptions.CustomBadRequestException;
-import com.spatialtranscriptomics.exceptions.CustomNotFoundException;
-import com.spatialtranscriptomics.exceptions.NotFoundResponse;
-import com.spatialtranscriptomics.model.Chip;
-import com.spatialtranscriptomics.serviceImpl.ChipServiceImpl;
 
 /**
  * This class is Spring MVC controller class for the API endpoint "rest/chip". It implements the methods available at this endpoint.
@@ -69,6 +67,18 @@ public class ChipController {
 			throw new CustomNotFoundException("A chip with this ID does not exist or you dont have permissions to access it.");
 		}
 		return chip;
+	}
+        
+        // get last modified
+	@Secured({"ROLE_CM","ROLE_USER","ROLE_ADMIN"})
+	@RequestMapping(value = "/lastmodified/{id}", method = RequestMethod.GET)
+	public @ResponseBody
+	DateTime getLastModified(@PathVariable String id) {
+		Chip chip = chipService.find(id);
+		if (chip == null) {
+			throw new CustomNotFoundException("A chip with this ID does not exist or you dont have permissions to access it.");
+		}
+		return chip.getLast_modified();
 	}
 
 	// add

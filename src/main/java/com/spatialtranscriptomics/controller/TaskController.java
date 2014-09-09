@@ -6,11 +6,16 @@
 
 package com.spatialtranscriptomics.controller;
 
+import com.spatialtranscriptomics.exceptions.BadRequestResponse;
+import com.spatialtranscriptomics.exceptions.CustomBadRequestException;
+import com.spatialtranscriptomics.exceptions.CustomNotFoundException;
+import com.spatialtranscriptomics.exceptions.NotFoundResponse;
+import com.spatialtranscriptomics.model.Task;
+import com.spatialtranscriptomics.serviceImpl.TaskServiceImpl;
 import java.util.List;
-
 import javax.validation.Valid;
-
 import org.apache.log4j.Logger;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.annotation.Secured;
@@ -25,13 +30,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-
-import com.spatialtranscriptomics.exceptions.BadRequestResponse;
-import com.spatialtranscriptomics.exceptions.CustomBadRequestException;
-import com.spatialtranscriptomics.exceptions.CustomNotFoundException;
-import com.spatialtranscriptomics.exceptions.NotFoundResponse;
-import com.spatialtranscriptomics.model.Task;
-import com.spatialtranscriptomics.serviceImpl.TaskServiceImpl;
 
 /**
  * This class is Spring MVC controller class for the API endpoint "rest/task". It implements the methods available at this endpoint.
@@ -76,6 +74,18 @@ public class TaskController {
 		}
 
 		return task;
+	}
+        
+        // get last modified
+	@Secured({"ROLE_CM","ROLE_ADMIN"})
+	@RequestMapping(value = "/lastmodified/{id}", method = RequestMethod.GET)
+	public @ResponseBody
+	DateTime getLastModified(@PathVariable String id) {
+		Task task = taskService.find(id);
+		if (task == null) {
+			throw new CustomNotFoundException("A task with this ID does not exist or you dont have permissions to access it.");
+		}
+		return task.getLast_modified();
 	}
 
 	// add

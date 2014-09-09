@@ -6,7 +6,19 @@
 
 package com.spatialtranscriptomics.controller;
 
+import com.spatialtranscriptomics.component.StaticContextAccessor;
+import com.spatialtranscriptomics.exceptions.BadRequestResponse;
+import com.spatialtranscriptomics.exceptions.CustomBadRequestException;
+import com.spatialtranscriptomics.exceptions.CustomNotFoundException;
+import com.spatialtranscriptomics.exceptions.NotFoundResponse;
+import com.spatialtranscriptomics.model.Account;
+import com.spatialtranscriptomics.serviceImpl.AccountServiceImpl;
+import java.security.Principal;
+import java.util.Iterator;
+import java.util.List;
+import javax.validation.Valid;
 import org.apache.log4j.Logger;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.annotation.Secured;
@@ -20,22 +32,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-//import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-
-import com.spatialtranscriptomics.component.StaticContextAccessor;
-import com.spatialtranscriptomics.exceptions.BadRequestResponse;
-import com.spatialtranscriptomics.exceptions.CustomBadRequestException;
-import com.spatialtranscriptomics.exceptions.CustomNotFoundException;
-import com.spatialtranscriptomics.exceptions.NotFoundResponse;
-import com.spatialtranscriptomics.model.Account;
-import com.spatialtranscriptomics.serviceImpl.AccountServiceImpl;
-
-import java.security.Principal;
-import java.util.List;
-
-import javax.validation.Valid;
 
 /**
  * This class is Spring MVC controller class for the API endpoint "rest/account". It implements the methods available at this endpoint.
@@ -60,6 +58,27 @@ public class AccountController {
 	@RequestMapping(method = RequestMethod.GET)
 	public @ResponseBody
 	List<Account> list(@RequestParam(value = "dataset", required = false) String datasetId) {
+            List<Account> accs;
+		if (datasetId != null) {
+                    accs = accountService.findByDataset(datasetId);
+		} else {
+                    accs = accountService.list();
+                }
+                Iterator<Account> i = accs.iterator();
+                while (i.hasNext()) {
+                   Account a = i.next(); // must be called before you can call i.remove()
+                   if (!a.isEnabled()) {
+                        i.remove();
+                   }
+                }
+            return accs;
+        }
+        
+        // list all / list all for dataset
+	@Secured({ "ROLE_CM", "ROLE_USER", "ROLE_ADMIN" })
+	@RequestMapping(value = "/all", method = RequestMethod.GET)
+	public @ResponseBody
+	List<Account> listAll(@RequestParam(value = "dataset", required = false) String datasetId) {
 		if (datasetId != null) {
 			return accountService.findByDataset(datasetId);
 		}
@@ -72,10 +91,34 @@ public class AccountController {
 	public @ResponseBody
 	Account get(@PathVariable String id) {
 		Account account = accountService.find(id);
-		if (account == null) {
-			throw new CustomNotFoundException("An account with this ID does not exist or you dont have permissions to access it.");
+		if (account == null || !account.isEnabled()) {
+			throw new CustomNotFoundException("An account with this ID does not exist, is disabled, or you dont have permissions to access it.");
 		}
 		return account;
+	}
+        
+        // get all by id
+	@Secured({ "ROLE_CM", "ROLE_USER", "ROLE_ADMIN" })
+	@RequestMapping(value = "/all/{id}", method = RequestMethod.GET)
+	public @ResponseBody
+	Account getAll(@PathVariable String id) {
+		Account account = accountService.find(id);
+		if (account == null) {
+			throw new CustomNotFoundException("An account with this ID does not exist, or you dont have permissions to access it.");
+		}
+		return account;
+	}
+        
+        // get last modified by id
+	@Secured({ "ROLE_CM", "ROLE_USER", "ROLE_ADMIN" })
+	@RequestMapping(value = "/lastmodified/{id}", method = RequestMethod.GET)
+	public @ResponseBody
+	DateTime getLastModified(@PathVariable String id) {
+		Account account = accountService.find(id);
+		if (account == null) {
+			throw new CustomNotFoundException("An account with this ID does not exist, or you dont have permissions to access it.");
+		}
+		return account.getLast_modified();
 	}
 
 	// get current account

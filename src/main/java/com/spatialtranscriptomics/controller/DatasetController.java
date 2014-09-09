@@ -6,11 +6,20 @@
 
 package com.spatialtranscriptomics.controller;
 
+import com.spatialtranscriptomics.component.StaticContextAccessor;
+import com.spatialtranscriptomics.exceptions.BadRequestResponse;
+import com.spatialtranscriptomics.exceptions.CustomBadRequestException;
+import com.spatialtranscriptomics.exceptions.CustomNotFoundException;
+import com.spatialtranscriptomics.exceptions.NotFoundResponse;
+import com.spatialtranscriptomics.model.Dataset;
+import com.spatialtranscriptomics.serviceImpl.DatasetServiceImpl;
+import java.util.Iterator;
 import java.util.List;
-
 import javax.validation.Valid;
-
 import org.apache.log4j.Logger;
+import org.joda.time.DateTime;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Repository;
@@ -23,16 +32,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-
-import com.spatialtranscriptomics.component.StaticContextAccessor;
-import com.spatialtranscriptomics.exceptions.BadRequestResponse;
-import com.spatialtranscriptomics.exceptions.CustomBadRequestException;
-import com.spatialtranscriptomics.exceptions.CustomNotFoundException;
-import com.spatialtranscriptomics.exceptions.NotFoundResponse;
-import com.spatialtranscriptomics.model.Dataset;
-import com.spatialtranscriptomics.serviceImpl.DatasetServiceImpl;
 
 /**
  * This class is Spring MVC controller class for the API endpoint "rest/dataset". It implements the methods available at this endpoint.
@@ -52,9 +51,30 @@ public class DatasetController {
 
 	// list / list for account
 	@Secured({"ROLE_CM","ROLE_USER","ROLE_ADMIN"})
-	@RequestMapping(method = RequestMethod.GET)
+	@RequestMapping(value = "/all", method = RequestMethod.GET)
 	public @ResponseBody
 	List<Dataset> list(@RequestParam(value = "account", required = false) String accountId) {
+		List<Dataset> ds;
+                if (accountId != null) {
+			ds = datasetService.findByAccount(accountId);
+		} else {
+                        ds = datasetService.list();
+                }
+                Iterator<Dataset> i = ds.iterator();
+                while (i.hasNext()) {
+                   Dataset d = i.next(); // must be called before you can call i.remove()
+                   if (!d.getEnabled()) {
+                        i.remove();
+                   }
+                }
+                return ds;
+	}
+        
+        // list all / list all for account
+	@Secured({"ROLE_CM","ROLE_USER","ROLE_ADMIN"})
+	@RequestMapping(method = RequestMethod.GET)
+	public @ResponseBody
+	List<Dataset> listAll(@RequestParam(value = "account", required = false) String accountId) {
 		if (accountId != null) {
 			return datasetService.findByAccount(accountId);
 		}
@@ -67,10 +87,34 @@ public class DatasetController {
 	public @ResponseBody
 	Dataset get(@PathVariable String id) {
 		Dataset ds = datasetService.find(id);
-		if (ds == null) {
-			throw new CustomNotFoundException("A dataset with this ID does not exist or you dont have permissions to access it.");
+		if (ds == null || !ds.getEnabled()) {
+			throw new CustomNotFoundException("A dataset with this ID does not exist, is disabled, or you dont have permissions to access it.");
 		}
 		return ds;
+	}
+        
+        // get all
+	@Secured({"ROLE_CM","ROLE_USER","ROLE_ADMIN"})
+	@RequestMapping(value = "/all/{id}", method = RequestMethod.GET)
+	public @ResponseBody
+	Dataset getAll(@PathVariable String id) {
+		Dataset ds = datasetService.find(id);
+		if (ds == null) {
+			throw new CustomNotFoundException("A dataset with this ID does not exist, or you dont have permissions to access it.");
+		}
+		return ds;
+	}
+        
+        // get last modified
+	@Secured({"ROLE_CM","ROLE_USER","ROLE_ADMIN"})
+	@RequestMapping(value = "/lastmodified/{id}", method = RequestMethod.GET)
+	public @ResponseBody
+	DateTime getLastModified(@PathVariable String id) {
+		Dataset ds = datasetService.find(id);
+		if (ds == null) {
+			throw new CustomNotFoundException("A dataset with this ID does not exist, or you dont have permissions to access it.");
+		}
+		return ds.getLast_modified();
 	}
 
 	// add
