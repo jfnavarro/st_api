@@ -6,11 +6,17 @@
 
 package com.spatialtranscriptomics.controller;
 
+import com.spatialtranscriptomics.exceptions.BadRequestResponse;
+import com.spatialtranscriptomics.exceptions.CustomBadRequestException;
+import com.spatialtranscriptomics.exceptions.CustomNotFoundException;
+import com.spatialtranscriptomics.exceptions.NotFoundResponse;
+import com.spatialtranscriptomics.model.Selection;
+import com.spatialtranscriptomics.serviceImpl.SelectionServiceImpl;
+import java.util.Iterator;
 import java.util.List;
-
 import javax.validation.Valid;
-
 import org.apache.log4j.Logger;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.annotation.Secured;
@@ -25,13 +31,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-
-import com.spatialtranscriptomics.exceptions.BadRequestResponse;
-import com.spatialtranscriptomics.exceptions.CustomBadRequestException;
-import com.spatialtranscriptomics.exceptions.CustomNotFoundException;
-import com.spatialtranscriptomics.exceptions.NotFoundResponse;
-import com.spatialtranscriptomics.model.Selection;
-import com.spatialtranscriptomics.serviceImpl.SelectionServiceImpl;
 
 /**
  * This class is Spring MVC controller class for the API endpoint "rest/selection". It implements the methods available at this endpoint.
@@ -72,17 +71,74 @@ public class SelectionController {
 		}
 		return selections;
 	}
+        
+        // list all / list all for account / list all for dataset
+	@Secured({"ROLE_USER","ROLE_CM","ROLE_ADMIN"})
+	@RequestMapping(value = "/all", method = RequestMethod.GET)
+	public @ResponseBody
+	List<Selection> listAll(
+			@RequestParam(value = "account", required = false) String accountId,
+			@RequestParam(value = "dataset", required = false) String datasetId,
+			@RequestParam(value = "task", required = false) String taskId
+			) {
+		List<Selection> selections = null;
+		if (accountId != null) {
+			selections = selectionService.findByAccount(accountId);
+		} else if (datasetId != null) {
+			selections = selectionService.findByDataset(datasetId);
+		} else if (taskId != null) {
+			selections = selectionService.findByTask(taskId);
+		} else {
+			selections = selectionService.list();
+		}
+		if (selections == null) {
+			throw new CustomNotFoundException("No selections found or you dont have permissions to access them.");
+		}
+                Iterator<Selection> i = selections.iterator();
+                while (i.hasNext()) {
+                   Selection sel = i.next(); // must be called before you can call i.remove()
+                   if (!sel.getEnabled()) {
+                        i.remove();
+                   }
+                }
+		return selections;
+	}
+
 
 	// get
 	@Secured({"ROLE_USER","ROLE_CM","ROLE_ADMIN"})
-	@RequestMapping(value = "{id}", method = RequestMethod.GET)
+	@RequestMapping(value = "/all/{id}", method = RequestMethod.GET)
 	public @ResponseBody
 	Selection get(@PathVariable String id) {
+		Selection selection = selectionService.find(id);
+		if (selection == null || !selection.getEnabled()) {
+			throw new CustomNotFoundException("A selection with this ID does not exist, is disabled, or you dont have permissions to access it.");
+		}
+		return selection;
+	}
+        
+        // get all
+	@Secured({"ROLE_USER","ROLE_CM","ROLE_ADMIN"})
+	@RequestMapping(value = "{id}", method = RequestMethod.GET)
+	public @ResponseBody
+	Selection getAll(@PathVariable String id) {
 		Selection selection = selectionService.find(id);
 		if (selection == null) {
 			throw new CustomNotFoundException("A selection with this ID does not exist or you dont have permissions to access it.");
 		}
 		return selection;
+	}
+        
+         // get last modified
+	@Secured({"ROLE_USER","ROLE_CM","ROLE_ADMIN"})
+	@RequestMapping(value = "/lastmodified/{id}", method = RequestMethod.GET)
+	public @ResponseBody
+	DateTime getLastModified(@PathVariable String id) {
+		Selection selection = selectionService.find(id);
+		if (selection == null) {
+			throw new CustomNotFoundException("A selection with this ID does not exist or you dont have permissions to access it.");
+		}
+		return selection.getLast_modified();
 	}
 
 	// add

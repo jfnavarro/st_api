@@ -66,6 +66,20 @@ public class ImageController {
 		return img;
 	}
         
+        // get last modified
+	// this {id:.+} is a workaround for a spring bug that truncates path
+	// variables containing a dot
+	@Secured({"ROLE_CM","ROLE_USER","ROLE_ADMIN"})
+	@RequestMapping(value = "/lastmodified/{id:.+}", produces = MediaType.IMAGE_JPEG_VALUE, method = RequestMethod.GET)
+	public @ResponseBody
+	Date getLastModified(@PathVariable String id) {
+		ImageMetadata img = imageService.getImageMetadata(id);
+                if (img == null) {
+                    throw new CustomNotFoundException("An image with this name does not exist or you do not have permissions to access it.");
+                }
+		return img.getLastModified();
+	}
+        
         // get compressed image payload
         // this {id:.+} is a workaround for a spring bug that truncates path
         // variables containing a dot
