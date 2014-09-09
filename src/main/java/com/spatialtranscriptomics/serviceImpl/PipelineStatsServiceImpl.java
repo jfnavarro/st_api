@@ -126,4 +126,11 @@ public class PipelineStatsServiceImpl implements PipelineStatsService {
 		}
 	}
 
+        @Override
+	public void deleteForExperiment(String experimentId) {
+		PipelineStats stats = findByExperiment(experimentId);
+		if (stats != null) {
+			delete(stats.getId());
+		}
+	}
 }

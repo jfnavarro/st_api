@@ -32,4 +32,5 @@ public interface PipelineExperimentService {
 
 	public void delete(String id);
 
+        public void clearAccount(String accountId);
 }

@@ -166,6 +166,24 @@ public class SelectionServiceImpl implements SelectionService {
 		}
 		return mongoTemplateExperimentDB.find(new Query(Criteria.where("id").in(ls)), Selection.class);
 	}
+        
+        @Override
+	public void deleteForDataset(String datasetId) {
+		List<Selection> sels = findByDataset(datasetId);
+		if (sels == null) { return; }
+		for (Selection sel : sels) {
+                    delete(sel.getId());
+		}
+	}
+        
+        @Override
+	public void deleteForAccount(String accountId) {
+		List<Selection> sels = findByAccount(accountId);
+		if (sels == null) { return; }
+		for (Selection sel : sels) {
+                    delete(sel.getId());
+		}
+	}
 	
         // Helper.
 	private Selection checkCredentials(Selection sel) {

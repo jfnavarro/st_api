@@ -119,6 +119,23 @@ public class DatasetInfoServiceImpl implements DatasetInfoService {
 		mongoTemplateUserDB.remove(find(id));
 	}
 
+	@Override
+	public void deleteForDataset(String datasetId) {
+		List<DatasetInfo> dsis = findByDataset(datasetId);
+		if (dsis ==  null) { return; }
+		for (DatasetInfo dsi : dsis) {
+			delete(dsi.getId());
+		}
+	}
+
+        @Override
+	public void deleteForAccount(String accountId) {
+		List<DatasetInfo> dsis = findByAccount(accountId);
+		if (dsis ==  null) { return; }
+		for (DatasetInfo dsi : dsis) {
+                    delete(dsi.getId());
+		}
+	}
 	
-	
+        
 }

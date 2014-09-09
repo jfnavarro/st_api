@@ -32,4 +32,6 @@ public interface ImageAlignmentService {
 
 	public void delete(String id);
 
+        public List<ImageAlignment> deleteForChip(String chipId);
+
 }

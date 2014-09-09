@@ -11,7 +11,10 @@ import com.spatialtranscriptomics.exceptions.CustomBadRequestException;
 import com.spatialtranscriptomics.exceptions.CustomNotFoundException;
 import com.spatialtranscriptomics.exceptions.NotFoundResponse;
 import com.spatialtranscriptomics.model.Chip;
+import com.spatialtranscriptomics.model.ImageAlignment;
 import com.spatialtranscriptomics.serviceImpl.ChipServiceImpl;
+import com.spatialtranscriptomics.serviceImpl.DatasetServiceImpl;
+import com.spatialtranscriptomics.serviceImpl.ImageAlignmentServiceImpl;
 import java.util.List;
 import javax.validation.Valid;
 import org.apache.log4j.Logger;
@@ -27,6 +30,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
@@ -44,7 +48,13 @@ public class ChipController {
 
 	@Autowired
 	ChipServiceImpl chipService;
+        
+        @Autowired
+	ImageAlignmentServiceImpl imageAlignmentService;
 
+        @Autowired
+	DatasetServiceImpl datasetService;
+        
 	// list
 	@Secured({"ROLE_CM","ROLE_ADMIN"})
 	@RequestMapping(method = RequestMethod.GET)
@@ -121,8 +131,17 @@ public class ChipController {
 	@Secured({"ROLE_CM","ROLE_ADMIN"})
 	@RequestMapping(value = "{id}", method = RequestMethod.DELETE)
 	public @ResponseBody
-	void delete(@PathVariable String id) {
-		chipService.delete(id);
+	void delete(@PathVariable String id,
+                @RequestParam(value="cascade", required = false, defaultValue = "true") boolean cascade) {
+            if (cascade) {
+                List<ImageAlignment> imals = imageAlignmentService.deleteForChip(id);
+                if (imals != null) {
+                    for (ImageAlignment imal : imals) {
+                            datasetService.setUnabledForImageAlignment(imal.getId());
+                    }
+                }
+            }
+            chipService.delete(id);
 	}
 
 	@ExceptionHandler(CustomNotFoundException.class)
