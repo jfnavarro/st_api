@@ -133,6 +133,10 @@ public class ChipController {
 	public @ResponseBody
 	void delete(@PathVariable String id,
                 @RequestParam(value="cascade", required = false, defaultValue = "true") boolean cascade) {
+            if (!chipService.deleteIsOK(id)) {
+                throw new CustomBadRequestException("You do not have permission to delete this chip.");
+            }
+            
             if (cascade) {
                 List<ImageAlignment> imals = imageAlignmentService.deleteForChip(id);
                 if (imals != null) {

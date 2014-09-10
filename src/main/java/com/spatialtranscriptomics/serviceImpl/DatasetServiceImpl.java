@@ -116,14 +116,19 @@ public class DatasetServiceImpl implements DatasetService {
 
 	// ROLE_ADMIN: all datasets.
 	// ROLE_CM:    granted datasets.
-	// ROLE_USER:  none.
+	// ROLE_USER:  granted datasets.
 	public void delete(String id) {
 		MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-		if (currentUser.isAdmin() || (currentUser.isContentManager() && datasetIsGranted(id, currentUser))) {
+		if (currentUser.isAdmin() || (datasetIsGranted(id, currentUser))) {
 			logger.info("Deleting dataset " + id);
 			mongoTemplateAnalysisDB.remove(find(id));
 		}
 	}
+        
+        public boolean deleteIsOK(String id) {
+            MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+            return (currentUser.isAdmin() || (datasetIsGranted(id, currentUser))) && find(id) != null;
+        }
 
 	// ROLE_ADMIN: all datasets.
 	// ROLE_CM:    granted datasets.

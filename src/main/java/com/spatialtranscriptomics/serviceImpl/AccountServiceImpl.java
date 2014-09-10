@@ -100,6 +100,11 @@ public class AccountServiceImpl implements AccountService {
 		logger.info("Removing account " + id);
 		mongoTemplateUserDB.remove(find(id));
 	}
+        
+        public boolean deleteIsOk(String id) {
+            MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+            return (currentUser.isAdmin() && find(id) != null);
+        }
 
 	// ROLE_ADMIN: all.
 	// ROLE_CM:    own.

@@ -16,6 +16,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import com.spatialtranscriptomics.model.Chip;
+import com.spatialtranscriptomics.model.MongoUserDetails;
 import com.spatialtranscriptomics.service.ChipService;
 
 /**
@@ -81,4 +82,8 @@ public class ChipServiceImpl implements ChipService {
 		mongoTemplateAnalysisDB.remove(find(id));
 	}
 
+        public boolean deleteIsOK(String id) {
+            MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+            return (currentUser.isAdmin() || currentUser.isContentManager()) && find(id) != null;
+        }
 }

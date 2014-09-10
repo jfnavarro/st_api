@@ -112,6 +112,12 @@ public class PipelineExperimentServiceImpl implements PipelineExperimentService 
                     logger.info("Not deleting PipelineExperiment - access mismatch.");
                 }
 	}
+        
+        
+        public boolean deleteIsOK(String id) {
+            MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+            return (currentUser.isAdmin() || currentUser.isContentManager()) && find(id) != null;
+        }
 
 	// ROLE_ADMIN: all.
 	// ROLE_CM:    own accounts.
@@ -134,5 +140,7 @@ public class PipelineExperimentServiceImpl implements PipelineExperimentService 
                 }
             }
         }
+
+    
 
 }

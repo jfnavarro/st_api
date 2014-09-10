@@ -63,7 +63,7 @@ public class DatasetController {
 
 	// list / list for account
 	@Secured({"ROLE_CM","ROLE_USER","ROLE_ADMIN"})
-	@RequestMapping(value = "/all", method = RequestMethod.GET)
+	@RequestMapping(method = RequestMethod.GET)
 	public @ResponseBody
 	List<Dataset> list(@RequestParam(value = "account", required = false) String accountId) {
 		List<Dataset> ds;
@@ -84,7 +84,7 @@ public class DatasetController {
         
         // list all / list all for account
 	@Secured({"ROLE_CM","ROLE_USER","ROLE_ADMIN"})
-	@RequestMapping(method = RequestMethod.GET)
+	@RequestMapping(value = "/all", method = RequestMethod.GET)
 	public @ResponseBody
 	List<Dataset> listAll(@RequestParam(value = "account", required = false) String accountId) {
 		if (accountId != null) {
@@ -179,11 +179,14 @@ public class DatasetController {
 	}
 
 	// delete
-	@Secured({"ROLE_CM","ROLE_ADMIN"})
+	@Secured({"ROLE_CM","ROLE_ADMIN", "ROLE_USER"})
 	@RequestMapping(value = "{id}", method = RequestMethod.DELETE)
 	public @ResponseBody
 	void delete(@PathVariable String id,
                 @RequestParam(value="cascade", required = false, defaultValue = "true") boolean cascade) {
+            if (!datasetService.deleteIsOK(id)) {
+                throw new CustomBadRequestException("You are not allowed to delete this dataset.");
+            }
             if (cascade) {
                 featureService.deleteAll(id);
             }
