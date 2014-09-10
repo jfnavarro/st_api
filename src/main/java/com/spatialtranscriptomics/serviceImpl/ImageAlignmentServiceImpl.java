@@ -6,17 +6,16 @@
 
 package com.spatialtranscriptomics.serviceImpl;
 
+import com.spatialtranscriptomics.model.ImageAlignment;
+import com.spatialtranscriptomics.model.MongoUserDetails;
+import com.spatialtranscriptomics.service.ImageAlignmentService;
 import java.util.List;
-
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
-
-import com.spatialtranscriptomics.model.ImageAlignment;
-import com.spatialtranscriptomics.service.ImageAlignmentService;
 
 /**
  * This class implements the store/retrieve logic to MongoDB for the data model class "ImageAlignment".
@@ -90,6 +89,11 @@ public class ImageAlignmentServiceImpl implements ImageAlignmentService {
 		mongoTemplateAnalysisDB.remove(find(id));
 	}
 
+        public boolean deleteIsOK(String id) {
+            MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+            return (currentUser.isAdmin() || currentUser.isContentManager()) && find(id) != null;
+        }
+        
         @Override
 	public List<ImageAlignment> deleteForChip(String chipId) {
 		//System.out.println("about to delete chip");
@@ -101,4 +105,6 @@ public class ImageAlignmentServiceImpl implements ImageAlignmentService {
 		}
 		return imals;
 	} 
+
+        
 }

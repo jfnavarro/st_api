@@ -205,7 +205,7 @@ public class SelectionController {
 	@RequestMapping(value = "{id}", method = RequestMethod.DELETE)
 	public @ResponseBody
 	void delete(@PathVariable String id) {
-		selectionService.delete(id);
+            selectionService.delete(id);
 	}
 
 	@ExceptionHandler(CustomNotFoundException.class)

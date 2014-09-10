@@ -149,6 +149,9 @@ public class PipelineExperimentController {
 	@RequestMapping(value = "{id}", method = RequestMethod.DELETE)
 	public @ResponseBody
 	void delete(@PathVariable String id) {
+            if (!pipelineexperimentService.deleteIsOK(id)) {
+                throw new CustomBadRequestException("You do not have permission to delete this experiment.");
+            }
             s3Service.deleteExperimentData(id);
             pipelineexperimentService.delete(id);
             pipelinestatsService.deleteForExperiment(id);

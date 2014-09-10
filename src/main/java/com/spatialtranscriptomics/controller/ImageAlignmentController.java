@@ -143,8 +143,11 @@ public class ImageAlignmentController {
 	public @ResponseBody
 	void delete(@PathVariable String id,
                 @RequestParam(value="cascade", required = false, defaultValue = "true") boolean cascade) {
-        ImageAlignment imal = imagealignmentService.find(id);
-        imagealignmentService.delete(id);
+            if (!imagealignmentService.deleteIsOK(id)) {
+                throw new CustomBadRequestException("You do not have permission to delete this image alignment.");
+            }
+            ImageAlignment imal = imagealignmentService.find(id);
+            imagealignmentService.delete(id);
             if (cascade && imal != null) {
                 imagealignmentService.delete(id);
                 datasetService.setUnabledForImageAlignment(id);

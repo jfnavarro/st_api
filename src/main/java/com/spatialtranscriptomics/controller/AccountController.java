@@ -225,6 +225,9 @@ public class AccountController {
 	public @ResponseBody
 	void delete(@PathVariable String id,
                 @RequestParam(value="cascade", required = false, defaultValue = "true") boolean cascade) {
+                if (!accountService.deleteIsOk(id)) {
+                    throw new CustomBadRequestException("You do not have permission to delete this account.");
+                }
                 accountService.delete(id);
                 if (cascade) {
                     datasetinfoService.deleteForAccount(id);
