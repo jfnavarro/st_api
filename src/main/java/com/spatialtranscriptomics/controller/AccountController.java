@@ -12,6 +12,7 @@ import com.spatialtranscriptomics.exceptions.CustomBadRequestException;
 import com.spatialtranscriptomics.exceptions.CustomNotFoundException;
 import com.spatialtranscriptomics.exceptions.NotFoundResponse;
 import com.spatialtranscriptomics.model.Account;
+import com.spatialtranscriptomics.model.LastModifiedDate;
 import com.spatialtranscriptomics.serviceImpl.AccountServiceImpl;
 import com.spatialtranscriptomics.serviceImpl.DatasetInfoServiceImpl;
 import com.spatialtranscriptomics.serviceImpl.DatasetServiceImpl;
@@ -133,12 +134,12 @@ public class AccountController {
 	@Secured({ "ROLE_CM", "ROLE_USER", "ROLE_ADMIN" })
 	@RequestMapping(value = "/lastmodified/{id}", method = RequestMethod.GET)
 	public @ResponseBody
-	DateTime getLastModified(@PathVariable String id) {
-		Account account = accountService.find(id);
-		if (account == null) {
-			throw new CustomNotFoundException("An account with this ID does not exist, or you dont have permissions to access it.");
-		}
-		return account.getLast_modified();
+	LastModifiedDate getLastModified(@PathVariable String id) {
+            Account account = accountService.find(id);
+            if (account == null) {
+                    throw new CustomNotFoundException("An account with this ID does not exist, or you dont have permissions to access it.");
+            }
+            return new LastModifiedDate(account.getLast_modified());
 	}
 
 	// get current account

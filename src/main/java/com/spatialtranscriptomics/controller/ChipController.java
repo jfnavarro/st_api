@@ -12,6 +12,7 @@ import com.spatialtranscriptomics.exceptions.CustomNotFoundException;
 import com.spatialtranscriptomics.exceptions.NotFoundResponse;
 import com.spatialtranscriptomics.model.Chip;
 import com.spatialtranscriptomics.model.ImageAlignment;
+import com.spatialtranscriptomics.model.LastModifiedDate;
 import com.spatialtranscriptomics.serviceImpl.ChipServiceImpl;
 import com.spatialtranscriptomics.serviceImpl.DatasetServiceImpl;
 import com.spatialtranscriptomics.serviceImpl.ImageAlignmentServiceImpl;
@@ -83,12 +84,12 @@ public class ChipController {
 	@Secured({"ROLE_CM","ROLE_USER","ROLE_ADMIN"})
 	@RequestMapping(value = "/lastmodified/{id}", method = RequestMethod.GET)
 	public @ResponseBody
-	DateTime getLastModified(@PathVariable String id) {
+	LastModifiedDate getLastModified(@PathVariable String id) {
 		Chip chip = chipService.find(id);
 		if (chip == null) {
 			throw new CustomNotFoundException("A chip with this ID does not exist or you dont have permissions to access it.");
 		}
-		return chip.getLast_modified();
+                return new LastModifiedDate(chip.getLast_modified());
 	}
 
 	// add

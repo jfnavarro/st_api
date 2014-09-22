@@ -3,27 +3,26 @@
  * Read LICENSE for more information about licensing terms
  * Contact: Jose Fernandez Navarro <jose.fernandez.navarro@scilifelab.se>
  */
-
 package com.spatialtranscriptomics.model;
 
-
-
 /**
- * This class implements the VersionSupportInfo object.
- * VersionSupportInfo is not mapped to a MongoDB document. Instead, it is being instantiated in VersionSupportInfoController.class
- * 
- * */
+ * This class implements the VersionSupportInfo object. VersionSupportInfo is
+ * not mapped to a MongoDB document. Instead, it is being instantiated in
+ * VersionSupportInfoController.class.
+ */
 public class VersionSupportInfo implements IVersionSupportInfo {
 
-	String minSupportedClientVersion;
+    String minSupportedClientVersion;
 
-	public String getMinSupportedClientVersion() {
-		return this.minSupportedClientVersion;
-	}
+    @Override
+    public String getMinSupportedClientVersion() {
+        return this.minSupportedClientVersion;
+    }
 
-	public void setMinSupportedClientVersion(String version) {
-		this.minSupportedClientVersion = version;
+    @Override
+    public void setMinSupportedClientVersion(String version) {
+        this.minSupportedClientVersion = version;
 
-	}
+    }
 
 }

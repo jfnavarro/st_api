@@ -3,7 +3,6 @@
  * Read LICENSE for more information about licensing terms
  * Contact: Jose Fernandez Navarro <jose.fernandez.navarro@scilifelab.se>
  */
-
 package com.spatialtranscriptomics.model;
 
 import java.util.List;
@@ -12,71 +11,73 @@ import org.joda.time.DateTime;
 import org.springframework.data.annotation.Transient;
 
 /**
- * This interface defines the Account model. Applications that use the API must implement the same model.
+ * This interface defines the Account model. Applications that use the API must
+ * implement the same model.
  */
-
 public interface IAccount {
 
-	public String getId();
+    public String getId();
 
-	public void setId(String id);
-	
-	public String getUsername();
+    public void setId(String id);
 
-	public void setUsername(String username);
-	
-	public String getPassword();
+    public String getUsername();
 
-	public void setPassword(String password);
-	
-	public String getRole();
+    public void setUsername(String username);
 
-	public void setRole(String role);
-	
-	public boolean isEnabled();
+    public String getPassword();
 
-	public void setEnabled(boolean enabled);
-	
-	public String getInstitution();
+    public void setPassword(String password);
 
-	public void setInstitution(String institution);
-	
-	public String getFirst_name();
+    public String getRole();
 
-	public void setFirst_name(String firstName);
-	
-	public String getLast_name();
+    public void setRole(String role);
 
-	public void setLast_name(String lastName);
-	
-	public String getStreet_address();
+    public boolean isEnabled();
 
-	public void setStreet_address(String streetAddress);
+    public void setEnabled(boolean enabled);
 
-	public String getCity();
+    public String getInstitution();
 
-	public void setCity(String city);
+    public void setInstitution(String institution);
 
-	public String getPostcode();
+    public String getFirst_name();
 
-	public void setPostcode(String postcode);
+    public void setFirst_name(String firstName);
 
-	public String getCountry();
+    public String getLast_name();
 
-	public void setCountry(String country);
-	
-        public DateTime getCreated_at();
+    public void setLast_name(String lastName);
 
-	public void setCreated_at(DateTime created);
-	
-	public DateTime getLast_modified();
-        
-	// HACK.
-	@Transient
-	public List<String> getGranted_datasets();
+    public String getStreet_address();
 
-	// HACK.
-	@Transient
-	public void setGranted_datasets(List<String> datasets);
-		
+    public void setStreet_address(String streetAddress);
+
+    public String getCity();
+
+    public void setCity(String city);
+
+    public String getPostcode();
+
+    public void setPostcode(String postcode);
+
+    public String getCountry();
+
+    public void setCountry(String country);
+
+    public DateTime getCreated_at();
+
+    public void setCreated_at(DateTime created);
+
+    public DateTime getLast_modified();
+
+    // HACK.
+    @Transient
+    public List<String> getGranted_datasets();
+
+    // HACK.
+    @Transient
+    public void setGranted_datasets(List<String> datasets);
+
+    // HACK.
+    public void updateGranted_datasets();
 }

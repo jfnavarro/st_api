@@ -36,7 +36,6 @@ public class VersionSupportController {
 	@RequestMapping(method = RequestMethod.GET)
 	public @ResponseBody
 	VersionSupportInfo getInfo() {
-
 		VersionSupportInfo info = new VersionSupportInfo();
 		info.setMinSupportedClientVersion(minSupportedClientVersion);
 		return info;

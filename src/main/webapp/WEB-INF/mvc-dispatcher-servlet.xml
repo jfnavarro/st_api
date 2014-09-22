@@ -35,9 +35,16 @@
 	<mvc:annotation-driven content-negotiation-manager="contentNegotiationManager">
 		<mvc:message-converters register-defaults="true">
                         <bean class="org.springframework.http.converter.ByteArrayHttpMessageConverter" >
-                            <property name="supportedMediaTypes" value="image/jpeg" />
+                            <property name="supportedMediaTypes">
+                                <list>
+                                    <value>image/jpeg</value>
+                                    <value>application/gzip</value>
+                                </list>
+                            </property>
                         </bean>
-			<bean class="org.springframework.http.converter.BufferedImageHttpMessageConverter" />
+			<bean class="org.springframework.http.converter.BufferedImageHttpMessageConverter" /> <!-- to upload decompressed Image files -->
+                        <bean class="org.springframework.http.converter.StringHttpMessageConverter" />
+                        <bean class="org.springframework.http.converter.xml.SourceHttpMessageConverter" />
 		</mvc:message-converters>
 	</mvc:annotation-driven>
         
@@ -77,6 +84,14 @@
 	<bean id="awsCredentials" class="com.amazonaws.auth.BasicAWSCredentials">
 		<constructor-arg type="String" value="${s3.accesskey}" />
 		<constructor-arg type="String" value="${s3.secretkey}" />
+	</bean>
+        
+        <!-- File upload max. filesize -->
+
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="maxUploadSize" value="1000000000" /> <!-- max. filesize of 1 GB -->
+                <property name="maxInMemorySize" value="10000000" /> <!-- max in memory 10MB (larger cached with files) --> 
 	</bean>
 
 	<!-- Mongo Config -->

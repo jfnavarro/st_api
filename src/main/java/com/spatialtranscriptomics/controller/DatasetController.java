@@ -12,9 +12,10 @@ import com.spatialtranscriptomics.exceptions.CustomBadRequestException;
 import com.spatialtranscriptomics.exceptions.CustomNotFoundException;
 import com.spatialtranscriptomics.exceptions.NotFoundResponse;
 import com.spatialtranscriptomics.model.Dataset;
+import com.spatialtranscriptomics.model.LastModifiedDate;
 import com.spatialtranscriptomics.serviceImpl.DatasetInfoServiceImpl;
 import com.spatialtranscriptomics.serviceImpl.DatasetServiceImpl;
-import com.spatialtranscriptomics.serviceImpl.FeatureServiceImpl;
+import com.spatialtranscriptomics.serviceImpl.FeaturesServiceImpl;
 import com.spatialtranscriptomics.serviceImpl.SelectionServiceImpl;
 import java.util.Iterator;
 import java.util.List;
@@ -53,7 +54,7 @@ public class DatasetController {
 	DatasetServiceImpl datasetService;
         
         @Autowired
-	FeatureServiceImpl featureService;
+	FeaturesServiceImpl featuresService;
         
         @Autowired
 	SelectionServiceImpl selectionService;
@@ -121,12 +122,12 @@ public class DatasetController {
 	@Secured({"ROLE_CM","ROLE_USER","ROLE_ADMIN"})
 	@RequestMapping(value = "/lastmodified/{id}", method = RequestMethod.GET)
 	public @ResponseBody
-	DateTime getLastModified(@PathVariable String id) {
+	LastModifiedDate getLastModified(@PathVariable String id) {
 		Dataset ds = datasetService.find(id);
 		if (ds == null) {
 			throw new CustomNotFoundException("A dataset with this ID does not exist, or you dont have permissions to access it.");
 		}
-		return ds.getLast_modified();
+                return new LastModifiedDate(ds.getLast_modified());
 	}
 
 	// add
@@ -188,14 +189,11 @@ public class DatasetController {
                 throw new CustomBadRequestException("You are not allowed to delete this dataset.");
             }
             if (cascade) {
-                featureService.deleteAll(id);
-            }
-            datasetService.delete(id);
-            if (cascade) {
-		datasetService.delete(id);
 		selectionService.deleteForDataset(id);
 		datasetInfoService.deleteForDataset(id);
             }
+            datasetService.delete(id);
+            featuresService.delete(id);
 	}
 
 	@ExceptionHandler(CustomNotFoundException.class)

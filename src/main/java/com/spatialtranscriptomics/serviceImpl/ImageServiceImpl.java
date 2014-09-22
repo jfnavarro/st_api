@@ -23,6 +23,7 @@ import java.util.List;
 import javax.imageio.ImageIO;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -59,8 +60,9 @@ public class ImageServiceImpl implements ImageService {
 		for (S3ObjectSummary o : objs) {
 			ImageMetadata im = new ImageMetadata();
 			im.setFilename(o.getKey());
-			im.setLastModified(o.getLastModified());
-                        im.setCreated(o.getLastModified());
+			im.setLastModified(new DateTime(o.getLastModified()));
+                        im.setCreated(new DateTime(o.getLastModified()));
+                        im.setSize(o.getSize());
 			imageMetadataList.add(im);
 		}
 		return imageMetadataList;
@@ -120,21 +122,20 @@ public class ImageServiceImpl implements ImageService {
 	// ROLE_USER:  nope.
         @Override
 	public void add(String filename, BufferedImage img) {
-		try {
-			logger.info("Adding image " + filename);
-			ObjectMetadata om = new ObjectMetadata();
-			om.setContentType("image/jpeg");
+            try {
+                logger.info("Adding image " + filename);
+                ObjectMetadata om = new ObjectMetadata();
+                om.setContentType("image/jpeg");
 
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			ImageIO.write(img, "jpeg", baos);
-			InputStream is = new ByteArrayInputStream(baos.toByteArray());
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                ImageIO.write(img, "jpeg", baos);
+                InputStream is = new ByteArrayInputStream(baos.toByteArray());
 
-			s3Client.putObject(imageBucket, filename, is, om);
+                s3Client.putObject(imageBucket, filename, is, om);
 
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 	}
         
         // ROLE_ADMIN: ok.
@@ -154,8 +155,8 @@ public class ImageServiceImpl implements ImageService {
 	// ROLE_USER:  nope.
         @Override
 	public void delete(String filename) {
-		logger.info("Deleting image " + filename);
-		s3Client.deleteObject(imageBucket, filename);
+            logger.info("Deleting image " + filename);
+            s3Client.deleteObject(imageBucket, filename);
 	}
 
 }

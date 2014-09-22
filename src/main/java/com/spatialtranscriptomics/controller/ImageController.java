@@ -11,6 +11,7 @@ import com.spatialtranscriptomics.exceptions.CustomBadRequestException;
 import com.spatialtranscriptomics.exceptions.CustomNotFoundException;
 import com.spatialtranscriptomics.model.ImageMetadata;
 import com.spatialtranscriptomics.model.JPEGWrapper;
+import com.spatialtranscriptomics.model.LastModifiedDate;
 import com.spatialtranscriptomics.serviceImpl.ImageServiceImpl;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -70,14 +71,14 @@ public class ImageController {
 	// this {id:.+} is a workaround for a spring bug that truncates path
 	// variables containing a dot
 	@Secured({"ROLE_CM","ROLE_USER","ROLE_ADMIN"})
-	@RequestMapping(value = "/lastmodified/{id:.+}", produces = MediaType.IMAGE_JPEG_VALUE, method = RequestMethod.GET)
+	@RequestMapping(value = "/lastmodified/{id:.+}", method = RequestMethod.GET)
 	public @ResponseBody
-	Date getLastModified(@PathVariable String id) {
+	LastModifiedDate getLastModified(@PathVariable String id) {
 		ImageMetadata img = imageService.getImageMetadata(id);
                 if (img == null) {
                     throw new CustomNotFoundException("An image with this name does not exist or you do not have permissions to access it.");
                 }
-		return img.getLastModified();
+                return new LastModifiedDate(img.getLastModified());
 	}
         
         // get compressed image payload
@@ -99,7 +100,7 @@ public class ImageController {
         }
         
         
-        // get compressed image payload
+        // get compressed image payload wrapped in JSON
         // this {id:.+} is a workaround for a spring bug that truncates path
         // variables containing a dot
         @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
@@ -118,12 +119,12 @@ public class ImageController {
         
         
 
-	// add
+	// add decompressed buffered image.
 	@Secured({"ROLE_CM","ROLE_ADMIN"})
 	@RequestMapping(value = "{id:.+}", method = RequestMethod.PUT)
 	public @ResponseBody
 	void add(@PathVariable String id, @RequestBody BufferedImage img) {
-		if(imageService.getImageMetadata(id) != null){
+		if (imageService.getImageMetadata(id) != null){
 			logger.error("Cannot add image: exists "+ id);
 			throw new CustomBadRequestException(
 					"An image with this name exists already. Image names are unique.");
@@ -132,11 +133,11 @@ public class ImageController {
 
 	}
         
-        // add
+        // add compressed jpeg image
 	@Secured({"ROLE_CM","ROLE_ADMIN"})
 	@RequestMapping(value = "/compressedjson", method = RequestMethod.POST)
 	public @ResponseBody
-	void addAsJSON(@RequestBody @Valid JPEGWrapper image, BindingResult result) {
+	String addAsJSON(@RequestBody @Valid JPEGWrapper image, BindingResult result) {
             byte[] img = image.getImage();
             if (image.getFilename() == null || image.getFilename().equals("")
                     || img == null || img.length == 0) {
@@ -149,14 +150,15 @@ public class ImageController {
                 throw new CustomBadRequestException("An image with this name exists already. Image names are unique.");
             }
             imageService.addCompressed(image.getFilename(), img);
+            return "Successfully_added_image_to_bucket";
 	}
 
 	// delete
 	@Secured({"ROLE_CM","ROLE_ADMIN"})
 	@RequestMapping(value = "{id:.+}", method = RequestMethod.DELETE)
 	public @ResponseBody
-	void delete(@PathVariable String id) {
-		imageService.delete(id);
+	void delete(@PathVariable String filename) {
+            imageService.delete(filename);
 	}
 	
 

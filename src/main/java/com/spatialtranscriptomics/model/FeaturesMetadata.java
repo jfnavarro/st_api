@@ -11,16 +11,27 @@ import org.joda.time.DateTime;
 import org.springframework.data.annotation.Transient;
 
 /**
- * This class implements the ImageMetadata object.
+ * This class implements the FeaturesMetadata object.
  *
  */
-public class ImageMetadata implements IImageMetadata {
+public class FeaturesMetadata implements IFeaturesMetadata {
 
+    String datasetId;
     String filename;
     DateTime lastModified;
     DateTime created;
     long size;
 
+    @Override
+    public String getDatasetId() {
+        return this.datasetId;
+    }
+    
+    @Override
+    public void setDatasetId(String id) {
+        this.datasetId = id;
+    }
+    
     @Override
     public String getFilename() {
         return this.filename;

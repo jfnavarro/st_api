@@ -9,11 +9,15 @@ import java.util.Date;
 import org.joda.time.DateTime;
 
 /**
- * This interface defines the ImageMetadata model. Applications that use the API
- * must implement the same model.
+ * This interface defines the FeaturesMetadata model. Applications that use the
+ * API must implement the same model.
  */
-public interface IImageMetadata {
+public interface IFeaturesMetadata {
 
+    public String getDatasetId();
+    
+    public void setDatasetId(String id);
+    
     public String getFilename();
 
     public void setFilename(String filename);
