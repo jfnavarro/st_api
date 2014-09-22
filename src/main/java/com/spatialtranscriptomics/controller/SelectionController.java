@@ -12,6 +12,7 @@ import com.spatialtranscriptomics.exceptions.CustomBadRequestException;
 import com.spatialtranscriptomics.exceptions.CustomNotFoundException;
 import com.spatialtranscriptomics.exceptions.NotFoundResponse;
 import com.spatialtranscriptomics.model.Dataset;
+import com.spatialtranscriptomics.model.LastModifiedDate;
 import com.spatialtranscriptomics.model.MongoUserDetails;
 import com.spatialtranscriptomics.model.Selection;
 import com.spatialtranscriptomics.serviceImpl.DatasetServiceImpl;
@@ -148,12 +149,12 @@ public class SelectionController {
 	@Secured({"ROLE_USER","ROLE_CM","ROLE_ADMIN"})
 	@RequestMapping(value = "/lastmodified/{id}", method = RequestMethod.GET)
 	public @ResponseBody
-	DateTime getLastModified(@PathVariable String id) {
+	LastModifiedDate getLastModified(@PathVariable String id) {
 		Selection selection = selectionService.find(id);
 		if (selection == null) {
                     throw new CustomNotFoundException("A selection with this ID does not exist or you dont have permissions to access it.");
 		}
-		return selection.getLast_modified();
+                return new LastModifiedDate(selection.getLast_modified());
 	}
 
 	// add

@@ -3,13 +3,13 @@
  * Read LICENSE for more information about licensing terms
  * Contact: Jose Fernandez Navarro <jose.fernandez.navarro@scilifelab.se>
  */
-
 package com.spatialtranscriptomics.controller;
 
 import com.spatialtranscriptomics.exceptions.BadRequestResponse;
 import com.spatialtranscriptomics.exceptions.CustomBadRequestException;
 import com.spatialtranscriptomics.exceptions.CustomNotFoundException;
 import com.spatialtranscriptomics.exceptions.NotFoundResponse;
+import com.spatialtranscriptomics.model.LastModifiedDate;
 import com.spatialtranscriptomics.model.PipelineExperiment;
 import com.spatialtranscriptomics.serviceImpl.PipelineExperimentServiceImpl;
 import com.spatialtranscriptomics.serviceImpl.PipelineStatsServiceImpl;
@@ -34,141 +34,142 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
- * This class is Spring MVC controller class for the API endpoint "rest/pipelineexperiment". It implements the methods available at this endpoint.
+ * This class is Spring MVC controller class for the API endpoint
+ * "rest/pipelineexperiment". It implements the methods available at this
+ * endpoint.
  */
-
 @Repository
 @Controller
 @RequestMapping("/rest/pipelineexperiment")
 public class PipelineExperimentController {
 
-	@SuppressWarnings("unused")
-	private static final Logger logger = Logger.getLogger(PipelineExperimentController.class);
+    @SuppressWarnings("unused")
+    private static final Logger logger = Logger.getLogger(PipelineExperimentController.class);
 
-	@Autowired
-	PipelineExperimentServiceImpl pipelineexperimentService;
-        
-        @Autowired
-	PipelineStatsServiceImpl pipelinestatsService;
-        
-        @Autowired
-	S3ServiceImpl s3Service;
+    @Autowired
+    PipelineExperimentServiceImpl pipelineexperimentService;
 
-	// list / list for account
-	@Secured({"ROLE_CM","ROLE_ADMIN"})
-	@RequestMapping(method = RequestMethod.GET)
-	public @ResponseBody
-	List<PipelineExperiment> list(@RequestParam(value = "account", required = false) String accountId) {
-		List<PipelineExperiment> pipelineexperiments;
-		if (accountId != null) {
-			pipelineexperiments = pipelineexperimentService.findByAccount(accountId);
-		} else {
-			pipelineexperiments = pipelineexperimentService.list();
-		}
-		if (pipelineexperiments == null) {
-			throw new CustomNotFoundException(
-					"No PipelineExperiment found or you don't have permissions to access them.");
-		}
-		return pipelineexperiments;
-	}
+    @Autowired
+    PipelineStatsServiceImpl pipelinestatsService;
 
-	// get
-	@Secured({"ROLE_CM","ROLE_ADMIN"})
-	@RequestMapping(value = "{id}", method = RequestMethod.GET)
-	public @ResponseBody
-	PipelineExperiment get(@PathVariable String id) {
-		PipelineExperiment pipelineexperiment = pipelineexperimentService.find(id);
-		if (pipelineexperiment == null) {
-			throw new CustomNotFoundException(
-					"A PipelineExperiment with this ID does not exist or you dont have permissions to access it.");
-		}
-		return pipelineexperiment;
-	}
-        
-        // get last modified
-	@Secured({"ROLE_CM","ROLE_ADMIN"})
-	@RequestMapping(value = "/lastmodified/{id}", method = RequestMethod.GET)
-	public @ResponseBody
-	DateTime getLastModified(@PathVariable String id) {
-		PipelineExperiment pipelineexperiment = pipelineexperimentService.find(id);
-		if (pipelineexperiment == null) {
-			throw new CustomNotFoundException(
-					"A PipelineExperiment with this ID does not exist or you dont have permissions to access it.");
-		}
-		return pipelineexperiment.getLast_modified();
-	}
+    @Autowired
+    S3ServiceImpl s3Service;
 
-	// add
-	@Secured({"ROLE_CM","ROLE_ADMIN"})
-	@RequestMapping(method = RequestMethod.POST)
-	public @ResponseBody
-	PipelineExperiment add(@RequestBody @Valid PipelineExperiment pipelineexperiment, BindingResult result) {
+    // list / list for account
+    @Secured({"ROLE_CM", "ROLE_ADMIN"})
+    @RequestMapping(method = RequestMethod.GET)
+    public @ResponseBody
+    List<PipelineExperiment> list(@RequestParam(value = "account", required = false) String accountId) {
+        List<PipelineExperiment> pipelineexperiments;
+        if (accountId != null) {
+            pipelineexperiments = pipelineexperimentService.findByAccount(accountId);
+        } else {
+            pipelineexperiments = pipelineexperimentService.list();
+        }
+        if (pipelineexperiments == null) {
+            throw new CustomNotFoundException(
+                    "No PipelineExperiment found or you don't have permissions to access them.");
+        }
+        return pipelineexperiments;
+    }
 
-		// PipelineExperiment validation
-		if (result.hasErrors()) {
-			// TODO send error messages here
-			throw new CustomBadRequestException(
-					"PipelineExperiment is invalid. Missing required fields?");
-		}
-		if (pipelineexperiment.getId() != null) {
-			throw new CustomBadRequestException(
-					"The PipelineExperiment you want to add must not have an ID. The ID will be autogenerated.");
-		}
-		if (pipelineexperimentService.findByName(pipelineexperiment.getName()) != null) {
-			throw new CustomBadRequestException(
-					"An PipelineExperiment with this name already exists. PipelineExperiment names are unique.");
-		}
-		return pipelineexperimentService.add(pipelineexperiment);
-	}
+    // get
+    @Secured({"ROLE_CM", "ROLE_ADMIN"})
+    @RequestMapping(value = "{id}", method = RequestMethod.GET)
+    public @ResponseBody
+    PipelineExperiment get(@PathVariable String id) {
+        PipelineExperiment pipelineexperiment = pipelineexperimentService.find(id);
+        if (pipelineexperiment == null) {
+            throw new CustomNotFoundException(
+                    "A PipelineExperiment with this ID does not exist or you dont have permissions to access it.");
+        }
+        return pipelineexperiment;
+    }
 
-	// update
-	@Secured({"ROLE_CM","ROLE_ADMIN"})
-	@RequestMapping(value = "{id}", method = RequestMethod.PUT)
-	public @ResponseBody
-	void update(@PathVariable String id, @RequestBody @Valid PipelineExperiment pipelineexperiment,
-			BindingResult result) {
-		// PipelineExperiment validation
-		if (result.hasErrors()) {
-			// TODO send error messages here
-			throw new CustomBadRequestException(
-					"PipelineExperiment is invalid. Missing required fields?");
-		}
-		if (!id.equals(pipelineexperiment.getId())) {
-			throw new CustomBadRequestException(
-					"PipelineExperiment ID in request URL does not match ID in content body.");
-		} else if (pipelineexperimentService.find(id) == null) {
-			throw new CustomBadRequestException(
-					"A PipelineExperiment with this ID does not exist or you don't have permissions to access it.");
-		} else {
-			pipelineexperimentService.update(pipelineexperiment);
-		}
-	}
+    // get last modified
+    @Secured({"ROLE_CM", "ROLE_ADMIN"})
+    @RequestMapping(value = "/lastmodified/{id}", method = RequestMethod.GET)
+    public @ResponseBody
+    LastModifiedDate getLastModified(@PathVariable String id) {
+        PipelineExperiment pipelineexperiment = pipelineexperimentService.find(id);
+        if (pipelineexperiment == null) {
+            throw new CustomNotFoundException(
+                    "A PipelineExperiment with this ID does not exist or you dont have permissions to access it.");
+        }
+        return new LastModifiedDate(pipelineexperiment.getLast_modified());
+    }
 
-	// delete
-	@Secured({"ROLE_CM","ROLE_ADMIN"})
-	@RequestMapping(value = "{id}", method = RequestMethod.DELETE)
-	public @ResponseBody
-	void delete(@PathVariable String id) {
-            if (!pipelineexperimentService.deleteIsOK(id)) {
-                throw new CustomBadRequestException("You do not have permission to delete this experiment.");
-            }
-            s3Service.deleteExperimentData(id);
-            pipelineexperimentService.delete(id);
-            pipelinestatsService.deleteForExperiment(id);
-	}
+    // add
+    @Secured({"ROLE_CM", "ROLE_ADMIN"})
+    @RequestMapping(method = RequestMethod.POST)
+    public @ResponseBody
+    PipelineExperiment add(@RequestBody @Valid PipelineExperiment pipelineexperiment, BindingResult result) {
 
-	@ExceptionHandler(CustomNotFoundException.class)
-	@ResponseStatus(value = HttpStatus.NOT_FOUND)
-	public @ResponseBody
-	NotFoundResponse handleNotFoundException(CustomNotFoundException ex) {
-		return new NotFoundResponse(ex.getMessage());
-	}
+        // PipelineExperiment validation
+        if (result.hasErrors()) {
+            // TODO send error messages here
+            throw new CustomBadRequestException(
+                    "PipelineExperiment is invalid. Missing required fields?");
+        }
+        if (pipelineexperiment.getId() != null) {
+            throw new CustomBadRequestException(
+                    "The PipelineExperiment you want to add must not have an ID. The ID will be autogenerated.");
+        }
+        if (pipelineexperimentService.findByName(pipelineexperiment.getName()) != null) {
+            throw new CustomBadRequestException(
+                    "An PipelineExperiment with this name already exists. PipelineExperiment names are unique.");
+        }
+        return pipelineexperimentService.add(pipelineexperiment);
+    }
 
-	@ExceptionHandler(CustomBadRequestException.class)
-	@ResponseStatus(value = HttpStatus.BAD_REQUEST)
-	public @ResponseBody
-	BadRequestResponse handleNotFoundException(CustomBadRequestException ex) {
-		return new BadRequestResponse(ex.getMessage());
-	}
+    // update
+    @Secured({"ROLE_CM", "ROLE_ADMIN"})
+    @RequestMapping(value = "{id}", method = RequestMethod.PUT)
+    public @ResponseBody
+    void update(@PathVariable String id, @RequestBody @Valid PipelineExperiment pipelineexperiment,
+            BindingResult result) {
+        // PipelineExperiment validation
+        if (result.hasErrors()) {
+            // TODO send error messages here
+            throw new CustomBadRequestException(
+                    "PipelineExperiment is invalid. Missing required fields?");
+        }
+        if (!id.equals(pipelineexperiment.getId())) {
+            throw new CustomBadRequestException(
+                    "PipelineExperiment ID in request URL does not match ID in content body.");
+        } else if (pipelineexperimentService.find(id) == null) {
+            throw new CustomBadRequestException(
+                    "A PipelineExperiment with this ID does not exist or you don't have permissions to access it.");
+        } else {
+            pipelineexperimentService.update(pipelineexperiment);
+        }
+    }
+
+    // delete
+    @Secured({"ROLE_CM", "ROLE_ADMIN"})
+    @RequestMapping(value = "{id}", method = RequestMethod.DELETE)
+    public @ResponseBody
+    void delete(@PathVariable String id) {
+        if (!pipelineexperimentService.deleteIsOK(id)) {
+            throw new CustomBadRequestException("You do not have permission to delete this experiment.");
+        }
+        s3Service.deleteExperimentData(id);
+        pipelineexperimentService.delete(id);
+        pipelinestatsService.deleteForExperiment(id);
+    }
+
+    @ExceptionHandler(CustomNotFoundException.class)
+    @ResponseStatus(value = HttpStatus.NOT_FOUND)
+    public @ResponseBody
+    NotFoundResponse handleNotFoundException(CustomNotFoundException ex) {
+        return new NotFoundResponse(ex.getMessage());
+    }
+
+    @ExceptionHandler(CustomBadRequestException.class)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    public @ResponseBody
+    BadRequestResponse handleNotFoundException(CustomBadRequestException ex) {
+        return new BadRequestResponse(ex.getMessage());
+    }
 
 }

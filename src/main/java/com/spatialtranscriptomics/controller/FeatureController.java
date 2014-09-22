@@ -1,214 +1,152 @@
-/*
- * Copyright (C) 2012 Spatial Transcriptomics AB
- * Read LICENSE for more information about licensing terms
- * Contact: Jose Fernandez Navarro <jose.fernandez.navarro@scilifelab.se>
- */
-
-package com.spatialtranscriptomics.controller;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.access.annotation.Secured;
-import org.springframework.stereotype.Controller;
-import org.springframework.stereotype.Repository;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
-
-import com.spatialtranscriptomics.exceptions.BadRequestResponse;
-import com.spatialtranscriptomics.exceptions.CustomBadRequestException;
-import com.spatialtranscriptomics.exceptions.CustomNotFoundException;
-import com.spatialtranscriptomics.model.Dataset;
-import com.spatialtranscriptomics.model.Feature;
-import com.spatialtranscriptomics.serviceImpl.DatasetServiceImpl;
-import com.spatialtranscriptomics.serviceImpl.FeatureServiceImpl;
-
-
-/**
- * This class is Spring MVC controller class for the API endpoint "rest/feature". It implements the methods available at this endpoint.
- */
-
-@Repository
-@Controller
-@RequestMapping("/rest/feature")
-public class FeatureController {
-
-	@SuppressWarnings("unused")
-	private static final Logger logger = Logger
-			.getLogger(FeatureController.class);
-
-	@Autowired
-	FeatureServiceImpl featureService;
-	
-	@Autowired
-	DatasetServiceImpl datasetService;
-
-	// list, filtered by name (required), gene(optional)
-	@Secured({"ROLE_CM","ROLE_USER","ROLE_ADMIN"})
-	@RequestMapping(method = RequestMethod.GET)
-	public @ResponseBody
-	List<Feature> list(
-			@RequestParam(value = "dataset", required = false) String datasetId,
-			@RequestParam(value = "gene", required = false) String gene,
-			@RequestParam(value = "annotation", required = false) String annotation
-			)
-//			@RequestParam(value = "selection", required = false) String selectionId
+///*
+// * Copyright (C) 2012 Spatial Transcriptomics AB
+// * Read LICENSE for more information about licensing terms
+// * Contact: Jose Fernandez Navarro <jose.fernandez.navarro@scilifelab.se>
+// */
+//
+//package com.spatialtranscriptomics.controller;
+//
+//import java.util.ArrayList;
+//import java.util.Collections;
+//import java.util.HashMap;
+//import java.util.HashSet;
+//import java.util.List;
+//
+//import org.apache.log4j.Logger;
+//import org.springframework.beans.factory.annotation.Autowired;
+//import org.springframework.http.HttpStatus;
+//import org.springframework.security.access.annotation.Secured;
+//import org.springframework.stereotype.Controller;
+//import org.springframework.stereotype.Repository;
+//import org.springframework.web.bind.annotation.ExceptionHandler;
+//import org.springframework.web.bind.annotation.RequestBody;
+//import org.springframework.web.bind.annotation.RequestMapping;
+//import org.springframework.web.bind.annotation.RequestMethod;
+//import org.springframework.web.bind.annotation.RequestParam;
+//import org.springframework.web.bind.annotation.ResponseBody;
+//import org.springframework.web.bind.annotation.ResponseStatus;
+//
+//import com.spatialtranscriptomics.exceptions.BadRequestResponse;
+//import com.spatialtranscriptomics.exceptions.CustomBadRequestException;
+//import com.spatialtranscriptomics.exceptions.CustomNotFoundException;
+//import com.spatialtranscriptomics.model.Dataset;
+//import com.spatialtranscriptomics.model.Feature;
+//import com.spatialtranscriptomics.serviceImpl.DatasetServiceImpl;
+//import com.spatialtranscriptomics.serviceImpl.FeatureServiceImpl;
+//
+//
+///**
+// * This class is Spring MVC controller class for the API endpoint "rest/feature". It implements the methods available at this endpoint.
+// */
+//
+//@Repository
+//@Controller
+//@RequestMapping("/rest/feature")
+//public class FeatureController {
+//
+//	@SuppressWarnings("unused")
+//	private static final Logger logger = Logger
+//			.getLogger(FeatureController.class);
+//
+//	@Autowired
+//	FeatureServiceImpl featureService;
+//	
+//	@Autowired
+//	DatasetServiceImpl datasetService;
+//
+//	// list, filtered by name (required), gene(optional)
+//	@Secured({"ROLE_CM","ROLE_USER","ROLE_ADMIN"})
+//	@RequestMapping(method = RequestMethod.GET)
+//	public @ResponseBody
+//	List<Feature> list(
+//			@RequestParam(value = "dataset", required = false) String datasetId,
+//			@RequestParam(value = "gene", required = false) String gene,
+//			@RequestParam(value = "annotation", required = false) String annotation
 //			)
-//			@RequestParam(value = "x1", required = false) Integer x1,
-//			@RequestParam(value = "y1", required = false) Integer y1,
-//			@RequestParam(value = "x2", required = false) Integer x2,
-//			@RequestParam(value = "y2", required = false) Integer y2)
-	{
-		/*if (selectionId != null) {
-			return featureService.findBySelectionId(selectionId);
-		} else*/
-		if (datasetId == null) {
-			throw new CustomBadRequestException("Need to specify either dataset or selection to acquire features.");
-		}
-		
-		if (annotation != null) {
-			return featureService.findByAnnotation(datasetId, annotation);
-		} else if (gene != null) {
-			return featureService.findByGene(datasetId, gene);
-		}
-//		else if ((x1 != null) || (x2 != null) || (y1 != null) || (y2 != null)) {
-//			List<Integer> coords = Arrays.asList(x1, y1, x2, y2);
-//			if (coords.contains(null)) {
-//				throw new CustomBadRequestException("One or more coordinates missing.");
-//			}
-//			return featureService.findBy2DCoords(datasetId, x1, y1, x2, y2);
+////			@RequestParam(value = "selection", required = false) String selectionId
+////			)
+////			@RequestParam(value = "x1", required = false) Integer x1,
+////			@RequestParam(value = "y1", required = false) Integer y1,
+////			@RequestParam(value = "x2", required = false) Integer x2,
+////			@RequestParam(value = "y2", required = false) Integer y2)
+//	{
+//		/*if (selectionId != null) {
+//			return featureService.findBySelectionId(selectionId);
+//		} else*/
+//		if (datasetId == null) {
+//			throw new CustomBadRequestException("Need to specify either dataset or selection to acquire features.");
 //		}
-		else {
-			return featureService.findByDatasetId(datasetId);
-		}
-	}
-	
-
-	// add all
-	@Secured({"ROLE_CM","ROLE_ADMIN"})
-	@RequestMapping(method = RequestMethod.POST)
-	public @ResponseBody
-	List<Feature> addAll(@RequestBody List<Feature> features,
-			@RequestParam(value = "dataset", required = true) String datasetId,
-                        @RequestParam(value = "nostats", required = false) String nostats) {
-		for (Feature f : features) {
-			if (f.getId() != null) {
-				throw new CustomNotFoundException(
-						"The features you want to add must not have IDs. The IDs will be autogenerated.");
-			}
-		}
-                List<Feature> feats = featureService.addAll(features, datasetId);
-                if (nostats == null || nostats.equals("") || nostats.equalsIgnoreCase("false")) {
-                    // Update stats.
-                    long cnt = featureService.countByDatasetId(datasetId);
-                    //System.out.println("Getting " + cnt + "features");
-                    //List<Feature> allfeats = featureService.findByDatasetId(datasetId);
-                    //System.out.println("Got " + allfeats.size() + " features");
-                    //overall_feature_count, overall_hit_count, unique_gene_count, unique_barcode_count
-                    double[] overall_hit_quartiles = new double[5];
-                    double[] gene_pooled_hit_quartiles = new double[5];
-                    int[] stats = computeStats(/*allfeats*/ feats, overall_hit_quartiles, gene_pooled_hit_quartiles);
-                    Dataset ds = datasetService.find(datasetId);
-                    ds.setOverall_feature_count(stats[0]);
-                    ds.setOverall_hit_count(stats[1]);
-                    ds.setUnique_gene_count(stats[2]);
-                    ds.setUnique_barcode_count(stats[3]);
-                    ds.setOverall_hit_quartiles(overall_hit_quartiles);
-                    ds.setGene_pooled_hit_quartiles(gene_pooled_hit_quartiles);
-                    datasetService.update(ds);
-                }
-		return feats;
-	}
-
-	// delete all
-	@Secured({"ROLE_CM","ROLE_ADMIN"})
-	@RequestMapping(method = RequestMethod.DELETE)
-	public @ResponseBody
-	void deleteAll(
-			@RequestParam(value = "dataset", required = true) String datasetId) {
-		featureService.deleteAll(datasetId);
-	}
-
-	@ExceptionHandler(CustomBadRequestException.class)
-	@ResponseStatus(value = HttpStatus.BAD_REQUEST)
-	public @ResponseBody
-	BadRequestResponse handleNotFoundException(CustomBadRequestException ex) {
-		return new BadRequestResponse(ex.getMessage());
-	}
-
-	/**
-         * Helper. Computes feature stats.
-         * @param features
-         * @param overall_hit_quartiles
-         * @param gene_pooled_hit_quartiles
-         * @return [overall_feature_count, overall_hit_count, unique_gene_count, unique_barcode_count]
-         */
-	private int[] computeStats(List<Feature> features, double[] overall_hit_quartiles, double[] gene_pooled_hit_quartiles) {	
-		int n = features.size();
-		int sum = 0;
-		List<Integer> hits = new ArrayList<Integer>(n);
-		HashMap<String, Integer> pooledHits = new HashMap<String, Integer>(n);
-		HashSet<String> pooledBarcodes = new HashSet<String>(n);
-		for (Feature f : features) {
-			String gene = f.getGene().toUpperCase();
-			String barcode = f.getBarcode().toUpperCase();
-			int h = f.getHits();
-			sum += h;
-			hits.add(h);
-			if (pooledHits.containsKey(gene)) {
-				pooledHits.put(gene, pooledHits.get(gene) + h);
-			} else {
-				pooledHits.put(gene, h);
-			}
-			pooledBarcodes.add(barcode);
-		}
-		Collections.sort(hits);
-		ArrayList<Integer> poolHits = new ArrayList<Integer>(pooledHits.values());
-		Collections.sort(poolHits);
-		
-		computeQuartiles(hits, overall_hit_quartiles);
-		computeQuartiles(poolHits, gene_pooled_hit_quartiles);
-		
-		// overall_feature_count, overall_hit_count, unique_gene_count, unique_barcode_count
-		return new int[] { n, sum, poolHits.size(), pooledBarcodes.size() };		
-	}
-	
-	/**
-         * Helper. Computes quartiles of a sorted list.
-         * @param hits the sorted hit counts.
-         * @param q the quartiles to be computed.
-         */	
-	private void computeQuartiles(List<Integer> hits, double[] q) {
-		int n = hits.size();
-		if (n == 1) {
-			double val = hits.get(0);
-			q[0] = val;
-			q[1] = val;
-			q[2] = val;
-			q[3] = val;
-			q[4] = val;
-		}
-		// Linear interpolation for intermediate values, exact at endpoints.
-		q[0] = hits.get(0);
-		q[4] = hits.get(n - 1);
-		double[] idx = new double[] { 0.25*n - 0.25,  0.5*n - 0.5,  0.75*n - 0.75 };
-		for (int i = 0; i < 3; ++i) {
-			int floor = (int) (Math.floor(idx[i]));
-			int ceil = (int) (Math.ceil(idx[i]));
-			double delta = idx[i] - floor;
-			q[i + 1] = hits.get(floor) * (1.0 - delta) + hits.get(ceil) * delta;  // No prob if ceil==floor...
-		}
-	}
-	
-}
+//		
+//		if (annotation != null) {
+//			return featureService.findByAnnotation(datasetId, annotation);
+//		} else if (gene != null) {
+//			return featureService.findByGene(datasetId, gene);
+//		}
+////		else if ((x1 != null) || (x2 != null) || (y1 != null) || (y2 != null)) {
+////			List<Integer> coords = Arrays.asList(x1, y1, x2, y2);
+////			if (coords.contains(null)) {
+////				throw new CustomBadRequestException("One or more coordinates missing.");
+////			}
+////			return featureService.findBy2DCoords(datasetId, x1, y1, x2, y2);
+////		}
+//		else {
+//			return featureService.findByDatasetId(datasetId);
+//		}
+//	}
+//	
+//
+//	// add all
+//	@Secured({"ROLE_CM","ROLE_ADMIN"})
+//	@RequestMapping(method = RequestMethod.POST)
+//	public @ResponseBody
+//	List<Feature> addAll(@RequestBody List<Feature> features,
+//			@RequestParam(value = "dataset", required = true) String datasetId,
+//                        @RequestParam(value = "nostats", required = false) String nostats) {
+//		for (Feature f : features) {
+//			if (f.getId() != null) {
+//				throw new CustomNotFoundException(
+//						"The features you want to add must not have IDs. The IDs will be autogenerated.");
+//			}
+//		}
+//                List<Feature> feats = featureService.addAll(features, datasetId);
+//                if (nostats == null || nostats.equals("") || nostats.equalsIgnoreCase("false")) {
+//                    // Update stats.
+//                    long cnt = featureService.countByDatasetId(datasetId);
+//                    //System.out.println("Getting " + cnt + "features");
+//                    //List<Feature> allfeats = featureService.findByDatasetId(datasetId);
+//                    //System.out.println("Got " + allfeats.size() + " features");
+//                    //overall_feature_count, overall_hit_count, unique_gene_count, unique_barcode_count
+//                    double[] overall_hit_quartiles = new double[5];
+//                    double[] gene_pooled_hit_quartiles = new double[5];
+//                    int[] stats = computeStats(/*allfeats*/ feats, overall_hit_quartiles, gene_pooled_hit_quartiles);
+//                    Dataset ds = datasetService.find(datasetId);
+//                    ds.setOverall_feature_count(stats[0]);
+//                    ds.setOverall_hit_count(stats[1]);
+//                    ds.setUnique_gene_count(stats[2]);
+//                    ds.setUnique_barcode_count(stats[3]);
+//                    ds.setOverall_hit_quartiles(overall_hit_quartiles);
+//                    ds.setGene_pooled_hit_quartiles(gene_pooled_hit_quartiles);
+//                    datasetService.update(ds);
+//                }
+//		return feats;
+//	}
+//
+//	// delete all
+//	@Secured({"ROLE_CM","ROLE_ADMIN"})
+//	@RequestMapping(method = RequestMethod.DELETE)
+//	public @ResponseBody
+//	void deleteAll(
+//			@RequestParam(value = "dataset", required = true) String datasetId) {
+//		featureService.deleteAll(datasetId);
+//	}
+//
+//	@ExceptionHandler(CustomBadRequestException.class)
+//	@ResponseStatus(value = HttpStatus.BAD_REQUEST)
+//	public @ResponseBody
+//	BadRequestResponse handleNotFoundException(CustomBadRequestException ex) {
+//		return new BadRequestResponse(ex.getMessage());
+//	}
+//
+//	
+//	
+//}

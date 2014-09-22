@@ -10,6 +10,7 @@ import com.spatialtranscriptomics.exceptions.BadRequestResponse;
 import com.spatialtranscriptomics.exceptions.CustomBadRequestException;
 import com.spatialtranscriptomics.exceptions.CustomNotFoundException;
 import com.spatialtranscriptomics.exceptions.NotFoundResponse;
+import com.spatialtranscriptomics.model.LastModifiedDate;
 import com.spatialtranscriptomics.model.Task;
 import com.spatialtranscriptomics.serviceImpl.TaskServiceImpl;
 import java.util.List;
@@ -80,12 +81,12 @@ public class TaskController {
 	@Secured({"ROLE_CM","ROLE_ADMIN"})
 	@RequestMapping(value = "/lastmodified/{id}", method = RequestMethod.GET)
 	public @ResponseBody
-	DateTime getLastModified(@PathVariable String id) {
+	LastModifiedDate getLastModified(@PathVariable String id) {
 		Task task = taskService.find(id);
 		if (task == null) {
 			throw new CustomNotFoundException("A task with this ID does not exist or you dont have permissions to access it.");
 		}
-		return task.getLast_modified();
+                return new LastModifiedDate(task.getLast_modified());
 	}
 
 	// add

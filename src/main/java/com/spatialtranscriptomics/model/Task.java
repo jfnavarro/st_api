@@ -3,7 +3,6 @@
  * Read LICENSE for more information about licensing terms
  * Contact: Jose Fernandez Navarro <jose.fernandez.navarro@scilifelab.se>
  */
-
 package com.spatialtranscriptomics.model;
 
 import java.util.Date;
@@ -18,123 +17,145 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.format.annotation.DateTimeFormat;
 
 /**
- * This interface defines the Task model. Applications that use the API must implement the same model.
+ * This interface defines the Task model. Applications that use the API must
+ * implement the same model.
  */
-@Document(collection="task")
+@Document(collection = "task")
 public class Task implements ITask {
 
-	@Id
-	String id;
-	
-	@Indexed(unique = true)
-	@NotBlank(message = "Name must not be blank.")
-	String name;
-	
-	@Indexed(unique = false)
-	@NotBlank(message = "Account must not be blank.")
-	String account_id;
-	
-	String status;
-	
-	@DateTimeFormat
-	Date start;
-	
-	@DateTimeFormat
-	Date end;
-	
-	String[] selection_ids;
-	
-	String parameters;
-	
-	String result_file;
+    @Id
+    String id;
 
-        @CreatedDate
-	private DateTime created_at;
-	
-        @LastModifiedDate
-        private DateTime last_modified;
-        
-	public String getId() {
-		return id;
-	}
+    @Indexed(unique = true)
+    @NotBlank(message = "Name must not be blank.")
+    String name;
 
-	public void setId(String id) {
-		this.id = id;
-	}
+    @Indexed(unique = false)
+    @NotBlank(message = "Account must not be blank.")
+    String account_id;
 
-	public String getName() {
-		return name;
-	}
+    String status;
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    @DateTimeFormat
+    Date start;
 
-	public String getStatus() {
-		return status;
-	}
+    @DateTimeFormat
+    Date end;
 
-	public void setStatus(String status) {
-		this.status = status;
-	}
+    String[] selection_ids;
 
-	public Date getStart() {
-		return start;
-	}
+    String parameters;
 
-	public void setStart(Date start) {
-		this.start = start;
-	}
+    String result_file;
 
-	public Date getEnd() {
-		return end;
-	}
+    @CreatedDate
+    private DateTime created_at;
 
-	public void setEnd(Date end) {
-		this.end = end;
-	}
+    @LastModifiedDate
+    private DateTime last_modified;
 
-	public String[] getSelection_ids() {
-		return selection_ids;
-	}
+    @Override
+    public String getId() {
+        return id;
+    }
 
-	public void setSelection_ids(String[] selection_ids) {
-		this.selection_ids = selection_ids;
-	}
+    @Override
+    public void setId(String id) {
+        this.id = id;
+    }
 
-	public String getAccount_id() {
-		return account_id;
-	}
+    @Override
+    public String getName() {
+        return name;
+    }
 
-	public void setAccount_id(String account_id) {
-		this.account_id = account_id;
-	}
+    @Override
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public String getParameters() {
-		return parameters;
-	}
+    @Override
+    public String getStatus() {
+        return status;
+    }
 
-	public void setParameters(String parameters) {
-		this.parameters = parameters;
-	}
+    @Override
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
-	public String getResult_file() {
-		return result_file;
-	}
+    @Override
+    public Date getStart() {
+        return start;
+    }
 
-	public void setResult_file(String file) {
-		this.result_file = file;
-	}	
-	
-        public DateTime getCreated_at() {
-		return created_at;
-	}
-	
-	public void setCreated_at(DateTime created) {
-		this.created_at = created;
-	}
+    @Override
+    public void setStart(Date start) {
+        this.start = start;
+    }
 
-	public DateTime getLast_modified() {
-		return last_modified;
-	}
+    @Override
+    public Date getEnd() {
+        return end;
+    }
+
+    @Override
+    public void setEnd(Date end) {
+        this.end = end;
+    }
+
+    @Override
+    public String[] getSelection_ids() {
+        return selection_ids;
+    }
+
+    @Override
+    public void setSelection_ids(String[] selection_ids) {
+        this.selection_ids = selection_ids;
+    }
+
+    @Override
+    public String getAccount_id() {
+        return account_id;
+    }
+
+    @Override
+    public void setAccount_id(String account_id) {
+        this.account_id = account_id;
+    }
+
+    @Override
+    public String getParameters() {
+        return parameters;
+    }
+
+    @Override
+    public void setParameters(String parameters) {
+        this.parameters = parameters;
+    }
+
+    @Override
+    public String getResult_file() {
+        return result_file;
+    }
+
+    @Override
+    public void setResult_file(String file) {
+        this.result_file = file;
+    }
+
+    @Override
+    public DateTime getCreated_at() {
+        return created_at;
+    }
+
+    @Override
+    public void setCreated_at(DateTime created) {
+        this.created_at = created;
+    }
+
+    @Override
+    public DateTime getLast_modified() {
+        return last_modified;
+    }
 }
