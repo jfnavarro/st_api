@@ -11,7 +11,7 @@ import com.spatialtranscriptomics.exceptions.CustomBadRequestException;
 import com.spatialtranscriptomics.exceptions.CustomNotFoundException;
 import com.spatialtranscriptomics.model.DatasetInfo;
 import com.spatialtranscriptomics.model.FeaturesMetadata;
-import com.spatialtranscriptomics.model.FeaturesWrapper;
+import com.spatialtranscriptomics.model.S3Resource;
 import com.spatialtranscriptomics.model.LastModifiedDate;
 import com.spatialtranscriptomics.model.MongoUserDetails;
 import com.spatialtranscriptomics.serviceImpl.FeaturesServiceImpl;
@@ -79,13 +79,13 @@ public class FeaturesController {
     @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
     @RequestMapping(value = "{id}", method = RequestMethod.GET, produces = "application/json")
     public @ResponseBody
-    FeaturesWrapper get(@PathVariable String id) {
+    S3Resource get(@PathVariable String id) {
         try {
             System.out.println("In GET");
             InputStream is = featuresService.find(id);
             byte[] bytes = IOUtils.toByteArray(is);
             System.out.println("Fetched " + bytes.length);
-            FeaturesWrapper wrap = new FeaturesWrapper(id, bytes);
+            S3Resource wrap = new S3Resource("application/json", "gzip", id, bytes);
             return wrap;
         } catch (IOException ex) {
             logger.info("Error writing file to output stream with file " + id);
@@ -97,7 +97,7 @@ public class FeaturesController {
     @Secured({"ROLE_CM", "ROLE_ADMIN"})
     @RequestMapping(value = "{id}", method=RequestMethod.PUT)
     public @ResponseBody
-    void addOrUpdate(@PathVariable String id, @RequestBody FeaturesWrapper feats){
+    void addOrUpdate(@PathVariable String id, @RequestBody S3Resource feats){
         System.out.println("Inside addUpdate()");
         byte[] bytes = feats.getFile();
         if (id != null && bytes != null && bytes.length != 0) {
