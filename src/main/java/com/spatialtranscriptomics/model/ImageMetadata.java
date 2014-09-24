@@ -5,10 +5,7 @@
  */
 package com.spatialtranscriptomics.model;
 
-import com.spatialtranscriptomics.util.SpatialStringUtils;
-import java.util.Date;
 import org.joda.time.DateTime;
-import org.springframework.data.annotation.Transient;
 
 /**
  * This class implements the ImageMetadata object.
@@ -16,11 +13,22 @@ import org.springframework.data.annotation.Transient;
  */
 public class ImageMetadata implements IImageMetadata {
 
+    String imageType;
     String filename;
     DateTime lastModified;
     DateTime created;
     long size;
 
+    @Override
+    public String getImageType() {
+        return this.imageType;
+    }
+
+    @Override
+    public void setImageType(String imageType) {
+        this.imageType = imageType;
+    }
+    
     @Override
     public String getFilename() {
         return this.filename;

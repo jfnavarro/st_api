@@ -14,6 +14,10 @@ import org.joda.time.DateTime;
  */
 public interface IImageMetadata {
 
+    public String getImageType();
+
+    public void setImageType(String filename);
+    
     public String getFilename();
 
     public void setFilename(String filename);

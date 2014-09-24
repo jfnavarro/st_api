@@ -80,7 +80,7 @@ public class FeaturesServiceImpl implements IFeaturesService {
                     FeaturesMetadata fm = new FeaturesMetadata();
                     String fn = o.getKey();
                     fm.setFilename(fn);
-                    fm.setDatasetId(fn.substring(0, fn.length()-5)); // Remove .gzip
+                    fm.setDatasetId(fn.substring(0, fn.length()-3)); // Remove .gz
                     fm.setLastModified(new DateTime(o.getLastModified()));
                     fm.setCreated(new DateTime(o.getLastModified()));
                     fm.setSize(o.getSize());
@@ -112,7 +112,7 @@ public class FeaturesServiceImpl implements IFeaturesService {
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
         if (currentUser.isContentManager() || currentUser.isAdmin() || datasetIsGranted(id, currentUser)) {
             try {
-                String filename = id + ".gzip";
+                String filename = id + ".gz";
                 System.out.println("Attempting to fetch " + filename);
                 S3ObjectInputStream in = s3Client.getObject(featuresBucket, filename).getObjectContent();
                 System.out.println("Succeded in fetching " + filename);
@@ -139,7 +139,7 @@ public class FeaturesServiceImpl implements IFeaturesService {
         om.setContentEncoding("gzip");
         InputStream is = new ByteArrayInputStream(file);
         
-        String filename = id + ".gzip";
+        String filename = id + ".gz";
         boolean exists = (getMetadata(id) != null);
         if (exists) {
             System.out.println("Updating features for dataset " + id);
@@ -160,7 +160,7 @@ public class FeaturesServiceImpl implements IFeaturesService {
     @Override
     public void delete(String id) {
             logger.info("Deleting features for dataset " + id);
-            String filename = id + ".gzip";
+            String filename = id + ".gz";
             s3Client.deleteObject(featuresBucket, filename);
     }
     

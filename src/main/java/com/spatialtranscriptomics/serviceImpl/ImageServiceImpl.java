@@ -59,6 +59,7 @@ public class ImageServiceImpl implements ImageService {
 		List<ImageMetadata> imageMetadataList = new ArrayList<ImageMetadata>();
 		for (S3ObjectSummary o : objs) {
 			ImageMetadata im = new ImageMetadata();
+                        im.setImageType("jpeg");
 			im.setFilename(o.getKey());
 			im.setLastModified(new DateTime(o.getLastModified()));
                         im.setCreated(new DateTime(o.getLastModified()));

@@ -10,8 +10,8 @@ import com.spatialtranscriptomics.exceptions.BadRequestResponse;
 import com.spatialtranscriptomics.exceptions.CustomBadRequestException;
 import com.spatialtranscriptomics.exceptions.CustomNotFoundException;
 import com.spatialtranscriptomics.model.ImageMetadata;
-import com.spatialtranscriptomics.model.JPEGWrapper;
 import com.spatialtranscriptomics.model.LastModifiedDate;
+import com.spatialtranscriptomics.model.S3Resource;
 import com.spatialtranscriptomics.serviceImpl.ImageServiceImpl;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -106,14 +106,12 @@ public class ImageController {
         @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
         @RequestMapping(value = "/compressedjson/{id:.+}", method = RequestMethod.GET)
         public @ResponseBody
-        JPEGWrapper getCompressedAsJSON(@PathVariable String id) {
+        S3Resource getCompressedAsJSON(@PathVariable String id) {
             byte[] image = imageService.getCompressedImage(id);
             if (image == null) {
                 throw new CustomNotFoundException("An image with this name does not exist or you do not have permissions to access it.");
             }
-            JPEGWrapper wrapper = new JPEGWrapper();
-            wrapper.setFilename(id);
-            wrapper.setImage(image);
+            S3Resource wrapper = new S3Resource("image/jpeg", id, image);
             return wrapper;
         }
         
@@ -137,8 +135,8 @@ public class ImageController {
 	@Secured({"ROLE_CM","ROLE_ADMIN"})
 	@RequestMapping(value = "/compressedjson", method = RequestMethod.POST)
 	public @ResponseBody
-	String addAsJSON(@RequestBody @Valid JPEGWrapper image, BindingResult result) {
-            byte[] img = image.getImage();
+	String addAsJSON(@RequestBody @Valid S3Resource image, BindingResult result) {
+            byte[] img = image.getFile();
             if (image.getFilename() == null || image.getFilename().equals("")
                     || img == null || img.length == 0) {
                 logger.error("Cannot add empty image.");
