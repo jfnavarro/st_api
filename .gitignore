@@ -1,1 +1,11 @@
+# Maven targets, etc.
+
 /target
+bin/
+
+
+
+
+# Eclipse and NetBeans stuff
+
+.settings/
