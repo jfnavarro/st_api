@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class StaticContextAccessor {
 
+    /** This class. **/
     private static StaticContextAccessor instance;
 
     @Autowired
@@ -30,12 +31,14 @@ public class StaticContextAccessor {
     }
 
     /**
-     * Returns the a named bean.
+     * Returns a bean by name.
+     * @param <T> the bean class.
+     * @return the bean instance.
      */
     public static <T> T getBean(Class<T> clazz) {
-    	//System.out.println("Getting bean");
+    	
         T inst = instance.applicationContext.getBean(clazz);
-        //System.out.println("Got bean:" + inst);
+        
         return inst;
     }
 

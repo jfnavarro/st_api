@@ -1,10 +1,9 @@
 /*
-*Copyright © 2012 Spatial Transcriptomics AB
-*Read LICENSE for more information about licensing terms
-*Contact: Jose Fernandez Navarro <jose.fernandez.navarro@scilifelab.se>
-* 
-*/
-
+ *Copyright © 2012 Spatial Transcriptomics AB
+ *Read LICENSE for more information about licensing terms
+ *Contact: Jose Fernandez Navarro <jose.fernandez.navarro@scilifelab.se>
+ * 
+ */
 package com.spatialtranscriptomics.component;
 
 import org.joda.time.DateTimeZone;
@@ -20,11 +19,12 @@ public class StartupHousekeeper implements ApplicationListener<ContextRefreshedE
 
     /**
      * (Hopefully) invoked once at app startup (more or less).
+     *
      * @param event.
      */
     public void onApplicationEvent(ContextRefreshedEvent event) {
-            DateTimeZone.setDefault(DateTimeZone.UTC);
+        // Set the default timezone to UTC.
+        DateTimeZone.setDefault(DateTimeZone.UTC);
     }
 
-  
 }

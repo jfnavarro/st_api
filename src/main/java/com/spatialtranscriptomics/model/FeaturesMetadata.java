@@ -5,7 +5,7 @@
  */
 package com.spatialtranscriptomics.model;
 
-import com.spatialtranscriptomics.util.SpatialStringUtils;
+import com.spatialtranscriptomics.util.StringOperations;
 import java.util.Date;
 import org.joda.time.DateTime;
 import org.springframework.data.annotation.Transient;

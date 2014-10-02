@@ -27,7 +27,8 @@
 //
 
 /*
- * This class is Spring MVC controller class for the API endpoint "rest/credentials". It implements the methods available at this endpoint.
+ * This class is Spring MVC controller class for the API endpoint "rest/credentials".
+ * It implements the methods available at this endpoint.
  * This endpoint is not used currently. It's been abandoned because not required at the momen.
  *  The purpose would be to reset/update passwords.
  */

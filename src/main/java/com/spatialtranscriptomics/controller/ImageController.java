@@ -133,9 +133,9 @@ public class ImageController {
         
         // add compressed jpeg image
 	@Secured({"ROLE_CM","ROLE_ADMIN"})
-	@RequestMapping(value = "/compressedjson", method = RequestMethod.POST)
+	@RequestMapping(value = "/compressedjson", method = RequestMethod.PUT)
 	public @ResponseBody
-	String addAsJSON(@RequestBody @Valid S3Resource image, BindingResult result) {
+	void addAsJSON(@RequestBody @Valid S3Resource image, BindingResult result) {
             byte[] img = image.getFile();
             if (image.getFilename() == null || image.getFilename().equals("")
                     || img == null || img.length == 0) {
@@ -143,20 +143,20 @@ public class ImageController {
                 throw new CustomBadRequestException("The image seems to be empty or lacking name.");
             
             }
-            if(imageService.getImageMetadata(image.getFilename()) != null){
+            if (imageService.getImageMetadata(image.getFilename()) != null){
 		logger.error("Cannot add image: exists "+ image.getFilename());
                 throw new CustomBadRequestException("An image with this name exists already. Image names are unique.");
             }
             imageService.addCompressed(image.getFilename(), img);
-            return "Successfully_added_image_to_bucket";
 	}
 
+        
 	// delete
 	@Secured({"ROLE_CM","ROLE_ADMIN"})
 	@RequestMapping(value = "{id:.+}", method = RequestMethod.DELETE)
 	public @ResponseBody
-	void delete(@PathVariable String filename) {
-            imageService.delete(filename);
+	void delete(@PathVariable String id) {
+            imageService.delete(id);
 	}
 	
 
