@@ -9,7 +9,7 @@ package com.spatialtranscriptomics.util;
 /**
  * Convenience methods for Strings.
  */
-public class SpatialStringUtils {
+public class StringOperations {
  
     /**
      * Returns a string representation of a byte count.

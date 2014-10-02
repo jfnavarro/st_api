@@ -40,6 +40,7 @@ public class S3Resource implements IS3Resource {
      */
     public S3Resource(String contentType, String filename, byte[] file) {
         this.contentType = contentType;
+        this.contentEncoding = "";
         this.filename = filename;
         this.file = file;
         this.size = file.length;
