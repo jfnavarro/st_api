@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Spatial Transcriptomics AB
+ * Copyright (C) 2014 Spatial Transcriptomics AB
  * Read LICENSE for more information about licensing terms
  * Contact: Jose Fernandez Navarro <jose.fernandez.navarro@scilifelab.se>
  */
@@ -10,10 +10,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
- * This class is used to return an Exception with a customized JSON response (see InternalServerErrorResponse)
- * Used in Controllers
+ * This exception class is used to return a HTTP response "500 Internal Server
+ * Error" with a customized
+ * JSON response (see InternalServerErrorResponse).
+ * NOTE: It is possible that the body will be truncated, and only the
+ * header message reach the client.
+ * Used in Controllers.
  */
-@ResponseStatus(value = HttpStatus.NOT_FOUND)
+@ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
 public class CustomInternalServerErrorException extends RuntimeException {
 
 	/**

@@ -8,8 +8,12 @@ package com.spatialtranscriptomics.controller;
 import com.spatialtranscriptomics.component.StaticContextAccessor;
 import com.spatialtranscriptomics.exceptions.BadRequestResponse;
 import com.spatialtranscriptomics.exceptions.CustomBadRequestException;
+import com.spatialtranscriptomics.exceptions.CustomInternalServerErrorException;
+import com.spatialtranscriptomics.exceptions.CustomInternalServerErrorResponse;
 import com.spatialtranscriptomics.exceptions.CustomNotFoundException;
+import com.spatialtranscriptomics.exceptions.CustomNotModifiedException;
 import com.spatialtranscriptomics.exceptions.NotFoundResponse;
+import com.spatialtranscriptomics.exceptions.NotModifiedResponse;
 import com.spatialtranscriptomics.model.Account;
 import com.spatialtranscriptomics.model.LastModifiedDate;
 import com.spatialtranscriptomics.serviceImpl.AccountServiceImpl;
@@ -18,13 +22,18 @@ import com.spatialtranscriptomics.serviceImpl.DatasetServiceImpl;
 import com.spatialtranscriptomics.serviceImpl.PipelineExperimentServiceImpl;
 import com.spatialtranscriptomics.serviceImpl.SelectionServiceImpl;
 import com.spatialtranscriptomics.serviceImpl.TaskServiceImpl;
+import com.spatialtranscriptomics.util.DateOperations;
 import java.security.Principal;
 import java.util.Iterator;
 import java.util.List;
 import javax.validation.Valid;
 import org.apache.log4j.Logger;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -33,6 +42,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -73,15 +83,15 @@ public class AccountController {
     PasswordEncoder passwordEncoder;
 
     /**
-     * GET /account/
-     * GET /account/?dataset={datasetId}
+     * GET|HEAD /account/
+     * GET|HEAD /account/?dataset={datasetId}
      * 
      * Lists enabled accounts.
      * @param datasetId the dataset ID.
      * @return the list.
      */
     @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
-    @RequestMapping(method = RequestMethod.GET)
+    @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD})
     public @ResponseBody
     List<Account> list(@RequestParam(value = "dataset", required = false) String datasetId) {
         List<Account> accs;
@@ -90,6 +100,10 @@ public class AccountController {
         } else {
             accs = accountService.list();
         }
+        if (accs == null) {
+            logger.info("Returning empty list of accounts");
+            throw new CustomNotFoundException("No accounts found or you dont have permissions to access them.");
+        } 
         Iterator<Account> i = accs.iterator();
         while (i.hasNext()) {
             Account a = i.next(); // must be called before you can call i.remove()
@@ -102,74 +116,117 @@ public class AccountController {
     }
 
     /**
-     * GET /account/all/
-     * GET /account/all/?dataset={datasetId}
+     * GET|HEAD /account/all/
+     * GET|HEAD /account/all/?dataset={datasetId}
      * 
      * Lists enabled/disabled accounts.
      * @param datasetId the dataset ID.
      * @return the list.
      */
     @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
-    @RequestMapping(value = "/all", method = RequestMethod.GET)
+    @RequestMapping(value = "/all", method = {RequestMethod.GET, RequestMethod.HEAD})
     public @ResponseBody
     List<Account> listAll(@RequestParam(value = "dataset", required = false) String datasetId) {
+        List<Account> accs;
         if (datasetId != null) {
             logger.info("Returning list of enabled/disabled accounts for dataset " + datasetId);
-            return accountService.findByDataset(datasetId);
+            accs = accountService.findByDataset(datasetId);
+        } else {
+            logger.info("Returning list of enabled/disabled accounts");
+            accs = accountService.list();
         }
-        logger.info("Returning list of enabled/disabled accounts");
-        return accountService.list();
+        if (accs == null) {
+            logger.info("Returning empty list of enabled/disabled accounts");
+            throw new CustomNotFoundException("No accounts found or you dont have permissions to access them.");
+        }
+        return accs;
     }
 
     /**
-     * GET /account/{id}
+     * GET|HEAD /account/{id}
      * 
      * Finds enabled account.
      * @param id the account ID.
+     * @param ifModifiedSince request timestamp.
      * @return the account.
      */
     @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
-    @RequestMapping(value = "{id}", method = RequestMethod.GET)
+    @RequestMapping(value = "{id}", method = {RequestMethod.GET, RequestMethod.HEAD})
     public @ResponseBody
-    Account get(@PathVariable String id) {
+    HttpEntity<Account> get(@PathVariable String id, @RequestHeader(value="If-Modified-Since", defaultValue="") String ifModifiedSince) {
         Account account = accountService.find(id);
         if (account == null || !account.isEnabled()) {
             logger.info("Failed to return enabled account " + id);
             throw new CustomNotFoundException("An account with this ID does not exist, is disabled, or you dont have permissions to access it.");
         }
+        // Check if already newest.
+        DateTime reqTime = DateOperations.parseHTTPDate(ifModifiedSince);
+        if (reqTime != null) {
+            DateTime resTime = account.getLast_modified() == null ? new DateTime(2012,1,1,0,0) : account.getLast_modified();
+            // NOTE: Only precision within day.
+            resTime = new DateTime(resTime.getYear(), resTime.getMonthOfYear(), resTime.getDayOfMonth(), resTime.getHourOfDay(), resTime.getMinuteOfHour(), resTime.getSecondOfMinute());
+            if (!resTime.isAfter(reqTime)) {
+                logger.info("Not returning enabled account " + id + " since not modified");
+                throw new CustomNotModifiedException("This account has not been modified");
+            }
+        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.add("Cache-Control", "public, must-revalidate, no-transform");
+        headers.add("Vary", "Accept-Encoding");
+        headers.add("Last-modified", DateOperations.getHTTPDateSafely(account.getLast_modified()));
+        HttpEntity<Account> entity = new HttpEntity<Account>(account, headers);
         logger.info("Returning enabled account " + id);
-        return account;
+        return entity;
     }
 
     /**
-     * GET /account/all/{id}
+     * GET|HEAD /account/all/{id}
      * 
      * Finds enabled/disabled account.
      * @param id the account ID.
+     * @param ifModifiedSince request timestamp.
      * @return the account.
      */
     @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
     @RequestMapping(value = "/all/{id}", method = RequestMethod.GET)
     public @ResponseBody
-    Account getAll(@PathVariable String id) {
+    HttpEntity<Account> getAll(@PathVariable String id, @RequestHeader(value="If-Modified-Since", defaultValue="") String ifModifiedSince) {
         Account account = accountService.find(id);
         if (account == null) {
             logger.info("Failed to return enabled/disabled account " + id);
             throw new CustomNotFoundException("An account with this ID does not exist, or you dont have permissions to access it.");
         }
+        // Check if already newest.
+        DateTime reqTime = DateOperations.parseHTTPDate(ifModifiedSince);
+        if (reqTime != null) {
+            DateTime resTime = account.getLast_modified() == null ? new DateTime(2012,1,1,0,0) : account.getLast_modified();
+            // NOTE: Only precision within day.
+            resTime = new DateTime(resTime.getYear(), resTime.getMonthOfYear(), resTime.getDayOfMonth(), resTime.getHourOfDay(), resTime.getMinuteOfHour(), resTime.getSecondOfMinute());
+            if (!resTime.isAfter(reqTime)) {
+                logger.info("Not returning enabled/disabled account " + id + " since not modified");
+                throw new CustomNotModifiedException("This account has not been modified");
+            }
+        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.add("Cache-Control", "public, must-revalidate, no-transform");
+        headers.add("Vary", "Accept-Encoding");
+        headers.add("Last-modified", DateOperations.getHTTPDateSafely(account.getLast_modified()));
+        HttpEntity<Account> entity = new HttpEntity<Account>(account, headers);
         logger.info("Returning enabled/disabled account " + id);
-        return account;
+        return entity;
     }
 
     /**
-     * GET /account/lastmodified/{id}
+     * GET|HEAD /account/lastmodified/{id}
      * 
      * Finds last modified timestamp of account.
      * @param id the account ID.
      * @return the timestamp.
      */
     @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
-    @RequestMapping(value = "/lastmodified/{id}", method = RequestMethod.GET)
+    @RequestMapping(value = "/lastmodified/{id}", method = {RequestMethod.GET, RequestMethod.HEAD})
     public @ResponseBody
     LastModifiedDate getLastModified(@PathVariable String id) {
         Account account = accountService.find(id);
@@ -182,13 +239,14 @@ public class AccountController {
     }
 
     /**
-     * GET /account/curreent/user
+     * GET|HEAD /account/current/user
      * 
      * Finds account currently logged in.
+     * @param principal the principal.
      * @return the account.
      */
     @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
-    @RequestMapping(value = "/current/user", method = RequestMethod.GET)
+    @RequestMapping(value = "/current/user", method = {RequestMethod.GET, RequestMethod.HEAD})
     public @ResponseBody
     Account getCurrent(Principal principal) {
         if (principal == null) {
@@ -327,6 +385,29 @@ public class AccountController {
     // return passwordEncoder.encode(pwd);
     // }
     
+    /**
+     * Static access to account service.
+     * @return the bean.
+     */
+    public static AccountServiceImpl getStaticAccountService() {
+        return StaticContextAccessor.getBean(AccountController.class).getAccountService();
+    }
+
+    /**
+     * Access to account service.
+     * @return the bean.
+     */
+    public AccountServiceImpl getAccountService() {
+        return this.accountService;
+    }
+    
+    @ExceptionHandler(CustomNotModifiedException.class)
+    @ResponseStatus(value = HttpStatus.NOT_MODIFIED)
+    public @ResponseBody
+    NotModifiedResponse handleNotModifiedException(CustomNotModifiedException ex) {
+        return new NotModifiedResponse(ex.getMessage());
+    }
+    
     @ExceptionHandler(CustomNotFoundException.class)
     @ResponseStatus(value = HttpStatus.NOT_FOUND)
     public @ResponseBody
@@ -337,22 +418,16 @@ public class AccountController {
     @ExceptionHandler(CustomBadRequestException.class)
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     public @ResponseBody
-    BadRequestResponse handleNotFoundException(CustomBadRequestException ex) {
+    BadRequestResponse handleBadRequestException(CustomBadRequestException ex) {
         return new BadRequestResponse(ex.getMessage());
     }
-
-    /**
-     * Static access to account service.
-     */
-    public static AccountServiceImpl getStaticAccountService() {
-        return StaticContextAccessor.getBean(AccountController.class).getAccountService();
-    }
-
-    /**
-     * Access to account service.
-     */
-    public AccountServiceImpl getAccountService() {
-        return this.accountService;
+    
+    @ExceptionHandler(RuntimeException.class)
+    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
+    public @ResponseBody
+    CustomInternalServerErrorResponse handleRuntimeException(CustomInternalServerErrorException ex) {
+        logger.error("Unknown error in account controller: " + ex.getMessage());
+        return new CustomInternalServerErrorResponse(ex.getMessage());
     }
 
 }

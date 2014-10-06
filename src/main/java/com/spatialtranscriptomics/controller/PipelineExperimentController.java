@@ -7,8 +7,12 @@ package com.spatialtranscriptomics.controller;
 
 import com.spatialtranscriptomics.exceptions.BadRequestResponse;
 import com.spatialtranscriptomics.exceptions.CustomBadRequestException;
+import com.spatialtranscriptomics.exceptions.CustomInternalServerErrorException;
+import com.spatialtranscriptomics.exceptions.CustomInternalServerErrorResponse;
 import com.spatialtranscriptomics.exceptions.CustomNotFoundException;
+import com.spatialtranscriptomics.exceptions.CustomNotModifiedException;
 import com.spatialtranscriptomics.exceptions.NotFoundResponse;
+import com.spatialtranscriptomics.exceptions.NotModifiedResponse;
 import com.spatialtranscriptomics.model.LastModifiedDate;
 import com.spatialtranscriptomics.model.PipelineExperiment;
 import com.spatialtranscriptomics.serviceImpl.PipelineExperimentServiceImpl;
@@ -57,7 +61,7 @@ public class PipelineExperimentController {
 
     // list / list for account
     @Secured({"ROLE_CM", "ROLE_ADMIN"})
-    @RequestMapping(method = RequestMethod.GET)
+    @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD})
     public @ResponseBody
     List<PipelineExperiment> list(@RequestParam(value = "account", required = false) String accountId) {
         List<PipelineExperiment> pipelineexperiments;
@@ -75,7 +79,7 @@ public class PipelineExperimentController {
 
     // get
     @Secured({"ROLE_CM", "ROLE_ADMIN"})
-    @RequestMapping(value = "{id}", method = RequestMethod.GET)
+    @RequestMapping(value = "{id}", method = {RequestMethod.GET, RequestMethod.HEAD})
     public @ResponseBody
     PipelineExperiment get(@PathVariable String id) {
         PipelineExperiment pipelineexperiment = pipelineexperimentService.find(id);
@@ -88,7 +92,7 @@ public class PipelineExperimentController {
 
     // get last modified
     @Secured({"ROLE_CM", "ROLE_ADMIN"})
-    @RequestMapping(value = "/lastmodified/{id}", method = RequestMethod.GET)
+    @RequestMapping(value = "/lastmodified/{id}", method = {RequestMethod.GET, RequestMethod.HEAD})
     public @ResponseBody
     LastModifiedDate getLastModified(@PathVariable String id) {
         PipelineExperiment pipelineexperiment = pipelineexperimentService.find(id);
@@ -158,6 +162,13 @@ public class PipelineExperimentController {
         pipelinestatsService.deleteForExperiment(id);
     }
 
+    @ExceptionHandler(CustomNotModifiedException.class)
+    @ResponseStatus(value = HttpStatus.NOT_MODIFIED)
+    public @ResponseBody
+    NotModifiedResponse handleNotModifiedException(CustomNotModifiedException ex) {
+        return new NotModifiedResponse(ex.getMessage());
+    }
+
     @ExceptionHandler(CustomNotFoundException.class)
     @ResponseStatus(value = HttpStatus.NOT_FOUND)
     public @ResponseBody
@@ -168,8 +179,16 @@ public class PipelineExperimentController {
     @ExceptionHandler(CustomBadRequestException.class)
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     public @ResponseBody
-    BadRequestResponse handleNotFoundException(CustomBadRequestException ex) {
+    BadRequestResponse handleBadRequestException(CustomBadRequestException ex) {
         return new BadRequestResponse(ex.getMessage());
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
+    public @ResponseBody
+    CustomInternalServerErrorResponse handleRuntimeException(CustomInternalServerErrorException ex) {
+        logger.error("Unknown error in pipeline experiment controller: " + ex.getMessage());
+        return new CustomInternalServerErrorResponse(ex.getMessage());
     }
 
 }

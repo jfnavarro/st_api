@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Spatial Transcriptomics AB
+ * Copyright (C) 2014 Spatial Transcriptomics AB
  * Read LICENSE for more information about licensing terms
  * Contact: Jose Fernandez Navarro <jose.fernandez.navarro@scilifelab.se>
  */
@@ -12,11 +12,11 @@ package com.spatialtranscriptomics.exceptions;
 
 public class InternalServerErrorResponse {
 
-	public String error;
-	public String error_description;
+    public String error;
+    public String error_description;
 
-	public InternalServerErrorResponse(String msg) {
-		this.error = "Internal Server Error";
-		this.error_description = msg;
-	}
+    public InternalServerErrorResponse(String msg) {
+            this.error = "Internal Server Error";
+            this.error_description = msg;
+    }
 }

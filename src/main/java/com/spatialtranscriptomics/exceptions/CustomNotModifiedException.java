@@ -9,23 +9,22 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
- * This exception class returns a HTTP response "404 Not Found"
- * with a customized JSON response.
- * (see NotFoundResponse) Used in Controllers.
+ * Exception class used for returning HTTP response type
+ * "304 Not Modified".
  */
-@ResponseStatus(value = HttpStatus.NOT_FOUND)
-public class CustomNotFoundException extends RuntimeException {
+@ResponseStatus(value = HttpStatus.NOT_MODIFIED)
+public class CustomNotModifiedException extends RuntimeException {
 
     /**
-     *
+     * Auto-generated serial number.
      */
-    private static final long serialVersionUID = 7644203240854556553L;
+    private static final long serialVersionUID = 3398348494792632720L;
 
     /**
-     * 
-     * @param message 
+     * Constructor.
+     * @param message message.
      */
-    public CustomNotFoundException(String message) {
+    public CustomNotModifiedException(String message) {
         super(message);
     }
 }

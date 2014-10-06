@@ -5,6 +5,8 @@
  */
 package com.spatialtranscriptomics.controller;
 
+import com.spatialtranscriptomics.exceptions.CustomInternalServerErrorException;
+import com.spatialtranscriptomics.exceptions.CustomInternalServerErrorResponse;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -14,6 +16,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.spatialtranscriptomics.model.VersionSupportInfo;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
  * This class is Spring MVC controller class for the API endpoint
@@ -34,9 +39,9 @@ public class VersionSupportController {
 
     /**
      * GET /versionsupportinfo
-     * 
-     * Returns the version support info for the
-     * minimum client required.
+     *
+     * Returns the version support info for the minimum client required.
+     *
      * @return the info.
      */
     @RequestMapping(method = RequestMethod.GET)
@@ -46,6 +51,14 @@ public class VersionSupportController {
         info.setMinSupportedClientVersion(minSupportedClientVersion);
         logger.info("Returning min supported client version " + minSupportedClientVersion);
         return info;
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
+    public @ResponseBody
+    CustomInternalServerErrorResponse handleRuntimeException(CustomInternalServerErrorException ex) {
+        logger.error("Unknown error in VersionSupport controller: " + ex.getMessage());
+        return new CustomInternalServerErrorResponse(ex.getMessage());
     }
 
 }
