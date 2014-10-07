@@ -14,7 +14,6 @@ import com.spatialtranscriptomics.exceptions.CustomNotFoundException;
 import com.spatialtranscriptomics.exceptions.CustomNotModifiedException;
 import com.spatialtranscriptomics.exceptions.NotFoundResponse;
 import com.spatialtranscriptomics.exceptions.NotModifiedResponse;
-import com.spatialtranscriptomics.model.Account;
 import com.spatialtranscriptomics.model.FeaturesMetadata;
 import com.spatialtranscriptomics.model.S3Resource;
 import com.spatialtranscriptomics.model.LastModifiedDate;

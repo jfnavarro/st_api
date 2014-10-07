@@ -21,10 +21,14 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 public class CustomInternalServerErrorException extends RuntimeException {
 
 	/**
-	 * 
+	 * Auto-gen ID.
 	 */
 	private static final long serialVersionUID = -2878259537987353629L;
 
+        /**
+         * Constructor.
+         * @param message message. 
+         */
 	public CustomInternalServerErrorException(String message) {
 		super(message);
 	}

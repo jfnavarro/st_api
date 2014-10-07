@@ -37,7 +37,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
  * This class is Spring MVC controller class for the API endpoint "rest/image".
- * It implements the methods available at this endpoint.
+ * It implements the methods available at this endpoint. Note that the images
+ * are stored on Amazon S3, and not in Mongo.
  */
 @Controller
 @RequestMapping("/rest/image")
@@ -49,7 +50,13 @@ public class ImageController {
     private static final Logger logger = Logger
             .getLogger(ImageController.class);
 
-    // list image metadata
+    /**
+     * GET|HEAD /image/
+     *
+     * Lists image metadata.
+     *
+     * @return the metadata.
+     */
     @Secured({"ROLE_CM", "ROLE_ADMIN"})
     @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD})
     public @ResponseBody
@@ -57,24 +64,40 @@ public class ImageController {
         return imageService.list();
     }
 
-	// get image payload
-    // this {id:.+} is a workaround for a spring bug that truncates path
-    // variables containing a dot
+    /**
+     * GET|HEAD /image/{id}
+     * 
+     * Returns image payload as a decompressed BufferedImage. NOTE: When
+     * possible, use getCompressed() or getCompressedAsJSON instead, due to size
+     * limitations.
+     *
+     * @param id the image name.
+     * @return the image as a BufferedImage.
+     */
     @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
     @RequestMapping(value = "{id:.+}", produces = MediaType.IMAGE_JPEG_VALUE, method = {RequestMethod.GET, RequestMethod.HEAD})
     public @ResponseBody
     BufferedImage get(@PathVariable String id) {
+        // this {id:.+} is a workaround for a spring bug that truncates path
+        // variables containing a dot
         BufferedImage img = imageService.getBufferedImage(id);
         return img;
     }
 
-        // get last modified
-    // this {id:.+} is a workaround for a spring bug that truncates path
-    // variables containing a dot
+    /**
+     * GET|HEAD /image/lastmodified/{id}
+     * 
+     * Returns the last modified date of an image.
+     *
+     * @param id the image name.
+     * @return the date.
+     */
     @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
     @RequestMapping(value = "/lastmodified/{id:.+}", method = {RequestMethod.GET, RequestMethod.HEAD})
     public @ResponseBody
     LastModifiedDate getLastModified(@PathVariable String id) {
+        // this {id:.+} is a workaround for a spring bug that truncates path
+        // variables containing a dot
         ImageMetadata img = imageService.getImageMetadata(id);
         if (img == null) {
             throw new CustomNotFoundException("An image with this name does not exist or you do not have permissions to access it.");
@@ -82,31 +105,45 @@ public class ImageController {
         return new LastModifiedDate(img.getLastModified());
     }
 
-        // get compressed image payload
-    // this {id:.+} is a workaround for a spring bug that truncates path
-    // variables containing a dot
+    /**
+     * GET|HEAD /image/compressed/{id}
+     * 
+     * Returns image payload as a compressed JPEG.
+     *
+     * @param id the image name.
+     * @return the image as a JPEG.
+     */
     @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
     @RequestMapping(value = "/compressed/{id:.+}", produces = MediaType.IMAGE_JPEG_VALUE, method = {RequestMethod.GET, RequestMethod.HEAD})
     public @ResponseBody
     byte[] getCompressed(@PathVariable String id) {
+        // this {id:.+} is a workaround for a spring bug that truncates path
+        // variables containing a dot
         byte[] image = imageService.getCompressedImage(id);
         if (image == null) {
             throw new CustomNotFoundException("An image with this name does not exist or you do not have permissions to access it.");
         }
         return image;
-            //HttpHeaders headers = new HttpHeaders();
+        //HttpHeaders headers = new HttpHeaders();
         //headers.setContentType(MediaType.IMAGE_JPEG);
         //headers.setContentLength(image.length);
         //return new HttpEntity<byte[]>(image, headers);
     }
 
-        // get compressed image payload wrapped in JSON
-    // this {id:.+} is a workaround for a spring bug that truncates path
-    // variables containing a dot
+    /**
+     * GET|HEAD /image/compressedjson/{id}
+     * 
+     * Returns image payload as a JPEG wrapped in JSON.
+     *
+     * @param id the image name.
+     * @return the image as JSON.
+     */
     @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
     @RequestMapping(value = "/compressedjson/{id:.+}", method = {RequestMethod.GET, RequestMethod.HEAD})
     public @ResponseBody
     S3Resource getCompressedAsJSON(@PathVariable String id) {
+        // this {id:.+} is a workaround for a spring bug that truncates path
+        // variables containing a dot
         byte[] image = imageService.getCompressedImage(id);
         if (image == null) {
             throw new CustomNotFoundException("An image with this name does not exist or you do not have permissions to access it.");
@@ -115,11 +152,21 @@ public class ImageController {
         return wrapper;
     }
 
-    // add decompressed buffered image.
+    /**
+     * PUT /imagealignment/
+     * 
+     * Adds/updates an image as a BufferedImage.
+     * NOTE: When possible use addAsJSON() instead.
+     * 
+     * @param id the image name.
+     * @param img the image.
+     */
     @Secured({"ROLE_CM", "ROLE_ADMIN"})
     @RequestMapping(value = "{id:.+}", method = RequestMethod.PUT)
     public @ResponseBody
     void add(@PathVariable String id, @RequestBody BufferedImage img) {
+        // this {id:.+} is a workaround for a spring bug that truncates path
+        // variables containing a dot
         if (imageService.getImageMetadata(id) != null) {
             logger.error("Cannot add image: exists " + id);
             throw new CustomBadRequestException(
@@ -129,17 +176,30 @@ public class ImageController {
 
     }
 
-    // add compressed jpeg image
+    /**
+     * PUT /imagealignment/compressedjson/{id}
+     * 
+     * Adds/updates an JPEG image wrapped in JSON.
+     * 
+     * @param id the image filename.
+     * @param image the image.
+     * @param result the binding.
+     */
     @Secured({"ROLE_CM", "ROLE_ADMIN"})
-    @RequestMapping(value = "/compressedjson", method = RequestMethod.PUT)
+    @RequestMapping(value = "/compressedjson/{id:.+}", method = RequestMethod.PUT)
     public @ResponseBody
-    void addAsJSON(@RequestBody @Valid S3Resource image, BindingResult result) {
+    void addAsJSON(@PathVariable String id, @RequestBody @Valid S3Resource image, BindingResult result) {
+        // this {id:.+} is a workaround for a spring bug that truncates path
+        // variables containing a dot
         byte[] img = image.getFile();
-        if (image.getFilename() == null || image.getFilename().equals("")
+        if (id == null || image.getFilename() == null || image.getFilename().equals("")
                 || img == null || img.length == 0) {
             logger.error("Cannot add empty image.");
-            throw new CustomBadRequestException("The image seems to be empty or lacking name.");
+            throw new CustomBadRequestException("The image seems to be empty, lacking name.");
 
+        }
+        if (!id.equals(image.getFilename())) {
+            throw new CustomBadRequestException("Filename and ID mismatch.");
         }
         if (imageService.getImageMetadata(image.getFilename()) != null) {
             logger.error("Cannot add image: exists " + image.getFilename());
@@ -148,11 +208,19 @@ public class ImageController {
         imageService.addCompressed(image.getFilename(), img);
     }
 
-    // delete
+    /**
+     * DELETE /image/{id}
+     * 
+     * Deletes an image.
+     * 
+     * @param id the image name.
+     */
     @Secured({"ROLE_CM", "ROLE_ADMIN"})
     @RequestMapping(value = "{id:.+}", method = RequestMethod.DELETE)
     public @ResponseBody
     void delete(@PathVariable String id) {
+        // this {id:.+} is a workaround for a spring bug that truncates path
+        // variables containing a dot
         imageService.delete(id);
     }
 

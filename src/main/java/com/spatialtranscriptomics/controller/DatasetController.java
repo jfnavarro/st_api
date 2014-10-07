@@ -276,7 +276,7 @@ public class DatasetController {
             throw new CustomBadRequestException("A dataset with this ID does not exist or you don't have permissions to access it.");
         } else if (datasetService.findByNameInternal(ds.getName()) != null) {
             if (!datasetService.findByNameInternal(ds.getName()).getId().equals(id)) {
-                logger.info("Failed to update daatset. Duplicate username.");
+                logger.info("Failed to update dataset. Duplicate name.");
                 throw new CustomBadRequestException("Another dataset with this name exists already. Dataset names are unique.");
             }
         }
@@ -297,7 +297,7 @@ public class DatasetController {
     void delete(@PathVariable String id,
             @RequestParam(value = "cascade", required = false, defaultValue = "true") boolean cascade) {
         if (!datasetService.deleteIsOK(id)) {
-            logger.info("Failed to delete daatset " + id + " Missing permissions.");
+            logger.info("Failed to delete dataset " + id + " Missing permissions.");
             throw new CustomBadRequestException("You are not allowed to delete this dataset.");
         }
         if (cascade) {
