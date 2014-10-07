@@ -18,6 +18,7 @@
 		<spring.data.commons.version>1.7.2.RELEASE</spring.data.commons.version>
 		<spring.osgi.range>[3.1.0,4.0.0)</spring.osgi.range>
 		<security.osgi.range>[3.1.0,4.0.0)</security.osgi.range>
+                <buildDir>${user.dir}</buildDir>
 	</properties>
 
 	<!-- MAVEN REPOSITORIES -->
@@ -317,6 +318,24 @@
 				<filtering>true</filtering>
 			</resource>
 		</resources>
+
+                <!-- To make it possible to build out of source tree
+                     See http://stackoverflow.com/a/13173350/757777 -->
+                <directory>${buildDir}</directory>
+
+                <plugins>
+                <!-- Adding this section as suggested in
+                     http://stackoverflow.com/questions/2451268/maven-use-source-5-or-higher-to-enable-static-import-declarations -->
+                        <plugin>
+                                <groupId>org.apache.maven.plugins</groupId>
+                                <artifactId>maven-compiler-plugin</artifactId>
+                                <version>2.3.2</version>
+                                <configuration>
+                                        <source>1.5</source>
+                                        <target>1.5</target>
+                                </configuration>
+                        </plugin>
+                </plugins>
 	</build>
 
 	<!-- DEPLOYMENT PROFILES -->
