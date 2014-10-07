@@ -59,7 +59,15 @@ public class PipelineExperimentController {
     @Autowired
     S3ServiceImpl s3Service;
 
-    // list / list for account
+    /**
+     * GET|HEAD /pipelineexperiment/
+     * GET|HEAD /pipelineexperiment/?account={accountId}
+     * 
+     * Returns a list of experiments.
+     * 
+     * @param accountId the account.
+     * @return the list.
+     */
     @Secured({"ROLE_CM", "ROLE_ADMIN"})
     @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD})
     public @ResponseBody
@@ -67,17 +75,27 @@ public class PipelineExperimentController {
         List<PipelineExperiment> pipelineexperiments;
         if (accountId != null) {
             pipelineexperiments = pipelineexperimentService.findByAccount(accountId);
+            logger.info("Returning list of pipeline experiments for account " + accountId);
         } else {
             pipelineexperiments = pipelineexperimentService.list();
+            logger.info("Returning list of pipeline experiments");
         }
         if (pipelineexperiments == null) {
+            logger.info("Returning empty list of pipeline experiments");
             throw new CustomNotFoundException(
                     "No PipelineExperiment found or you don't have permissions to access them.");
         }
         return pipelineexperiments;
     }
 
-    // get
+    /**
+     * GET|HEAD /pipelineexperiment/{id}
+     * 
+     * Returns an experiment.
+     * 
+     * @param id the experiment ID.
+     * @return the experiment.
+     */
     @Secured({"ROLE_CM", "ROLE_ADMIN"})
     @RequestMapping(value = "{id}", method = {RequestMethod.GET, RequestMethod.HEAD})
     public @ResponseBody

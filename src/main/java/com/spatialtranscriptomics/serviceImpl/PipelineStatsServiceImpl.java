@@ -3,7 +3,6 @@
  * Read LICENSE for more information about licensing terms
  * Contact: Jose Fernandez Navarro <jose.fernandez.navarro@scilifelab.se>
  */
-
 package com.spatialtranscriptomics.serviceImpl;
 
 import java.util.List;
@@ -21,116 +20,132 @@ import com.spatialtranscriptomics.model.PipelineStats;
 import com.spatialtranscriptomics.service.PipelineStatsService;
 
 /**
- * This class implements the store/retrieve logic to MongoDB for the data model class "PipelineStats".
- * The DB connection is handled in a MongoOperations object, which is configured in mvc-dispatcher-servlet.xml
+ * This class implements the store/retrieve logic to MongoDB for the data model
+ * class "PipelineStats". The DB connection is handled in a MongoOperations
+ * object, which is configured in mvc-dispatcher-servlet.xml
  */
-
 @Service
 public class PipelineStatsServiceImpl implements PipelineStatsService {
 
-	private static final Logger logger = Logger
-			.getLogger(PipelineStatsServiceImpl.class);
+    private static final Logger logger = Logger
+            .getLogger(PipelineStatsServiceImpl.class);
 
-	@Autowired
-	MongoUserDetailsServiceImpl customUserDetailsService;
+    @Autowired
+    MongoUserDetailsServiceImpl customUserDetailsService;
 
-	@Autowired
-	MongoOperations mongoTemplateExperimentDB;
-	
-	
+    @Autowired
+    MongoOperations mongoTemplateExperimentDB;
 
-	// ROLE_ADMIN: all.
-	// ROLE_CM:    own account.
-	// ROLE_USER:  none.
-	public PipelineStats find(String id) {
-		MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-		PipelineStats stats = mongoTemplateExperimentDB.findOne(new Query(Criteria.where("id").is(id)), PipelineStats.class);
-		if (stats == null || currentUser.isAdmin()) { return stats; }
-		PipelineExperiment exp = mongoTemplateExperimentDB.findOne(new Query(Criteria.where("id").is(stats.getExperiment_id())), PipelineExperiment.class);
-		if (exp.getAccount_id().equals(currentUser.getId())) {
-			return stats;
-		}
-		return null;
-	}
+    // ROLE_ADMIN: all.
+    // ROLE_CM:    own account.
+    // ROLE_USER:  none.
+    @Override
+    public PipelineStats find(String id) {
+        MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+        PipelineStats stats = mongoTemplateExperimentDB.findOne(new Query(Criteria.where("id").is(id)), PipelineStats.class);
+        if (stats == null || currentUser.isAdmin()) {
+            return stats;
+        }
+        PipelineExperiment exp = mongoTemplateExperimentDB.findOne(new Query(Criteria.where("id").is(stats.getExperiment_id())), PipelineExperiment.class);
+        if (exp.getAccount_id().equals(currentUser.getId())) {
+            return stats;
+        }
+        return null;
+    }
 
-	// ROLE_ADMIN: all.
-	// ROLE_CM:    own account.
-	// ROLE_USER:  none.
-	public PipelineStats findByExperiment(String experimentId) {
-		MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-		PipelineStats stats = mongoTemplateExperimentDB.findOne(new Query(Criteria.where("experiment_id").is(experimentId)), PipelineStats.class);
-		if (stats == null || currentUser.isAdmin()) { return stats; }
-		PipelineExperiment exp = mongoTemplateExperimentDB.findOne(new Query(Criteria.where("id").is(experimentId)), PipelineExperiment.class);
-		if (exp.getAccount_id().equals(currentUser.getId())) {
-			return stats;
-		}
-		return null;
-	}
+    // ROLE_ADMIN: all.
+    // ROLE_CM:    own account.
+    // ROLE_USER:  none.
+    @Override
+    public PipelineStats findByExperiment(String experimentId) {
+        MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+        PipelineStats stats = mongoTemplateExperimentDB.findOne(new Query(Criteria.where("experiment_id").is(experimentId)), PipelineStats.class);
+        if (stats == null || currentUser.isAdmin()) {
+            return stats;
+        }
+        PipelineExperiment exp = mongoTemplateExperimentDB.findOne(new Query(Criteria.where("id").is(experimentId)), PipelineExperiment.class);
+        if (exp.getAccount_id().equals(currentUser.getId())) {
+            return stats;
+        }
+        return null;
+    }
 
-	// ROLE_ADMIN: all.
-	// ROLE_CM:    own account.
-	// ROLE_USER:  none.
-	public List<PipelineStats> list() {
-		MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-		List<PipelineStats> list = mongoTemplateExperimentDB.findAll(PipelineStats.class);
-		if (list == null || currentUser.isAdmin()) { return list; }
-		for (int i = list.size() - 1; i >= 0; i--) {
-			// This will be a bit slow, but works for now...
-			PipelineExperiment exp = mongoTemplateExperimentDB.findOne(new Query(Criteria.where("id").is(list.get(i).getExperiment_id())), PipelineExperiment.class);
-			if (!exp.getAccount_id().equals(currentUser.getId())) {
-				list.remove(i);
-			}
-		}
-		return list;
-	}
+    // ROLE_ADMIN: all.
+    // ROLE_CM:    own account.
+    // ROLE_USER:  none.
+    @Override
+    public List<PipelineStats> list() {
+        MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+        List<PipelineStats> list = mongoTemplateExperimentDB.findAll(PipelineStats.class);
+        if (list == null || currentUser.isAdmin()) {
+            return list;
+        }
+        for (int i = list.size() - 1; i >= 0; i--) {
+            // This will be a bit slow, but works for now...
+            PipelineExperiment exp = mongoTemplateExperimentDB.findOne(new Query(Criteria.where("id").is(list.get(i).getExperiment_id())), PipelineExperiment.class);
+            if (!exp.getAccount_id().equals(currentUser.getId())) {
+                list.remove(i);
+            }
+        }
+        return list;
+    }
 
-	// ROLE_ADMIN: all.
-	// ROLE_CM:    own account.
-	// ROLE_USER:  none.
-	public PipelineStats add(PipelineStats stats) {
-		MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-		if (stats == null) { return null; }
-		PipelineExperiment exp = mongoTemplateExperimentDB.findOne(new Query(Criteria.where("id").is(stats.getExperiment_id())), PipelineExperiment.class);
-		if (currentUser.isAdmin() || exp.getAccount_id().equals(currentUser.getId())) {
-			logger.info("Adding PipelineStats");
-			mongoTemplateExperimentDB.insert(stats);
-			return stats;
-		}
-		return null;
-	}
+    // ROLE_ADMIN: all.
+    // ROLE_CM:    own account.
+    // ROLE_USER:  none.
+    @Override
+    public PipelineStats add(PipelineStats stats) {
+        MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+        if (stats == null) {
+            return null;
+        }
+        PipelineExperiment exp = mongoTemplateExperimentDB.findOne(new Query(Criteria.where("id").is(stats.getExperiment_id())), PipelineExperiment.class);
+        if (currentUser.isAdmin() || exp.getAccount_id().equals(currentUser.getId())) {
+            logger.info("Adding PipelineStats");
+            mongoTemplateExperimentDB.insert(stats);
+            return stats;
+        }
+        return null;
+    }
 
-	// ROLE_ADMIN: all.
-	// ROLE_CM:    own account.
-	// ROLE_USER:  none.
-	public void update(PipelineStats stats) {
-		MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-		if (stats == null) { return; }
-		PipelineExperiment exp = mongoTemplateExperimentDB.findOne(new Query(Criteria.where("id").is(stats.getExperiment_id())), PipelineExperiment.class);
-		if (currentUser.isAdmin() || exp.getAccount_id().equals(currentUser.getId())) {
-			logger.info("Updating PipelineStats " + stats.getId());
-			mongoTemplateExperimentDB.save(stats);
-		}
-	}
+    // ROLE_ADMIN: all.
+    // ROLE_CM:    own account.
+    // ROLE_USER:  none.
+    @Override
+    public void update(PipelineStats stats) {
+        MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+        if (stats == null) {
+            return;
+        }
+        PipelineExperiment exp = mongoTemplateExperimentDB.findOne(new Query(Criteria.where("id").is(stats.getExperiment_id())), PipelineExperiment.class);
+        if (currentUser.isAdmin() || exp.getAccount_id().equals(currentUser.getId())) {
+            logger.info("Updating PipelineStats " + stats.getId());
+            mongoTemplateExperimentDB.save(stats);
+        }
+    }
 
-	// ROLE_ADMIN: all.
-	// ROLE_CM:    own account.
-	// ROLE_USER:  none.
-	public void delete(String id) {
-		MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-		PipelineStats stats = find(id);
-		if (stats == null) { return; }
-		PipelineExperiment exp = mongoTemplateExperimentDB.findOne(new Query(Criteria.where("id").is(stats.getExperiment_id())), PipelineExperiment.class);
-		if (currentUser.isAdmin() || exp.getAccount_id().equals(currentUser.getId())) {
-			logger.info("Deleting PipelineStats " + id);
-			mongoTemplateExperimentDB.remove(stats);
-		}
-	}
+    // ROLE_ADMIN: all.
+    // ROLE_CM:    own account.
+    // ROLE_USER:  none.
+    @Override
+    public void delete(String id) {
+        MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+        PipelineStats stats = find(id);
+        if (stats == null) {
+            return;
+        }
+        PipelineExperiment exp = mongoTemplateExperimentDB.findOne(new Query(Criteria.where("id").is(stats.getExperiment_id())), PipelineExperiment.class);
+        if (currentUser.isAdmin() || exp.getAccount_id().equals(currentUser.getId())) {
+            logger.info("Deleting PipelineStats " + id);
+            mongoTemplateExperimentDB.remove(stats);
+        }
+    }
 
-        @Override
-	public void deleteForExperiment(String experimentId) {
-		PipelineStats stats = findByExperiment(experimentId);
-		if (stats != null) {
-			delete(stats.getId());
-		}
-	}
+    @Override
+    public void deleteForExperiment(String experimentId) {
+        PipelineStats stats = findByExperiment(experimentId);
+        if (stats != null) {
+            delete(stats.getId());
+        }
+    }
 }

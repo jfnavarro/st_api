@@ -3,7 +3,6 @@
  * Read LICENSE for more information about licensing terms
  * Contact: Jose Fernandez Navarro <jose.fernandez.navarro@scilifelab.se>
  */
-
 package com.spatialtranscriptomics.serviceImpl;
 
 import org.apache.log4j.Logger;
@@ -19,51 +18,48 @@ import org.springframework.stereotype.Service;
 
 import com.spatialtranscriptomics.model.MongoUserDetails;
 
-
 /**
- * This class implements the store/retrieve logic to MongoDB for the data model class "MongoUserDetails".
- * The DB connection is handled in a MongoOperations object, which is configured in mvc-dispather-servlet.xml
- *  See also class MongoUserDetails.
+ * This class implements the store/retrieve logic to MongoDB for the data model
+ * class "MongoUserDetails". The DB connection is handled in a MongoOperations
+ * object, which is configured in mvc-dispather-servlet.xml See also class
+ * MongoUserDetails.
  */
-
-
 @Service
 public class MongoUserDetailsServiceImpl implements UserDetailsService {
 
-	private static final Logger logger = Logger
-			.getLogger(MongoUserDetailsServiceImpl.class);
+    private static final Logger logger = Logger
+            .getLogger(MongoUserDetailsServiceImpl.class);
 
-	@Autowired
-	MongoOperations mongoTemplateUserDB;
+    @Autowired
+    MongoOperations mongoTemplateUserDB;
 
-	
-	private final String DB_COLLECTION_NAME = "account";
+    private final String DB_COLLECTION_NAME = "account";
 
-	private boolean isProperlyLoaded = false;
-	
-	public MongoUserDetails loadUserByUsername(String username)
-			throws UsernameNotFoundException {
-		logger.info("Attempting to load user " + username);
-		isProperlyLoaded = false;
-		MongoUserDetails result = mongoTemplateUserDB.findOne(new Query(Criteria.where("username").is(username)), MongoUserDetails.class, DB_COLLECTION_NAME);
-		if (result == null) {
-			logger.info("Failed loading user " + username);
-			throw new UsernameNotFoundException(username);
-		} else {
-			isProperlyLoaded = true;
-			logger.info("Succeeded loading user " + username);
-		}
-		return result;
-	}
+    private boolean isProperlyLoaded = false;
 
-	
-	public MongoUserDetails loadCurrentUser() {
-		Authentication a = SecurityContextHolder.getContext().getAuthentication();
-		return loadUserByUsername(a.getName());
-	}
-	
-	public boolean isProperlyLoaded() {
-		return isProperlyLoaded;
-	}
+    @Override
+    public MongoUserDetails loadUserByUsername(String username)
+            throws UsernameNotFoundException {
+        logger.info("Attempting to load user " + username);
+        isProperlyLoaded = false;
+        MongoUserDetails result = mongoTemplateUserDB.findOne(new Query(Criteria.where("username").is(username)), MongoUserDetails.class, DB_COLLECTION_NAME);
+        if (result == null) {
+            logger.info("Failed loading user " + username);
+            throw new UsernameNotFoundException(username);
+        } else {
+            isProperlyLoaded = true;
+            logger.info("Succeeded loading user " + username);
+        }
+        return result;
+    }
+
+    public MongoUserDetails loadCurrentUser() {
+        Authentication a = SecurityContextHolder.getContext().getAuthentication();
+        return loadUserByUsername(a.getName());
+    }
+
+    public boolean isProperlyLoaded() {
+        return isProperlyLoaded;
+    }
 
 }

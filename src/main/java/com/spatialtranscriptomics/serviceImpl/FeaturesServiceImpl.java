@@ -3,7 +3,6 @@
  * Read LICENSE for more information about licensing terms
  * Contact: Jose Fernandez Navarro <jose.fernandez.navarro@scilifelab.se>
  */
-
 package com.spatialtranscriptomics.serviceImpl;
 
 import com.amazonaws.services.s3.AmazonS3Client;
@@ -30,66 +29,61 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
-
 /**
- * This class retrieves/stores feature files and features metadata from Amazon S3.
- * It uses the Amazon AWS Java SDK, see http://aws.amazon.com/sdkforjava/
+ * This class retrieves/stores feature files and features metadata from Amazon
+ * S3. It uses the Amazon AWS Java SDK, see http://aws.amazon.com/sdkforjava/
  * The AmazonS3Client is configured in the mvc-dispatcher-servlet.xml
  */
-
 @Service
 public class FeaturesServiceImpl implements IFeaturesService {
-    
+
     @Autowired
     AmazonS3Client s3Client;
-    
+
     @Autowired
     MongoOperations mongoTemplateUserDB;
-    
+
     @Autowired
     MongoUserDetailsServiceImpl customUserDetailsService;
 
     private @Value("${s3.featuresbucket}")
     String featuresBucket;
-    
+
     private @Value("${s3.featurespath}")
     String featuresPath;
-    
 
     private static final Logger logger = Logger.getLogger(ImageServiceImpl.class);
-    
+
     @Override
     public boolean datasetIsGranted(String datasetId, MongoUserDetails user) {
         List<DatasetInfo> dsis = mongoTemplateUserDB.find(new Query(Criteria.where("dataset_id").is(datasetId).and("account_id").is(user.getId())), DatasetInfo.class);
         return (dsis != null && dsis.size() > 0);
     }
-    
-    
+
     // ROLE_ADMIN: ok.
     // ROLE_CM:    ok.
     // ROLE_USER:  nope.
     @Override
     public List<FeaturesMetadata> listMetadata() {
         System.out.println("Inside listMetadata in service");
-            ObjectListing objects = s3Client.listObjects(featuresBucket);
+        ObjectListing objects = s3Client.listObjects(featuresBucket);
 
-            List<S3ObjectSummary> objs = objects.getObjectSummaries();
+        List<S3ObjectSummary> objs = objects.getObjectSummaries();
 
-            List<FeaturesMetadata> featuresMetadataList = new ArrayList<FeaturesMetadata>();
-            for (S3ObjectSummary o : objs) {
-                    FeaturesMetadata fm = new FeaturesMetadata();
-                    String fn = o.getKey();
-                    fm.setFilename(fn);
-                    fm.setDatasetId(fn.substring(0, fn.length()-3)); // Remove .gz
-                    fm.setLastModified(new DateTime(o.getLastModified()));
-                    fm.setCreated(new DateTime(o.getLastModified()));
-                    fm.setSize(o.getSize());
-                    featuresMetadataList.add(fm);
-            }
-            return featuresMetadataList;
+        List<FeaturesMetadata> featuresMetadataList = new ArrayList<FeaturesMetadata>();
+        for (S3ObjectSummary o : objs) {
+            FeaturesMetadata fm = new FeaturesMetadata();
+            String fn = o.getKey();
+            fm.setFilename(fn);
+            fm.setDatasetId(fn.substring(0, fn.length() - 3)); // Remove .gz
+            fm.setLastModified(new DateTime(o.getLastModified()));
+            fm.setCreated(new DateTime(o.getLastModified()));
+            fm.setSize(o.getSize());
+            featuresMetadataList.add(fm);
+        }
+        return featuresMetadataList;
     }
-    
-    
+
     // ROLE_ADMIN: ok.
     // ROLE_CM:    ok.
     // ROLE_USER:  ok.
@@ -103,7 +97,7 @@ public class FeaturesServiceImpl implements IFeaturesService {
         }
         return null;
     }
-    
+
     // ROLE_ADMIN: all.
     // ROLE_CM:    all.
     // ROLE_USER:  granted datasets.
@@ -124,7 +118,7 @@ public class FeaturesServiceImpl implements IFeaturesService {
             return null; // user has no permissions on dataset
         }
     }
-    
+
     // ROLE_ADMIN: ok.
     // ROLE_CM:    ok.
     // ROLE_USER:  nope.
@@ -138,7 +132,7 @@ public class FeaturesServiceImpl implements IFeaturesService {
         om.setContentType("application/json");
         om.setContentEncoding("gzip");
         InputStream is = new ByteArrayInputStream(file);
-        
+
         String filename = id + ".gz";
         boolean exists = (getMetadata(id) != null);
         if (exists) {
@@ -153,15 +147,15 @@ public class FeaturesServiceImpl implements IFeaturesService {
             return false;
         }
     }
-    
+
     // ROLE_ADMIN: ok.
     // ROLE_CM:    ok.
     // ROLE_USER:  nope.
     @Override
     public void delete(String id) {
-            logger.info("Deleting features for dataset " + id);
-            String filename = id + ".gz";
-            s3Client.deleteObject(featuresBucket, filename);
+        logger.info("Deleting features for dataset " + id);
+        String filename = id + ".gz";
+        s3Client.deleteObject(featuresBucket, filename);
     }
-    
+
 }

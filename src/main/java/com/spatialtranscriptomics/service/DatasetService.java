@@ -11,6 +11,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.spatialtranscriptomics.model.Dataset;
+import com.spatialtranscriptomics.model.MongoUserDetails;
 
 /**
  * Interface for the dataset service.
@@ -35,4 +36,10 @@ public interface DatasetService {
         public void clearAccountCreator(String accountId);
 
         public void setUnabledForImageAlignment(String imalId);
+        
+        public boolean datasetIsGranted(String datasetId, MongoUserDetails user);
+        
+        public Dataset findByNameInternal(String name);
+        
+        public boolean deleteIsOK(String id);
 }

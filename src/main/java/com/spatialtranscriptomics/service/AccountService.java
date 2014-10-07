@@ -32,5 +32,5 @@ public interface AccountService {
 
 	public void delete(String id);
 	
-	
+	public boolean deleteIsOk(String id);
 }
