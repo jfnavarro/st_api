@@ -192,10 +192,10 @@ public class ChipController {
             logger.info("Failed to update chip. ID mismatch.");
             throw new CustomBadRequestException("Chip ID in request URL does not match ID in content body.");
         } else if (chipService.find(id) == null) {
-            logger.info("Failed to update account. Missing or failed permissions.");
+            logger.info("Failed to update chip. Missing or failed permissions.");
             throw new CustomBadRequestException("A chip with this ID does not exist or you don't have permissions to access it.");
         } else if (!chipService.findByName(chip.getName()).getId().equals(id)) {
-            logger.info("Failed to update account. Duplicate username.");
+            logger.info("Failed to update chip. Duplicate username.");
             throw new CustomBadRequestException(
                         "Another chip with this name exists already. Names are unique.");
         } else {

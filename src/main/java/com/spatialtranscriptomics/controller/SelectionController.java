@@ -5,7 +5,6 @@
  */
 package com.spatialtranscriptomics.controller;
 
-import com.spatialtranscriptomics.component.StartupHousekeeper;
 import com.spatialtranscriptomics.exceptions.BadRequestResponse;
 import com.spatialtranscriptomics.exceptions.CustomBadRequestException;
 import com.spatialtranscriptomics.exceptions.CustomInternalServerErrorException;
@@ -25,7 +24,6 @@ import java.util.Iterator;
 import java.util.List;
 import javax.validation.Valid;
 import org.apache.log4j.Logger;
-import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.annotation.Secured;
@@ -62,7 +60,18 @@ public class SelectionController {
     @Autowired
     MongoUserDetailsServiceImpl customUserDetailsService;
 
-    // list / list for account / list for dataset
+    /**
+     * GET|HEAD /selection/
+     * GET|HEAD /selection/?account={accountId}
+     * GET|HEAD /selection/?dataset={datasetId}
+     * GET|HEAD /selection/?task={taskId}
+     * 
+     * Enabled list / list for account / list for dataset / list for task.
+     * @param accountId accout ID.
+     * @param datasetId dataset ID.
+     * @param taskId task ID.
+     * @return list.
+     */
     @Secured({"ROLE_USER", "ROLE_CM", "ROLE_ADMIN"})
     @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD})
     public @ResponseBody
@@ -73,17 +82,22 @@ public class SelectionController {
     ) {
         List<Selection> selections = null;
         if (accountId != null) {
+            logger.info("Returning list of enabled user's selections for account " + accountId);
             selections = selectionService.findByAccount(accountId);
         } else if (datasetId != null) {
+            logger.info("Returning list of enabled user's selections for dataset " + datasetId);
             selections = selectionService.findByDataset(datasetId);
         } else if (taskId != null) {
+            logger.info("Returning list of enabled user's selections for task " + taskId);
             selections = selectionService.findByTask(taskId);
         } else {
             // NOTE: Only current user's selections, even for admin.
             MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
             selections = selectionService.findByAccount(currentUser.getId());
+            logger.info("Returning list of enabled user's selections");
         }
         if (selections == null) {
+            logger.info("Returning empty list of enabled user's selections");
             throw new CustomNotFoundException("No selections found or you dont have permissions to access them.");
         }
         Iterator<Selection> i = selections.iterator();
@@ -97,7 +111,18 @@ public class SelectionController {
         return selections;
     }
 
-    // list all / list all for account / list all for dataset
+    /**
+     * GET|HEAD /selection/all/
+     * GET|HEAD /selection/all/?account={accountId}
+     * GET|HEAD /selection/all/?dataset={datasetId}
+     * GET|HEAD /selection/all/?task={taskId}
+     * 
+     * All list / list for account / list for dataset / list for task.
+     * @param accountId accout ID.
+     * @param datasetId dataset ID.
+     * @param taskId task ID.
+     * @return list.
+     */
     @Secured({"ROLE_USER", "ROLE_CM", "ROLE_ADMIN"})
     @RequestMapping(value = "/all", method = {RequestMethod.GET, RequestMethod.HEAD})
     public @ResponseBody
@@ -109,79 +134,127 @@ public class SelectionController {
         List<Selection> selections = null;
         if (accountId != null) {
             selections = selectionService.findByAccount(accountId);
+            logger.info("Returning list of all selections for account " + accountId);
         } else if (datasetId != null) {
             selections = selectionService.findByDataset(datasetId);
+            logger.info("Returning list of all selections for dataset " + datasetId);
         } else if (taskId != null) {
+            logger.info("Returning list of all selections for task " + taskId);
             selections = selectionService.findByTask(taskId);
         } else {
             selections = selectionService.list();
+            logger.info("Returning list of all selections");
         }
         if (selections == null) {
+            logger.info("Returning empty list of selections");
             throw new CustomNotFoundException("No selections found or you dont have permissions to access them.");
         }
         return selections;
     }
 
-    // get
+    /**
+     * GET|HEAD /selection/{id}
+     * 
+     * Returns an enabled selection.
+     * 
+     * @param id the selection ID.
+     * @return the selection.
+     */
     @Secured({"ROLE_USER", "ROLE_CM", "ROLE_ADMIN"})
-    @RequestMapping(value = "/all/{id}", method = {RequestMethod.GET, RequestMethod.HEAD})
+    @RequestMapping(value = "{id}", method = {RequestMethod.GET, RequestMethod.HEAD})
     public @ResponseBody
     Selection get(@PathVariable String id) {
         Selection selection = selectionService.find(id);
         Dataset d = datasetService.find(selection.getDataset_id());
         if (selection == null || !selection.getEnabled() || d == null || !d.getEnabled()) {
+            logger.info("Failed to return enabled selection " + id + ". Permission denied or missing.");
             throw new CustomNotFoundException("A selection with this ID does not exist, is disabled, or you dont have permissions to access it.");
         }
+        logger.info("Returning enabled selection " + id);
         return selection;
     }
 
-    // get all
+    /**
+     * GET|HEAD /selection/all/{id}
+     * 
+     * Returns an enabled/disabled selection.
+     * 
+     * @param id the selection ID.
+     * @return the selection.
+     */
     @Secured({"ROLE_USER", "ROLE_CM", "ROLE_ADMIN"})
-    @RequestMapping(value = "{id}", method = {RequestMethod.GET, RequestMethod.HEAD})
+    @RequestMapping(value = "/all/{id}", method = {RequestMethod.GET, RequestMethod.HEAD})
     public @ResponseBody
     Selection getAll(@PathVariable String id) {
         Selection selection = selectionService.find(id);
         if (selection == null) {
+            logger.info("Failed to return selection " + id + ". Permission denied or missing.");
             throw new CustomNotFoundException("A selection with this ID does not exist or you dont have permissions to access it.");
         }
+        logger.info("Returning selection " + id);
         return selection;
     }
 
-    // get last modified
+    /**
+     * GET|HEAD /selection/lastmodified/{id}
+     *
+     * Finds a selection's last modified timestamp.
+     * @param id the selection ID.
+     * @return the timestamp.
+     */
     @Secured({"ROLE_USER", "ROLE_CM", "ROLE_ADMIN"})
     @RequestMapping(value = "/lastmodified/{id}", method = {RequestMethod.GET, RequestMethod.HEAD})
     public @ResponseBody
     LastModifiedDate getLastModified(@PathVariable String id) {
         Selection selection = selectionService.find(id);
         if (selection == null) {
+            logger.info("Failed to return last modified time of selection " + id);
             throw new CustomNotFoundException("A selection with this ID does not exist or you dont have permissions to access it.");
         }
+        logger.info("Returning last modified time of selection " + id);
         return new LastModifiedDate(selection.getLast_modified());
     }
 
-    // add
+    /**
+     * POST /selection/
+     * 
+     * Adds a selection
+     * @param selection the selection.
+     * @param result binding.
+     * @return the selection with ID assigned.
+     */
     @Secured({"ROLE_USER", "ROLE_CM", "ROLE_ADMIN"})
     @RequestMapping(method = RequestMethod.POST)
     public @ResponseBody
     Selection add(@RequestBody @Valid Selection selection, BindingResult result) {
         // Selection validation
         if (result.hasErrors()) {
-            // TODO send error messages here
+            logger.info("Failed to add selection. Missing fields?");
             throw new CustomBadRequestException(
                     "Selection is invalid. Missing required fields?");
         }
         if (selection.getId() != null) {
+            logger.info("Failed to add selection. ID set by user.");
             throw new CustomBadRequestException(
                     "The selection you want to add must not have an ID. The ID will be autogenerated.");
         }
         if (selectionService.findByName(selection.getName()) != null) {
+            logger.info("Failed to add selection. Duplicate name.");
             throw new CustomBadRequestException(
                     "An selection with this name already exists. Selection names are unique.");
         }
+        logger.info("Successfully added selection " + selection.getId());
         return selectionService.add(selection);
     }
 
-    // update
+    /**
+     * PUT /selection/{id}
+     * 
+     * Updates a selection.
+     * @param id the selection ID.
+     * @param selection the selection.
+     * @param result binding.
+     */
     @Secured({"ROLE_USER", "ROLE_CM", "ROLE_ADMIN"})
     @RequestMapping(value = "{id}", method = RequestMethod.PUT)
     public @ResponseBody
@@ -189,26 +262,35 @@ public class SelectionController {
             BindingResult result) {
         // Selection validation
         if (result.hasErrors()) {
-            // TODO send error messages here
+            logger.info("Failed to update selection " + id + " . Missing fields?");
             throw new CustomBadRequestException(
                     "Selection is invalid. Missing required fields?");
         }
         if (!id.equals(selection.getId())) {
+            logger.info("Failed to update selection " + id + ". ID mismatch.");
             throw new CustomBadRequestException(
                     "Selection ID in request URL does not match ID in content body.");
         } else if (selectionService.find(id) == null) {
+            logger.info("Failed to update selection " + id + ". Duplicate username.");
             throw new CustomBadRequestException(
                     "A selection with this ID does not exist or you don't have permissions to access it.");
         }
+        logger.info("Successfully updated selection " + id);
         selectionService.update(selection);
     }
 
-    // delete
+    /**
+     * DELETE /selection/{id}
+     * 
+     * Deletes a selection.
+     * @param id the selection ID.
+     */
     @Secured({"ROLE_USER", "ROLE_CM", "ROLE_ADMIN"})
     @RequestMapping(value = "{id}", method = RequestMethod.DELETE)
     public @ResponseBody
     void delete(@PathVariable String id) {
         selectionService.delete(id);
+        logger.info("Successfully deleted selection " + id);
     }
 
     @ExceptionHandler(CustomNotModifiedException.class)
