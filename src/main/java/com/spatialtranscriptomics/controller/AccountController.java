@@ -179,7 +179,8 @@ public class AccountController {
         logger.info("Returning enabled account " + id);
         return entity;
     }
-
+    
+    
     /**
      * GET|HEAD /account/all/{id}
      * 

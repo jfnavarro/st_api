@@ -16,16 +16,22 @@ import com.spatialtranscriptomics.exceptions.NotModifiedResponse;
 import com.spatialtranscriptomics.model.Dataset;
 import com.spatialtranscriptomics.model.LastModifiedDate;
 import com.spatialtranscriptomics.model.MongoUserDetails;
+import com.spatialtranscriptomics.model.PipelineExperiment;
 import com.spatialtranscriptomics.model.Selection;
 import com.spatialtranscriptomics.serviceImpl.DatasetServiceImpl;
 import com.spatialtranscriptomics.serviceImpl.MongoUserDetailsServiceImpl;
 import com.spatialtranscriptomics.serviceImpl.SelectionServiceImpl;
+import com.spatialtranscriptomics.util.DateOperations;
 import java.util.Iterator;
 import java.util.List;
 import javax.validation.Valid;
 import org.apache.log4j.Logger;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Repository;
@@ -33,6 +39,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -158,20 +165,38 @@ public class SelectionController {
      * Returns an enabled selection.
      * 
      * @param id the selection ID.
+     * @param ifModifiedSince last mod tag.
      * @return the selection.
      */
     @Secured({"ROLE_USER", "ROLE_CM", "ROLE_ADMIN"})
     @RequestMapping(value = "{id}", method = {RequestMethod.GET, RequestMethod.HEAD})
     public @ResponseBody
-    Selection get(@PathVariable String id) {
+    HttpEntity<Selection> get(@PathVariable String id, @RequestHeader(value="If-Modified-Since", defaultValue="") String ifModifiedSince) {
         Selection selection = selectionService.find(id);
         Dataset d = datasetService.find(selection.getDataset_id());
         if (selection == null || !selection.getEnabled() || d == null || !d.getEnabled()) {
             logger.info("Failed to return enabled selection " + id + ". Permission denied or missing.");
             throw new CustomNotFoundException("A selection with this ID does not exist, is disabled, or you dont have permissions to access it.");
         }
-        logger.info("Returning enabled selection " + id);
-        return selection;
+        // Check if already newest.
+        DateTime reqTime = DateOperations.parseHTTPDate(ifModifiedSince);
+        if (reqTime != null) {
+            DateTime resTime = selection.getLast_modified() == null ? new DateTime(2012,1,1,0,0) : selection.getLast_modified();
+            // NOTE: Only precision within day.
+            resTime = new DateTime(resTime.getYear(), resTime.getMonthOfYear(), resTime.getDayOfMonth(), resTime.getHourOfDay(), resTime.getMinuteOfHour(), resTime.getSecondOfMinute());
+            if (!resTime.isAfter(reqTime)) {
+                logger.info("Not returning selection " + id + " since not modified");
+                throw new CustomNotModifiedException("This selection has not been modified");
+            }
+        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.add("Cache-Control", "public, must-revalidate, no-transform");
+        headers.add("Vary", "Accept-Encoding");
+        headers.add("Last-modified", DateOperations.getHTTPDateSafely(selection.getLast_modified()));
+        HttpEntity<Selection> entity = new HttpEntity<Selection>(selection, headers);
+        logger.info("Returning selection " + id);
+        return entity;
     }
 
     /**
