@@ -12,7 +12,9 @@ import org.springframework.data.annotation.Transient;
 
 /**
  * This class implements the FeaturesMetadata object.
- *
+ * It derives its contents from Amazon S3.
+ * 
+ * Features metadata holds properties of a features file stored on Amazon S3.
  */
 public class FeaturesMetadata implements IFeaturesMetadata {
 
@@ -20,7 +22,13 @@ public class FeaturesMetadata implements IFeaturesMetadata {
     String filename;
     DateTime lastModified;
     DateTime created;
-    long size;
+    long size;       // No. of bytes in file
+    
+    /**
+     * Default constructor is needed by Jackson, in
+     * case other constructors are added.
+     */
+    public FeaturesMetadata() {}
 
     @Override
     public String getDatasetId() {

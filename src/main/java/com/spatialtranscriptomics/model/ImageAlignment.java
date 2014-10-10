@@ -16,6 +16,10 @@ import org.springframework.data.mongodb.core.mapping.Document;
 /**
  * This interface defines the ImageAlignment model. Applications that use the
  * API must implement the same model.
+ * 
+ * An image alignment holds the transform between the coordinate space of the
+ * image of the tissue of an experiment, and the coordinates of the chip
+ * (and the obtained features).
  */
 @Document(collection = "imagealignment")
 public class ImageAlignment implements IImageAlignment {
@@ -37,7 +41,7 @@ public class ImageAlignment implements IImageAlignment {
     @NotBlank(message = "Figure blue must not be blank.")
     String figure_blue;
 
-        // Now possible.
+    // Not possible.
     //@NotEmpty(message = "Alignment matrix must not be empty.")
     double[] alignment_matrix;
 
@@ -47,6 +51,12 @@ public class ImageAlignment implements IImageAlignment {
     @LastModifiedDate
     private DateTime last_modified;
 
+    /**
+     * Default constructor is needed by Jackson, in
+     * case other constructors are added.
+     */
+    public ImageAlignment() {}
+    
     @Override
     public String getId() {
         return id;

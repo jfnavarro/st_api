@@ -19,6 +19,9 @@ import org.springframework.format.annotation.DateTimeFormat;
 /**
  * This interface defines the Task model. Applications that use the API must
  * implement the same model.
+ * 
+ * This a template for tasks invoked by the user in the client, potentially carried out
+ * in the client or in the Amazon EMR.
  */
 @Document(collection = "task")
 public class Task implements ITask {
@@ -54,6 +57,12 @@ public class Task implements ITask {
     @LastModifiedDate
     private DateTime last_modified;
 
+     /**
+     * Default constructor is needed by Jackson, in
+     * case other constructors are added.
+     */
+    public Task() {}
+    
     @Override
     public String getId() {
         return id;

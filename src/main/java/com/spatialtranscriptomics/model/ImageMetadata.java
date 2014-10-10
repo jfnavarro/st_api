@@ -8,8 +8,11 @@ package com.spatialtranscriptomics.model;
 import org.joda.time.DateTime;
 
 /**
- * This class implements the ImageMetadata object.
+ * This class implements the ImageMetadata object. It derives its properties
+ * from Amazon S3.
  *
+ * Image metadata holds characterstics of a tissue microscopy image obtained
+ * in an exeperiment. Images are stored on Amazon S3.
  */
 public class ImageMetadata implements IImageMetadata {
 
@@ -17,8 +20,14 @@ public class ImageMetadata implements IImageMetadata {
     String filename;
     DateTime lastModified;
     DateTime created;
-    long size;
+    long size;       // No of bytes of file.
 
+    /**
+     * Default constructor is needed by Jackson, in
+     * case other constructors are added.
+     */
+    public ImageMetadata() {}
+    
     @Override
     public String getImageType() {
         return this.imageType;

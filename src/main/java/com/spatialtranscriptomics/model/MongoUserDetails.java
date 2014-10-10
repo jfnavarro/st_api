@@ -25,6 +25,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 public class MongoUserDetails extends Account implements UserDetails, IMongoUserDetails {
 
     /**
+     * Default constructor is needed by Jackson, in
+     * case other constructors are added.
+     */
+    public MongoUserDetails() {}
+    
+    /**
      * Auto-generated ID for inheritance.
      */
     private static final long serialVersionUID = 6756025876358143006L;

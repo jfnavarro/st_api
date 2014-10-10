@@ -28,6 +28,8 @@ import org.springframework.data.annotation.LastModifiedDate;
  * the @Document annotation of Spring Data for the mapping. We also do data
  * validation using Hibernate validator constraints.
  *
+ * A dataset represents the characteristics of of an experiment. It is tightly
+ * linked to a features collection.
  */
 @Document(collection = "dataset")
 public class Dataset implements IDataset {
@@ -47,6 +49,7 @@ public class Dataset implements IDataset {
     @NotBlank(message = "Species must not be blank.")
     String species;
 
+    // We now allow this being blank.
     //@NotBlank(message = "Image alignment must not be blank.")
     String image_alignment_id;
 
@@ -56,7 +59,9 @@ public class Dataset implements IDataset {
     int unique_barcode_count;
     double[] overall_hit_quartiles;
     double[] gene_pooled_hit_quartiles;
+    
     String[] obo_foundry_terms;
+    
     String comment;
 
     public String created_by_account_id;
@@ -70,6 +75,12 @@ public class Dataset implements IDataset {
     @Transient
     public List<String> granted_accounts;
 
+    /**
+     * Default constructor is needed by Jackson, in
+     * case other constructors are added.
+     */
+    public Dataset() {}
+    
     @Override
     public String getId() {
         return id;

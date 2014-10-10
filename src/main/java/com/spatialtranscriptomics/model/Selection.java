@@ -20,6 +20,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 /**
  * This interface defines the Selection model. Applications that use the API
  * must implement the same model.
+ * 
+ * A selection represents a subset of features, stemming from a user-selected
+ * region in the client.
  */
 @Document(collection = "selection")
 public class Selection implements ISelection {
@@ -58,6 +61,12 @@ public class Selection implements ISelection {
     @LastModifiedDate
     private DateTime last_modified;
 
+     /**
+     * Default constructor is needed by Jackson, in
+     * case other constructors are added.
+     */
+    public Selection() {}
+    
     @Override
     public String getId() {
         return id;

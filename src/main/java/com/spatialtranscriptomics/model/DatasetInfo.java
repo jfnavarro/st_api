@@ -17,6 +17,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
  * use the @Document annotation of Spring Data for the mapping. We also do data
  * validation using Hibernate validator constraints.
  *
+ * A dataset info is a join-table-like entity allowing an account to access
+ * a dataset.
  */
 @Document(collection = "datasetinfo")
 @CompoundIndexes({
@@ -37,8 +39,11 @@ public class DatasetInfo implements IDatasetInfo {
 
     String comment;
 
-    public DatasetInfo() {
-    }
+    /**
+     * Default constructor is needed by Jackson, in
+     * case other constructors are added.
+     */
+    public DatasetInfo() {}
 
     // HACK. Only for admin editing.
     public DatasetInfo(String accountId, String datasetId, String comment) {

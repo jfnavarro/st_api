@@ -12,7 +12,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
  * This interface defines the PipelineStats model. Applications that use the API
- * must implement the same model.
+ * must implement the same model. This class will at some point be merged with PipelineExperiment.
+ * 
+ * This class holds additional properties of a pipeline experiment.
  */
 @Document(collection = "pipelinestats")
 public class PipelineStats implements IPipelineStats {
@@ -62,6 +64,12 @@ public class PipelineStats implements IPipelineStats {
 
     String log_file;
 
+    /**
+     * Default constructor is needed by Jackson, in
+     * case other constructors are added.
+     */
+    public PipelineStats() {}
+    
     @Override
     public String getId() {
         return id;

@@ -18,6 +18,10 @@ import org.springframework.data.mongodb.core.mapping.Document;
  *
  * @Document annotation of Spring Data for the mapping. We also do data
  * validation using Hibernate validator constraints.
+ * 
+ * Chips represent the physical chip on which an experiment has been performed.
+ * As such, it has a outer "total" dimensions, border dimensions, and inner
+ * dimensions for coordinates, and the total number of barcodes.
  */
 @Document(collection = "chip")
 public class Chip implements IChip {
@@ -34,12 +38,15 @@ public class Chip implements IChip {
     int x1;
     int x1_border;
     int x1_total;
+    
     int x2;
     int x2_border;
     int x2_total;
+    
     int y1;
     int y1_border;
     int y1_total;
+    
     int y2;
     int y2_border;
     int y2_total;
@@ -50,6 +57,12 @@ public class Chip implements IChip {
     @LastModifiedDate
     private DateTime last_modified;
 
+    /**
+     * Default constructor is needed by Jackson, in
+     * case other constructors are added.
+     */
+    public Chip() {}
+    
     // id is set automatically by MongoDB
     @Override
     public String getId() {

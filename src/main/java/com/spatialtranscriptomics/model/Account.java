@@ -30,6 +30,8 @@ import org.springframework.data.annotation.LastModifiedDate;
  * the @Document annotation of Spring Data for the mapping. We also do data
  * validation using Hibernate validator constraints.
  *
+ * Accounts represent the user entities, and also store the credentials used
+ * for login. The username is enforced to be an email.
  */
 @Document(collection = "account")
 public class Account implements IAccount {
@@ -74,6 +76,12 @@ public class Account implements IAccount {
     @Transient
     public List<String> granted_datasets;
 
+    /**
+     * Default constructor is needed by Jackson, in
+     * case other constructors are added.
+     */
+    public Account() {}
+    
     // id is set automatically by MongoDB
     @Override
     public String getId() {

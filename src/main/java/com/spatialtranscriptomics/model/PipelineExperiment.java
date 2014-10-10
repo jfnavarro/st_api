@@ -17,7 +17,10 @@ import org.springframework.data.mongodb.core.mapping.Document;
  * This class maps the PipelineExperiment data model object into a MongoDB
  * Document We use the @Document annotation of Spring Data for the mapping. We
  * also do data validation using Hibernate validator constraints.
- *
+ * 
+ * A pipeline experiment represents the computational part of an experiment
+ * performed on Amazon EMR, in which a raw dataset is mapped, annotated, etc.
+ * to obtain a set of features as a feature file.
  */
 @Document(collection = "pipelineexperiment")
 public class PipelineExperiment implements IPipelineExperiment {
@@ -50,6 +53,12 @@ public class PipelineExperiment implements IPipelineExperiment {
     @LastModifiedDate
     private DateTime last_modified;
 
+    /**
+     * Default constructor is needed by Jackson, in
+     * case other constructors are added.
+     */
+    public PipelineExperiment() {}
+    
     // id is set automatically by MongoDB
     @Override
     public String getId() {

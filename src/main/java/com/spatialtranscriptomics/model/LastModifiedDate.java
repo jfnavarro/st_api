@@ -10,11 +10,19 @@ package com.spatialtranscriptomics.model;
 import org.joda.time.DateTime;
 
 /**
- * Wraps a date into JSON
+ * Wraps a last modified date into JSON.
+ * Enables JSON access to only last modified date as a subset of a bigger JSON entity.
  */
 public class LastModifiedDate implements ILastModifiedDate {
     
     DateTime last_modified;
+    
+    /**
+     * Default constructor is needed by Jackson, in
+     * case other constructors are added.
+     */
+    public LastModifiedDate() {}
+    
     
     public LastModifiedDate(DateTime date) {
         last_modified =  date;

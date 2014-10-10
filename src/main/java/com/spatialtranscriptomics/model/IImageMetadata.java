@@ -5,7 +5,6 @@
  */
 package com.spatialtranscriptomics.model;
 
-import java.util.Date;
 import org.joda.time.DateTime;
 
 /**

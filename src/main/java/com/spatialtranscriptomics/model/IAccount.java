@@ -70,11 +70,9 @@ public interface IAccount {
 
     public DateTime getLast_modified();
 
-    // HACK.
     @Transient
     public List<String> getGranted_datasets();
 
-    // HACK.
     @Transient
     public void setGranted_datasets(List<String> datasets);
 
