@@ -41,5 +41,5 @@ public interface DatasetService {
         
         public Dataset findByNameInternal(String name);
         
-        public boolean deleteIsOK(String id);
+        public boolean deleteIsOkForCurrUser(String id);
 }

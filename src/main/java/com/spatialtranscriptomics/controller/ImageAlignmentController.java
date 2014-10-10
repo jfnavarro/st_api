@@ -17,6 +17,7 @@ import com.spatialtranscriptomics.model.ImageAlignment;
 import com.spatialtranscriptomics.model.LastModifiedDate;
 import com.spatialtranscriptomics.serviceImpl.DatasetServiceImpl;
 import com.spatialtranscriptomics.serviceImpl.ImageAlignmentServiceImpl;
+import com.spatialtranscriptomics.serviceImpl.ImageServiceImpl;
 import com.spatialtranscriptomics.serviceImpl.S3ServiceImpl;
 import com.spatialtranscriptomics.util.DateOperations;
 import java.util.ArrayList;
@@ -59,6 +60,9 @@ public class ImageAlignmentController {
     @Autowired
     ImageAlignmentServiceImpl imagealignmentService;
 
+    @Autowired
+    ImageServiceImpl imageService;
+    
     @Autowired
     DatasetServiceImpl datasetService;
 
@@ -226,7 +230,7 @@ public class ImageAlignmentController {
     public @ResponseBody
     void delete(@PathVariable String id,
             @RequestParam(value = "cascade", required = false, defaultValue = "true") boolean cascade) {
-        if (!imagealignmentService.deleteIsOK(id)) {
+        if (!imagealignmentService.deleteIsOkForCurrUser(id)) {
             logger.info("Failed to delete image alignment " + id + " Missing permissions.");
             throw new CustomBadRequestException("You do not have permission to delete this image alignment.");
         }
@@ -246,7 +250,9 @@ public class ImageAlignmentController {
                     todel.remove(ia.getFigure_red());
                 }
             }
-            s3Service.deleteImageData(new ArrayList<String>(todel));
+            for (String sid : new ArrayList<String>(todel)) {
+                imageService.delete(sid);
+            }
             logger.info("Successfully cascade-deleted dependencies for image alignment " + id);
         }
     }

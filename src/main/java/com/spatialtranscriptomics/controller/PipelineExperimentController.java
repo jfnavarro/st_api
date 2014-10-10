@@ -229,7 +229,7 @@ public class PipelineExperimentController {
     @RequestMapping(value = "{id}", method = RequestMethod.DELETE)
     public @ResponseBody
     void delete(@PathVariable String id) {
-        if (!pipelineexperimentService.deleteIsOK(id)) {
+        if (!pipelineexperimentService.deleteIsOkForCurrUser(id)) {
             logger.info("Failed to delete pipeline experiment " + id + " Missing permissions.");
             throw new CustomBadRequestException("You do not have permission to delete this experiment.");
         }

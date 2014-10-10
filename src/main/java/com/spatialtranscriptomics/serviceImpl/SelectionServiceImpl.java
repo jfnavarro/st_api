@@ -97,8 +97,8 @@ public class SelectionServiceImpl implements SelectionService {
     public Selection add(Selection selection) {
         selection = checkCredentials(selection);
         if (selection != null) {
-            logger.info("Adding Selection");
             mongoTemplateExperimentDB.insert(selection);
+            logger.info("Added selection " + selection.getId() + " to MongoDB.");
         }
         return selection;
     }
@@ -110,8 +110,8 @@ public class SelectionServiceImpl implements SelectionService {
     public void update(Selection selection) {
         selection = checkCredentials(selection);
         if (selection != null) {
-            logger.info("Updating Selection " + selection.getId());
             mongoTemplateExperimentDB.save(selection);
+            logger.info("Updated selection " + selection.getId() + " to MongoDB.");
         }
     }
 
@@ -122,8 +122,8 @@ public class SelectionServiceImpl implements SelectionService {
     public void delete(String id) {
         Selection selection = checkCredentials(find(id));
         if (selection != null) {
-            logger.info("Deleing Selection " + id);
             mongoTemplateExperimentDB.remove(selection);
+            logger.info("Deleted account " + id + " from MongoDB.");
         }
     }
 

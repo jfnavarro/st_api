@@ -86,15 +86,13 @@ public class TaskServiceImpl implements TaskService {
     // ROLE_USER:  nope.
     @Override
     public Task add(Task task) {
-        logger.info("Adding Task");
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
         if (currentUser.isAdmin() || currentUser.getId().equals(task.getAccount_id())) {
             mongoTemplateExperimentDB.insert(task);
+            logger.info("Added task " + task.getId() + " to MongoDB.");
             return task;
-        } else {
-            logger.info("Failed to add Task -- user lacking access.");
-            return null;
         }
+        return null;
     }
 
     // ROLE_ADMIN: ok.
@@ -102,12 +100,10 @@ public class TaskServiceImpl implements TaskService {
     // ROLE_USER:  nope.
     @Override
     public void update(Task task) {
-        logger.info("Updating Task");
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
         if (currentUser.isAdmin() || currentUser.getId().equals(task.getAccount_id())) {
             mongoTemplateExperimentDB.save(task);
-        } else {
-            logger.info("Failed to update Task -- user lacking access.");
+            logger.info("Updated task " + task.getId() + " to MongoDB.");
         }
     }
 
@@ -121,8 +117,7 @@ public class TaskServiceImpl implements TaskService {
         Task t = find(id);
         if (currentUser.isAdmin() || currentUser.getId().equals(t.getAccount_id())) {
             mongoTemplateExperimentDB.remove(t);
-        } else {
-            logger.info("Failed to delete Task -- user lacking access.");
+            logger.info("deleted task " + id + " from MongoDB.");
         }
     }
 

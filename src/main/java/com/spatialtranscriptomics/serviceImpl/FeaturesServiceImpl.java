@@ -15,11 +15,9 @@ import com.spatialtranscriptomics.model.FeaturesMetadata;
 import com.spatialtranscriptomics.model.MongoUserDetails;
 import com.spatialtranscriptomics.service.IFeaturesService;
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,7 +63,7 @@ public class FeaturesServiceImpl implements IFeaturesService {
     // ROLE_USER:  nope.
     @Override
     public List<FeaturesMetadata> listMetadata() {
-        System.out.println("Inside listMetadata in service");
+        
         ObjectListing objects = s3Client.listObjects(featuresBucket);
 
         List<S3ObjectSummary> objs = objects.getObjectSummaries();
@@ -107,9 +105,9 @@ public class FeaturesServiceImpl implements IFeaturesService {
         if (currentUser.isContentManager() || currentUser.isAdmin() || datasetIsGranted(id, currentUser)) {
             try {
                 String filename = id + ".gz";
-                System.out.println("Attempting to fetch " + filename);
+                //System.out.println("Attempting to fetch " + filename);
                 S3ObjectInputStream in = s3Client.getObject(featuresBucket, filename).getObjectContent();
-                System.out.println("Succeded in fetching " + filename);
+                //System.out.println("Succeded in fetching " + filename);
                 return in;
             } catch (Exception ex) {
                 return null;
@@ -127,7 +125,7 @@ public class FeaturesServiceImpl implements IFeaturesService {
      */
     @Override
     public boolean addUpdate(String id, byte[] file) {
-        System.out.println("Inside addUpdate in service");
+        
         ObjectMetadata om = new ObjectMetadata();
         om.setContentType("application/json");
         om.setContentEncoding("gzip");
@@ -136,14 +134,12 @@ public class FeaturesServiceImpl implements IFeaturesService {
         String filename = id + ".gz";
         boolean exists = (getMetadata(id) != null);
         if (exists) {
-            System.out.println("Updating features for dataset " + id);
-            logger.info("Updating features for dataset " + id);
             s3Client.putObject(featuresBucket, filename, is, om);
+            logger.info("Updated features for dataset " + id + "on Amazon S3");
             return true;
         } else {
-            System.out.println("Updating features for dataset " + id);
-            logger.info("Updating features for dataset " + id);
             s3Client.putObject(featuresBucket, filename, is, om);
+            logger.info("Added features for dataset " + id + "on Amazon S3");
             return false;
         }
     }
@@ -153,9 +149,9 @@ public class FeaturesServiceImpl implements IFeaturesService {
     // ROLE_USER:  nope.
     @Override
     public void delete(String id) {
-        logger.info("Deleting features for dataset " + id);
         String filename = id + ".gz";
         s3Client.deleteObject(featuresBucket, filename);
+        logger.info("Deleted features for dataset " + id + " from Amazon S3");
     }
 
 }

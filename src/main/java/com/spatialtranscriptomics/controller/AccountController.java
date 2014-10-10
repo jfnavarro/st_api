@@ -358,7 +358,7 @@ public class AccountController {
     public @ResponseBody
     void delete(@PathVariable String id,
             @RequestParam(value = "cascade", required = false, defaultValue = "true") boolean cascade) {
-        if (!accountService.deleteIsOk(id)) {
+        if (!accountService.deleteIsOkForCurrUser(id)) {
             logger.info("Failed to delete account " + id + " Missing permissions.");
             throw new CustomBadRequestException("You do not have permission to delete this account.");
         }

@@ -79,11 +79,9 @@ public class PipelineExperimentServiceImpl implements PipelineExperimentService 
     public PipelineExperiment add(PipelineExperiment experiment) {
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
         if (currentUser.isAdmin() || currentUser.getId().equals(experiment.getAccount_id())) {
-            logger.info("Adding PipelineExperiment");
             mongoTemplateExperimentDB.insert(experiment);
+            logger.info("Added pipeline experiment " + experiment.getId() + " to MongoDB.");
             return experiment;
-        } else {
-            logger.info("Not adding PipelineExperiment - access mismatch.");
         }
         return null;
     }
@@ -95,16 +93,13 @@ public class PipelineExperimentServiceImpl implements PipelineExperimentService 
     public void update(PipelineExperiment experiment) {
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
         if (currentUser.isAdmin() || currentUser.getId().equals(experiment.getAccount_id())) {
-            logger.info("Updating PipelineExperiment " + experiment.getId());
             mongoTemplateExperimentDB.save(experiment);
-        } else {
-            logger.info("Not updating PipelineExperiment - access mismatch.");
+            logger.info("Updated pipeline experiment " + experiment.getId() + " to MongoDB.");
         }
     }
 
-    // ROLE_ADMIN: all.
-    // ROLE_CM:    own account.
-    // ROLE_USER:  none.
+    
+    // See deleteIsOkForCurrUser(). Internal use may be different
     @Override
     public void delete(String id) {
         PipelineExperiment exp = find(id);
@@ -113,15 +108,16 @@ public class PipelineExperimentServiceImpl implements PipelineExperimentService 
         }
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
         if (currentUser.isAdmin() || currentUser.getId().equals(exp.getId())) {
-            logger.info("Deleting PipelineExperiment " + id);
             mongoTemplateExperimentDB.remove(exp);
-        } else {
-            logger.info("Not deleting PipelineExperiment - access mismatch.");
+            logger.info("Deleted pipeline experiment " + id + " fomr MongoDB.");
         }
     }
 
+    // ROLE_ADMIN: all.
+    // ROLE_CM:    own account.
+    // ROLE_USER:  none.
     @Override
-    public boolean deleteIsOK(String id) {
+    public boolean deleteIsOkForCurrUser(String id) {
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
         return (currentUser.isAdmin() || currentUser.isContentManager()) && find(id) != null;
     }

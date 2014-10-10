@@ -34,5 +34,5 @@ public interface ImageAlignmentService {
 
         public List<ImageAlignment> deleteForChip(String chipId);
 
-        public boolean deleteIsOK(String id);
+        public boolean deleteIsOkForCurrUser(String id);
 }

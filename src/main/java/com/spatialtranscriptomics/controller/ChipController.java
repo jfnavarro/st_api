@@ -216,7 +216,7 @@ public class ChipController {
     public @ResponseBody
     void delete(@PathVariable String id,
             @RequestParam(value = "cascade", required = false, defaultValue = "true") boolean cascade) {
-        if (!chipService.deleteIsOK(id)) {
+        if (!chipService.deleteIsOkForCurrUser(id)) {
             logger.info("Failed to delete chip " + id + " Missing permissions.");
             throw new CustomBadRequestException("You do not have permission to delete this chip.");
         }

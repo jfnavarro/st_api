@@ -64,8 +64,8 @@ public class ChipServiceImpl implements ChipService {
     // ROLE_USER:  nope.
     @Override
     public Chip add(Chip chip) {
-        logger.info("Adding chip");
         mongoTemplateAnalysisDB.insert(chip);
+        logger.info("Added chip " + chip.getId() + " to MongoDB.");
         return chip;
     }
 
@@ -74,21 +74,22 @@ public class ChipServiceImpl implements ChipService {
     // ROLE_USER:  nope.
     @Override
     public void update(Chip chip) {
-        logger.info("Updating chip " + chip.getId());
         mongoTemplateAnalysisDB.save(chip);
+        logger.info("Updated chip " + chip.getId() + " to MongoDB.");
+    }
+
+    // See deleteIsOkForCurrUser(). Internal use may be different
+    @Override
+    public void delete(String id) {
+        mongoTemplateAnalysisDB.remove(find(id));
+        logger.info("Deleted chip " + id + " from MongoDB.");
     }
 
     // ROLE_ADMIN: ok.
     // ROLE_CM:    ok.
     // ROLE_USER:  nope.
     @Override
-    public void delete(String id) {
-        logger.info("Deleting chip " + id);
-        mongoTemplateAnalysisDB.remove(find(id));
-    }
-
-    @Override
-    public boolean deleteIsOK(String id) {
+    public boolean deleteIsOkForCurrUser(String id) {
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
         return (currentUser.isAdmin() || currentUser.isContentManager()) && find(id) != null;
     }

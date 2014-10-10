@@ -80,8 +80,8 @@ public class AccountServiceImpl implements AccountService {
     // ROLE_USER:  none.
     @Override
     public Account add(Account account) {
-        logger.info("Adding account");
         mongoTemplateUserDB.insert(account);
+        logger.info("Added account " + account.getId() + " to MongoDB.");
         return account;
     }
 
@@ -92,22 +92,23 @@ public class AccountServiceImpl implements AccountService {
     public void update(Account account) {
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
         if (currentUser.isAdmin() || currentUser.getId().equals(account.getId())) {
-            logger.info("Updating account " + account.getId());
             mongoTemplateUserDB.save(account);
+            logger.info("Updated account " + account.getId() + " to MongoDB.");
         }
+    }
+
+    // See deleteIsOkForCurrUser(). Internal use may be different
+    @Override
+    public void delete(String id) {
+        mongoTemplateUserDB.remove(find(id));
+        logger.info("Deleted account " + id + " from MongoDB.");
     }
 
     // ROLE_ADMIN: ok.
     // ROLE_CM:    none.
     // ROLE_USER:  none.
     @Override
-    public void delete(String id) {
-        logger.info("Removing account " + id);
-        mongoTemplateUserDB.remove(find(id));
-    }
-
-    @Override
-    public boolean deleteIsOk(String id) {
+    public boolean deleteIsOkForCurrUser(String id) {
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
         return (currentUser.isAdmin() && find(id) != null);
     }

@@ -92,7 +92,7 @@ public class ImageServiceImpl implements ImageService {
             byte[] bytes = IOUtils.toByteArray(in);
             return bytes;
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error getting JPEG " + filename + " from Amazon S3.", e);
             return null;
         }
 
@@ -109,7 +109,7 @@ public class ImageServiceImpl implements ImageService {
             BufferedImage img = ImageIO.read(in);
             return img;
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error getting BufferedImage " + filename + " from Amazon S3.", e);
             return null;
         }
 
@@ -121,7 +121,6 @@ public class ImageServiceImpl implements ImageService {
     @Override
     public void add(String filename, BufferedImage img) {
         try {
-            logger.info("Adding image " + filename);
             ObjectMetadata om = new ObjectMetadata();
             om.setContentType("image/jpeg");
 
@@ -130,9 +129,11 @@ public class ImageServiceImpl implements ImageService {
             InputStream is = new ByteArrayInputStream(baos.toByteArray());
 
             s3Client.putObject(imageBucket, filename, is, om);
-
+            logger.info("Added image from BuffereedImage " + filename + " to Amazon S3.");
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error adding image " + filename + " to Amazon S3:" + e.getMessage());
+            throw new RuntimeException("Error adding image " + filename + " to Amazon S3", e);
+            //e.printStackTrace();
         }
     }
 
@@ -141,11 +142,11 @@ public class ImageServiceImpl implements ImageService {
     // ROLE_USER:  nope.
     @Override
     public void addCompressed(String filename, byte[] img) {
-        logger.info("Adding image " + filename);
         ObjectMetadata om = new ObjectMetadata();
         om.setContentType("image/jpeg");
         InputStream is = new ByteArrayInputStream(img);
         s3Client.putObject(imageBucket, filename, is, om);
+        logger.info("Added image from JPEG " + filename + " to Amazon S3.");
     }
 
     // ROLE_ADMIN: ok.
@@ -153,8 +154,8 @@ public class ImageServiceImpl implements ImageService {
     // ROLE_USER:  nope.
     @Override
     public void delete(String filename) {
-        logger.info("Deleting image " + filename);
         s3Client.deleteObject(imageBucket, filename);
+        logger.info("Deleted image " + filename + " from Amazon S3.");
     }
 
 }

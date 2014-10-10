@@ -16,7 +16,5 @@ import org.springframework.stereotype.Service;
 @Service
 public interface S3Service {
     
-    public void deleteImageData(List<String> imageNames);
-    
     public void deleteExperimentData(String experimentId);
 }

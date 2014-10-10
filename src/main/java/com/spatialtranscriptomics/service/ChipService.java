@@ -31,5 +31,5 @@ public interface ChipService {
 
 	public void delete(String id);
 
-        public boolean deleteIsOK(String id);
+        public boolean deleteIsOkForCurrUser(String id);
 }

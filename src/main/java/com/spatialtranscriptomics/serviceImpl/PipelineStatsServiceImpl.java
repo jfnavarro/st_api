@@ -101,8 +101,8 @@ public class PipelineStatsServiceImpl implements PipelineStatsService {
         }
         PipelineExperiment exp = mongoTemplateExperimentDB.findOne(new Query(Criteria.where("id").is(stats.getExperiment_id())), PipelineExperiment.class);
         if (currentUser.isAdmin() || exp.getAccount_id().equals(currentUser.getId())) {
-            logger.info("Adding PipelineStats");
             mongoTemplateExperimentDB.insert(stats);
+            logger.info("Added pipeline stats " + stats.getId() + " to MongoDB.");
             return stats;
         }
         return null;
@@ -119,8 +119,8 @@ public class PipelineStatsServiceImpl implements PipelineStatsService {
         }
         PipelineExperiment exp = mongoTemplateExperimentDB.findOne(new Query(Criteria.where("id").is(stats.getExperiment_id())), PipelineExperiment.class);
         if (currentUser.isAdmin() || exp.getAccount_id().equals(currentUser.getId())) {
-            logger.info("Updating PipelineStats " + stats.getId());
             mongoTemplateExperimentDB.save(stats);
+            logger.info("Updated pipeline stats " + stats.getId() + " to MongoDB.");
         }
     }
 
@@ -136,8 +136,8 @@ public class PipelineStatsServiceImpl implements PipelineStatsService {
         }
         PipelineExperiment exp = mongoTemplateExperimentDB.findOne(new Query(Criteria.where("id").is(stats.getExperiment_id())), PipelineExperiment.class);
         if (currentUser.isAdmin() || exp.getAccount_id().equals(currentUser.getId())) {
-            logger.info("Deleting PipelineStats " + id);
             mongoTemplateExperimentDB.remove(stats);
+            logger.info("Deleting pipeline stats " + id + " from MongoDB.");
         }
     }
 

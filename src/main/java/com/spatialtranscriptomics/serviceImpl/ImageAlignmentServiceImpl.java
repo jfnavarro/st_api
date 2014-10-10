@@ -72,8 +72,8 @@ public class ImageAlignmentServiceImpl implements ImageAlignmentService {
     // ROLE_USER:  nope.
     @Override
     public ImageAlignment add(ImageAlignment imal) {
-        logger.info("Adding ImageAlignment");
         mongoTemplateAnalysisDB.insert(imal);
+        logger.info("Added image alignment " + imal.getId() + " to MongoDB.");
         return imal;
     }
 
@@ -82,21 +82,23 @@ public class ImageAlignmentServiceImpl implements ImageAlignmentService {
     // ROLE_USER:  nope.
     @Override
     public void update(ImageAlignment imal) {
-        logger.info("Updating imagealignment " + imal.getId());
         mongoTemplateAnalysisDB.save(imal);
+        logger.info("Updated image alignment " + imal.getId() + " to MongoDB.");
+    }
+
+    
+    // See deleteIsOkForCurrUser(). Internal use may be different
+    @Override
+    public void delete(String id) {
+        mongoTemplateAnalysisDB.remove(find(id));
+        logger.info("Deleted image alignment " + id + " from MongoDB.");
     }
 
     // ROLE_ADMIN: ok.
     // ROLE_CM:    ok.
     // ROLE_USER:  nope.
     @Override
-    public void delete(String id) {
-        logger.info("Deleting imagealignment " + id);
-        mongoTemplateAnalysisDB.remove(find(id));
-    }
-
-    @Override
-    public boolean deleteIsOK(String id) {
+    public boolean deleteIsOkForCurrUser(String id) {
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
         return (currentUser.isAdmin() || currentUser.isContentManager()) && find(id) != null;
     }

@@ -119,9 +119,8 @@ public class DatasetServiceImpl implements DatasetService {
         }
     }
 
-    // ROLE_ADMIN: all datasets.
-    // ROLE_CM:    granted datasets.
-    // ROLE_USER:  granted datasets.
+    
+    // See deleteIsOkForCurrUser(). Internal use may be different
     @Override
     public void delete(String id) {
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
@@ -131,8 +130,11 @@ public class DatasetServiceImpl implements DatasetService {
         }
     }
 
+    // ROLE_ADMIN: all datasets.
+    // ROLE_CM:    granted datasets.
+    // ROLE_USER:  granted datasets.
     @Override
-    public boolean deleteIsOK(String id) {
+    public boolean deleteIsOkForCurrUser(String id) {
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
         return (currentUser.isAdmin() || (datasetIsGranted(id, currentUser))) && find(id) != null;
     }

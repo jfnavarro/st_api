@@ -296,7 +296,7 @@ public class DatasetController {
     public @ResponseBody
     void delete(@PathVariable String id,
             @RequestParam(value = "cascade", required = false, defaultValue = "true") boolean cascade) {
-        if (!datasetService.deleteIsOK(id)) {
+        if (!datasetService.deleteIsOkForCurrUser(id)) {
             logger.info("Failed to delete dataset " + id + " Missing permissions.");
             throw new CustomBadRequestException("You are not allowed to delete this dataset.");
         }

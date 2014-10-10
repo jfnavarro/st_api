@@ -34,5 +34,5 @@ public interface PipelineExperimentService {
 
         public void clearAccount(String accountId);
         
-        public boolean deleteIsOK(String id);
+        public boolean deleteIsOkForCurrUser(String id);
 }

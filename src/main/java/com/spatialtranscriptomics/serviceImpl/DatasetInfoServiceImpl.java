@@ -110,8 +110,8 @@ public class DatasetInfoServiceImpl implements DatasetInfoService {
     // ROLE_USER:  nope.
     @Override
     public DatasetInfo add(DatasetInfo dsi) {
-        logger.info("Adding datasetinfo");
         mongoTemplateUserDB.insert(dsi);
+        logger.info("Added dataset info " + dsi.getId() + " to MongoDB.");
         return dsi;
     }
 
@@ -120,8 +120,8 @@ public class DatasetInfoServiceImpl implements DatasetInfoService {
     // ROLE_USER:  nope.
     @Override
     public void update(DatasetInfo dsi) {
-        logger.info("Updating datasetino " + dsi.getId());
         mongoTemplateUserDB.save(dsi);
+        logger.info("Updated dataset info " + dsi.getId() + " to MongoDB.");
     }
 
     // ROLE_ADMIN: ok.
@@ -130,6 +130,7 @@ public class DatasetInfoServiceImpl implements DatasetInfoService {
     @Override
     public void delete(String id) {
         mongoTemplateUserDB.remove(find(id));
+        logger.info("Removed dataset info " + id + " from MongoDB.");
     }
 
     @Override
