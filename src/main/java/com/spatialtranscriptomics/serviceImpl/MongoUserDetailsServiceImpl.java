@@ -40,7 +40,8 @@ public class MongoUserDetailsServiceImpl implements UserDetailsService {
     @Override
     public MongoUserDetails loadUserByUsername(String username)
             throws UsernameNotFoundException {
-        logger.info("Attempting to load user " + username);
+        // This call is too frequent. 
+        //logger.info("Attempting to load user " + username);
         isProperlyLoaded = false;
         MongoUserDetails result = mongoTemplateUserDB.findOne(new Query(Criteria.where("username").is(username)), MongoUserDetails.class, DB_COLLECTION_NAME);
         if (result == null) {
@@ -48,7 +49,8 @@ public class MongoUserDetailsServiceImpl implements UserDetailsService {
             throw new UsernameNotFoundException(username);
         } else {
             isProperlyLoaded = true;
-            logger.info("Succeeded loading user " + username);
+            // This call is too frequent. 
+            //logger.info("Succeeded loading user " + username);
         }
         return result;
     }

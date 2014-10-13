@@ -169,7 +169,14 @@ public class DatasetController {
         return entity;
     }
 
-    // get all
+    /**
+     * GET|HEAD /dataset/all/{id}
+     * 
+     * Finds enabled/disabled datasets.
+     * @param id the dataset ID.
+     * @param ifModifiedSince request timestamp.
+     * @return the dataset.
+     */
     @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
     @RequestMapping(value = "/all/{id}", method = {RequestMethod.GET, RequestMethod.HEAD})
     public @ResponseBody
@@ -200,6 +207,7 @@ public class DatasetController {
         return entity;
     }
 
+    
     /**
      * GET|HEAD /dataset/lastmodified/{id}
      *

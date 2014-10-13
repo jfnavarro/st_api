@@ -20,9 +20,11 @@ import com.spatialtranscriptomics.model.LastModifiedDate;
 import com.spatialtranscriptomics.serviceImpl.FeaturesServiceImpl;
 import com.spatialtranscriptomics.serviceImpl.MongoUserDetailsServiceImpl;
 import com.spatialtranscriptomics.util.DateOperations;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
@@ -83,7 +85,7 @@ public class FeaturesController {
     }
 
     /**
-     * GET|HEAD /features/{id}
+     * GET|HEAD /features/json/{id}
      * 
      * Finds features payload wrapped in JSON.
      * 
@@ -92,14 +94,14 @@ public class FeaturesController {
      * @return the account.
      */
     @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
-    @RequestMapping(value = "{id}", method = {RequestMethod.GET, RequestMethod.HEAD})
+    @RequestMapping(value = "json/{id}", method = {RequestMethod.GET, RequestMethod.HEAD})
     public @ResponseBody
-    HttpEntity<S3Resource> get(@PathVariable String id, @RequestHeader(value="If-Modified-Since", defaultValue="") String ifModifiedSince) {
+    HttpEntity<S3Resource> getAsJSON(@PathVariable String id, @RequestHeader(value="If-Modified-Since", defaultValue="") String ifModifiedSince) {
         try {
             FeaturesMetadata meta = featuresService.getMetadata(id);
             InputStream is = featuresService.find(id);
             if (meta == null || is == null) {
-                logger.info("Failed to return features for dataset " + id);
+                logger.info("Failed to return features as JSON for dataset " + id);
                 throw new CustomNotFoundException("A features file for a dataset with this ID does not exist, or you dont have permissions to access it.");
             }
             // Check if already newest.
@@ -109,7 +111,7 @@ public class FeaturesController {
                 // NOTE: Only precision within day.
                 resTime = new DateTime(resTime.getYear(), resTime.getMonthOfYear(), resTime.getDayOfMonth(), resTime.getHourOfDay(), resTime.getMinuteOfHour(), resTime.getSecondOfMinute());
                 if (!resTime.isAfter(reqTime)) {
-                    logger.info("Not returning features for dataset " + id + " since not modified");
+                    logger.info("Not returning features as JSON for dataset " + id + " since not modified");
                     throw new CustomNotModifiedException("This features file has not been modified");
                 }
             }
@@ -121,11 +123,56 @@ public class FeaturesController {
             headers.add("Vary", "Accept-Encoding");
             headers.add("Last-modified", DateOperations.getHTTPDateSafely(meta.getLastModified()));
             HttpEntity<S3Resource> entity = new HttpEntity<S3Resource>(wrap, headers);
-            logger.info("Returning features for dataset " + id);
+            logger.info("Returning features as JSON for dataset " + id);
             return entity;
         } catch (IOException ex) {
             logger.error("Error writing features file to output stream with file " + id);
             throw new CustomInternalServerErrorException("IOError writing features file to output stream");
+        }
+    }
+    
+    
+    /**
+     * Returns the zipped features payload as a file.
+     *
+     * @param id dataset ID.
+     * @param response HTTP response containing the file.
+     * @param ifModifiedSince last modified tag.
+     */
+    @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
+    @RequestMapping(value = "{id}", method = {RequestMethod.GET, RequestMethod.HEAD})
+    public void getAsFile(@PathVariable String id, HttpServletResponse response,
+            @RequestHeader(value="If-Modified-Since", defaultValue="") String ifModifiedSince) {
+        try {
+            FeaturesMetadata meta = featuresService.getMetadata(id);
+            InputStream is = featuresService.find(id);
+            if (meta == null || is == null) {
+                logger.info("Failed to return features as JSON for dataset " + id);
+                throw new CustomNotFoundException("A features file for a dataset with this ID does not exist, or you dont have permissions to access it.");
+            }
+            // Check if already newest.
+            DateTime reqTime = DateOperations.parseHTTPDate(ifModifiedSince);
+            if (reqTime != null) {
+                DateTime resTime = meta.getLastModified() == null ? new DateTime(2012,1,1,0,0) : meta.getLastModified();
+                // NOTE: Only precision within day.
+                resTime = new DateTime(resTime.getYear(), resTime.getMonthOfYear(), resTime.getDayOfMonth(), resTime.getHourOfDay(), resTime.getMinuteOfHour(), resTime.getSecondOfMinute());
+                if (!resTime.isAfter(reqTime)) {
+                    logger.info("Not returning features as JSON for dataset " + id + " since not modified");
+                    throw new CustomNotModifiedException("This features file has not been modified");
+                }
+            }
+            // Copy raw stream into response.
+            IOUtils.copy(is, response.getOutputStream());
+            response.setContentType("application/json");
+            response.addHeader("Content-Encoding", "gzip");
+            response.addHeader("Cache-Control", "public, must-revalidate, no-transform");
+            response.addHeader("Vary", "Accept-Encoding");
+            response.addHeader("Last-modified", DateOperations.getHTTPDateSafely(meta.getLastModified()));
+            logger.info("Returning features as raw gzip file for dataset " + id);
+            response.flushBuffer();
+        } catch (IOException ex) {
+            logger.error("Error writing features file to output stream with file " + id);
+            throw new RuntimeException("IOError writing features file to HTTP response", ex);
         }
     }
 
@@ -135,7 +182,6 @@ public class FeaturesController {
      * Adds a features file payload wrapped in JSON.
      * @param id the dataset ID.
      * @param feats the features.
-     * @param result binding.
      */
     @Secured({"ROLE_CM", "ROLE_ADMIN"})
     @RequestMapping(value = "{id}", method = RequestMethod.PUT)

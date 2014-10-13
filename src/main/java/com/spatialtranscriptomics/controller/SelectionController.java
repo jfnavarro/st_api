@@ -185,6 +185,45 @@ public class SelectionController {
             // NOTE: Only precision within day.
             resTime = new DateTime(resTime.getYear(), resTime.getMonthOfYear(), resTime.getDayOfMonth(), resTime.getHourOfDay(), resTime.getMinuteOfHour(), resTime.getSecondOfMinute());
             if (!resTime.isAfter(reqTime)) {
+                logger.info("Not returning enabled selection " + id + " since not modified");
+                throw new CustomNotModifiedException("This enabled selection has not been modified");
+            }
+        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.add("Cache-Control", "public, must-revalidate, no-transform");
+        headers.add("Vary", "Accept-Encoding");
+        headers.add("Last-modified", DateOperations.getHTTPDateSafely(selection.getLast_modified()));
+        HttpEntity<Selection> entity = new HttpEntity<Selection>(selection, headers);
+        logger.info("Returning enabled selection " + id);
+        return entity;
+    }
+
+    /**
+     * GET|HEAD /selection/all/{id}
+     * 
+     * Returns an enabled/disabled selection.
+     * 
+     * @param id the selection ID.
+     * @param ifModifiedSince last mod tag.
+     * @return the selection.
+     */
+    @Secured({"ROLE_USER", "ROLE_CM", "ROLE_ADMIN"})
+    @RequestMapping(value = "/all/{id}", method = {RequestMethod.GET, RequestMethod.HEAD})
+    public @ResponseBody
+    HttpEntity<Selection> getAll(@PathVariable String id, @RequestHeader(value="If-Modified-Since", defaultValue="") String ifModifiedSince) {
+        Selection selection = selectionService.find(id);
+        if (selection == null) {
+            logger.info("Failed to return selection " + id + ". Permission denied or missing.");
+            throw new CustomNotFoundException("A selection with this ID does not exist or you dont have permissions to access it.");
+        }
+        // Check if already newest.
+        DateTime reqTime = DateOperations.parseHTTPDate(ifModifiedSince);
+        if (reqTime != null) {
+            DateTime resTime = selection.getLast_modified() == null ? new DateTime(2012,1,1,0,0) : selection.getLast_modified();
+            // NOTE: Only precision within day.
+            resTime = new DateTime(resTime.getYear(), resTime.getMonthOfYear(), resTime.getDayOfMonth(), resTime.getHourOfDay(), resTime.getMinuteOfHour(), resTime.getSecondOfMinute());
+            if (!resTime.isAfter(reqTime)) {
                 logger.info("Not returning selection " + id + " since not modified");
                 throw new CustomNotModifiedException("This selection has not been modified");
             }
@@ -197,27 +236,6 @@ public class SelectionController {
         HttpEntity<Selection> entity = new HttpEntity<Selection>(selection, headers);
         logger.info("Returning selection " + id);
         return entity;
-    }
-
-    /**
-     * GET|HEAD /selection/all/{id}
-     * 
-     * Returns an enabled/disabled selection.
-     * 
-     * @param id the selection ID.
-     * @return the selection.
-     */
-    @Secured({"ROLE_USER", "ROLE_CM", "ROLE_ADMIN"})
-    @RequestMapping(value = "/all/{id}", method = {RequestMethod.GET, RequestMethod.HEAD})
-    public @ResponseBody
-    Selection getAll(@PathVariable String id) {
-        Selection selection = selectionService.find(id);
-        if (selection == null) {
-            logger.info("Failed to return selection " + id + ". Permission denied or missing.");
-            throw new CustomNotFoundException("A selection with this ID does not exist or you dont have permissions to access it.");
-        }
-        logger.info("Returning selection " + id);
-        return selection;
     }
 
     /**
