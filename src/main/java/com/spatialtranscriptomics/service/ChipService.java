@@ -3,7 +3,6 @@
  * Read LICENSE for more information about licensing terms
  * Contact: Jose Fernandez Navarro <jose.fernandez.navarro@scilifelab.se>
  */
-
 package com.spatialtranscriptomics.service;
 
 import java.util.List;
@@ -15,21 +14,52 @@ import com.spatialtranscriptomics.model.Chip;
 /**
  * Interface for the chip service.
  */
-
 @Service
 public interface ChipService {
 
-	public Chip find(String id);
-	
-	public Chip findByName(String name);
+    /**
+     * Returns a chip.
+     * @param id the chip ID.
+     * @return the chip.
+     */
+    public Chip find(String id);
 
-	public List<Chip> list();
+    /**
+     * Returns a chip by name.
+     * @param name the name.
+     * @return the chip.
+     */
+    public Chip findByName(String name);
 
-	public Chip add(Chip chip);
+    /**
+     * Returns all chips.
+     * @return the list.
+     */
+    public List<Chip> list();
 
-	public void update(Chip chip);
+    /**
+     * Adds a chip.
+     * @param chip the chip.
+     * @return the chip with ID assigned.
+     */
+    public Chip add(Chip chip);
 
-	public void delete(String id);
+    /**
+     * Updates a chip.
+     * @param chip the chip.
+     */
+    public void update(Chip chip);
 
-        public boolean deleteIsOkForCurrUser(String id);
+    /**
+     * Deletes a chip.
+     * @param id the chip ID.
+     */
+    public void delete(String id);
+
+    /**
+     * Returns true if the current user may delete a chip.
+     * @param id the chip ID.
+     * @return true if granted delete rights.
+     */
+    public boolean deleteIsOkForCurrUser(String id);
 }

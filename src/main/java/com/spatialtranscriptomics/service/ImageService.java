@@ -3,7 +3,6 @@
  * Read LICENSE for more information about licensing terms
  * Contact: Jose Fernandez Navarro <jose.fernandez.navarro@scilifelab.se>
  */
-
 package com.spatialtranscriptomics.service;
 
 import java.awt.image.BufferedImage;
@@ -16,17 +15,50 @@ import com.spatialtranscriptomics.model.ImageMetadata;
  */
 public interface ImageService {
 
-	public List<ImageMetadata> list();
-	
-	public ImageMetadata getImageMetadata(String filename);
+    /**
+     * Lists all image metadata.
+     * @return the list.
+     */
+    public List<ImageMetadata> list();
 
-	public BufferedImage getBufferedImage(String filename);
+    /**
+     * Returns image metadata for an image.
+     * @param filename the image name.
+     * @return metadata.
+     */
+    public ImageMetadata getImageMetadata(String filename);
 
-        public byte[] getCompressedImage(String filename);
-        
-	public void add(String filename, BufferedImage img);
-        
-        public void addCompressed(String filename, byte[] img);
+    /**
+     * Returns an image as a BufferedImage.
+     * @param filename the image name.
+     * @return the image.
+     */
+    public BufferedImage getBufferedImage(String filename);
 
-	public void delete(String filename);
+    /**
+     * Returns an image a JPEG stream.
+     * @param filename the image name.
+     * @return the image.
+     */
+    public byte[] getCompressedImage(String filename);
+
+    /**
+     * Adds a JPEG image via a BufferedImage.
+     * @param filename the image name.
+     * @param img the image.
+     */
+    public void add(String filename, BufferedImage img);
+
+    /**
+     * Adds an image as a JPEG.
+     * @param filename the image name.
+     * @param img the JPEG image, stored in BASE64.
+     */
+    public void addCompressed(String filename, byte[] img);
+
+    /**
+     * Deletes an image.
+     * @param filename the image name.
+     */
+    public void delete(String filename);
 }

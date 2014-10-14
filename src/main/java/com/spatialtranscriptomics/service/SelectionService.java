@@ -3,7 +3,6 @@
  * Read LICENSE for more information about licensing terms
  * Contact: Jose Fernandez Navarro <jose.fernandez.navarro@scilifelab.se>
  */
-
 package com.spatialtranscriptomics.service;
 
 import java.util.List;
@@ -18,25 +17,75 @@ import com.spatialtranscriptomics.model.Selection;
 @Service
 public interface SelectionService {
 
-	public Selection find(String id);
-	
-	public Selection findByName(String name);
+    /**
+     * Returns a selection.
+     * @param id the selection ID.
+     * @return the selection.
+     */
+    public Selection find(String id);
 
-	public List<Selection> list();
-	
-	public List<Selection> findByAccount(String accountId);
-	
-	public List<Selection> findByDataset(String datasetId);
+    /**
+     * Returns a selection by name.
+     * @param name the selection name.
+     * @return the selection.
+     */
+    public Selection findByName(String name);
 
-	public List<Selection> findByTask(String taskId);
-	
-	public Selection add(Selection sel);
+    /**
+     * Returns all selections.
+     * @return the list.
+     */
+    public List<Selection> list();
 
-	public void update(Selection sel);
+    /**
+     * Returns all selections for an account.
+     * @param accountId the account ID.
+     * @return the selections.
+     */
+    public List<Selection> findByAccount(String accountId);
 
-	public void delete(String id);
+    /**
+     * Returns all selections for a dataset.
+     * @param datasetId the dataset ID.
+     * @return the list.
+     */
+    public List<Selection> findByDataset(String datasetId);
 
-        public void deleteForDataset(String datasetId);
-        
-        public void deleteForAccount(String accountId);
+    /**
+     * Returns all selections for a task.
+     * @param taskId the task ID.
+     * @return the list.
+     */
+    public List<Selection> findByTask(String taskId);
+
+    /**
+     * Adds a selection.
+     * @param sel the selection.
+     * @return the selection with ID assigned.
+     */
+    public Selection add(Selection sel);
+
+    /**
+     * Updates a seelction.
+     * @param sel the selection.
+     */
+    public void update(Selection sel);
+
+    /**
+     * Deletes a selection.
+     * @param id the selection ID.
+     */
+    public void delete(String id);
+
+    /**
+     * Deletes all selection for a given dataset.
+     * @param datasetId the dataset ID.
+     */
+    public void deleteForDataset(String datasetId);
+
+    /**
+     * Deletes all selections for an account.
+     * @param accountId the account ID.
+     */
+    public void deleteForAccount(String accountId);
 }

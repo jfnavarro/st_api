@@ -3,7 +3,6 @@
  * Read LICENSE for more information about licensing terms
  * Contact: Jose Fernandez Navarro <jose.fernandez.navarro@scilifelab.se>
  */
-
 package com.spatialtranscriptomics.service;
 
 import java.util.List;
@@ -18,17 +17,48 @@ import com.spatialtranscriptomics.model.PipelineStats;
 @Service
 public interface PipelineStatsService {
 
-	public PipelineStats find(String id);
-	
-	public PipelineStats findByExperiment(String experimentId);
-	
-	public List<PipelineStats> list();
+    /**
+     * Returns a stats.
+     * @param id the stats ID.
+     * @return the stats.
+     */
+    public PipelineStats find(String id);
 
-	public PipelineStats add(PipelineStats stats);
+    /**
+     * Returns the stats of an experiment.
+     * @param experimentId the experiment ID.
+     * @return the stats.
+     */
+    public PipelineStats findByExperiment(String experimentId);
 
-	public void update(PipelineStats stats);
+    /**
+     * Returns all stats.
+     * @return the list.
+     */
+    public List<PipelineStats> list();
 
-	public void delete(String id);
+    /**
+     * Adds a stats.
+     * @param stats the stats.
+     * @return the stats with ID assigned.
+     */
+    public PipelineStats add(PipelineStats stats);
 
-        public void deleteForExperiment(String experimentId);
+    /**
+     * Updates a stats.
+     * @param stats the stats.
+     */
+    public void update(PipelineStats stats);
+
+    /**
+     * Deletes a stats.
+     * @param id the stats ID.
+     */
+    public void delete(String id);
+
+    /**
+     * Deletes the stats of an experiment.
+     * @param experimentId the experiment.
+     */
+    public void deleteForExperiment(String experimentId);
 }

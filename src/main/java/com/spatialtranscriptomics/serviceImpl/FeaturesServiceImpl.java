@@ -13,7 +13,7 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.spatialtranscriptomics.model.DatasetInfo;
 import com.spatialtranscriptomics.model.FeaturesMetadata;
 import com.spatialtranscriptomics.model.MongoUserDetails;
-import com.spatialtranscriptomics.service.IFeaturesService;
+import com.spatialtranscriptomics.service.FeaturesService;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -33,7 +33,7 @@ import org.springframework.stereotype.Service;
  * The AmazonS3Client is configured in the mvc-dispatcher-servlet.xml
  */
 @Service
-public class FeaturesServiceImpl implements IFeaturesService {
+public class FeaturesServiceImpl implements FeaturesService {
 
     @Autowired
     AmazonS3Client s3Client;

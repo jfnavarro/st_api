@@ -16,5 +16,9 @@ import org.springframework.stereotype.Service;
 @Service
 public interface S3Service {
     
+    /**
+     * Deletes the experiment data on Amazon S3 for an experiment.
+     * @param experimentId the experiment ID.
+     */
     public void deleteExperimentData(String experimentId);
 }

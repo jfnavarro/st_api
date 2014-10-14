@@ -3,7 +3,6 @@
  * Read LICENSE for more information about licensing terms
  * Contact: Jose Fernandez Navarro <jose.fernandez.navarro@scilifelab.se>
  */
-
 package com.spatialtranscriptomics.service;
 
 import java.util.List;
@@ -18,21 +17,63 @@ import com.spatialtranscriptomics.model.ImageAlignment;
 @Service
 public interface ImageAlignmentService {
 
-	public ImageAlignment find(String id);
-	
-	public ImageAlignment findByName(String name);
-	
-	public List<ImageAlignment> findByChip(String chipId);
+    /**
+     * Finds an alignment.
+     * @param id the alignment ID.
+     * @return the alignment.
+     */
+    public ImageAlignment find(String id);
 
-	public List<ImageAlignment> list();
+    /**
+     * Finds an alignment by name.
+     * @param name the alignment name.
+     * @return the alignment.
+     */
+    public ImageAlignment findByName(String name);
 
-	public ImageAlignment add(ImageAlignment imal);
+    /**
+     * Finds all alignments of a chip.
+     * @param chipId the chip ID.
+     * @return the list.
+     */
+    public List<ImageAlignment> findByChip(String chipId);
 
-	public void update(ImageAlignment imal);
+    /**
+     * Finds all alignments.
+     * @return the list.
+     */
+    public List<ImageAlignment> list();
 
-	public void delete(String id);
+    /**
+     * Adds an alignment.
+     * @param imal the alignment.
+     * @return the alignment with ID assigned.
+     */
+    public ImageAlignment add(ImageAlignment imal);
 
-        public List<ImageAlignment> deleteForChip(String chipId);
+    /**
+     * Updates an alignment.
+     * @param imal the alignment.
+     */
+    public void update(ImageAlignment imal);
 
-        public boolean deleteIsOkForCurrUser(String id);
+    /**
+     * Deletes an alignment.
+     * @param id the alignment ID.
+     */
+    public void delete(String id);
+
+    /**
+     * Deletes all alignment referencing a certain chip.
+     * @param chipId the chip ID.
+     * @return the list of deleted items.
+     */
+    public List<ImageAlignment> deleteForChip(String chipId);
+
+    /**
+     * Returns true if the current user may delete an alignment.
+     * @param id the alignment ID.
+     * @return true is granted rights.
+     */
+    public boolean deleteIsOkForCurrUser(String id);
 }
