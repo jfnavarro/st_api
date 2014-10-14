@@ -18,7 +18,7 @@
 		<spring.data.commons.version>1.7.2.RELEASE</spring.data.commons.version>
 		<spring.osgi.range>[3.1.0,4.0.0)</spring.osgi.range>
 		<security.osgi.range>[3.1.0,4.0.0)</security.osgi.range>
-                <!--<buildDir>${user.dir}</buildDir>-->
+                <!-- <buildDir>${user.dir}</buildDir> -->
                 <buildDir>${basedir}/target</buildDir>
 	</properties>
 
