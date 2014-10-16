@@ -116,12 +116,6 @@
 		<constructor-arg name="userCredentials" ref="mongoCredentials" />
 	</bean>
 
-	<bean id="mongoTemplateFeatureDB" class="org.springframework.data.mongodb.core.MongoTemplate">
-		<constructor-arg ref="mongo" />
-		<constructor-arg name="databaseName" value="${mongodb.database.feature}" />
-		<constructor-arg name="userCredentials" ref="mongoCredentials" />
-	</bean>
-
 	<bean id="mongoTemplateUserDB" class="org.springframework.data.mongodb.core.MongoTemplate">
 		<constructor-arg ref="mongo" />
 		<constructor-arg name="databaseName" value="${mongodb.database.user}" />

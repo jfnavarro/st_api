@@ -61,9 +61,6 @@ public class FeaturesController {
     @Autowired
     MongoUserDetailsServiceImpl customUserDetailsService;
 
-    @Autowired
-    MongoOperations mongoTemplateFeatureDB;
-
     /**
      * GET|HEAD /features/
      *
