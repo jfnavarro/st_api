@@ -76,16 +76,9 @@
 		used in com.spatialtranscriptomics.serviceImpl.ImageServiceImpl.class -->
 
 	<bean id="s3Client" class="com.amazonaws.services.s3.AmazonS3Client">
-		<constructor-arg>
-			<ref bean="awsCredentials" />
-		</constructor-arg>
 	</bean>
 
-	<bean id="awsCredentials" class="com.amazonaws.auth.BasicAWSCredentials">
-		<constructor-arg type="String" value="${s3.accesskey}" />
-		<constructor-arg type="String" value="${s3.secretkey}" />
-	</bean>
-        
+       
         <!-- File upload max. filesize -->
 
 	<bean id="multipartResolver"
