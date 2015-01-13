@@ -87,9 +87,9 @@ public class ImageServiceImpl implements ImageService {
     @Override
     public byte[] getCompressedImage(String filename) {
         try {
-            S3ObjectInputStream in = s3Client.getObject(imageBucket, filename)
-                    .getObjectContent();
+            S3ObjectInputStream in = s3Client.getObject(imageBucket, filename).getObjectContent();
             byte[] bytes = IOUtils.toByteArray(in);
+            in.close();   // As soon as possible.
             return bytes;
         } catch (IOException e) {
             logger.error("Error getting JPEG " + filename + " from Amazon S3.", e);
@@ -104,9 +104,9 @@ public class ImageServiceImpl implements ImageService {
     @Override
     public BufferedImage getBufferedImage(String filename) {
         try {
-            S3ObjectInputStream in = s3Client.getObject(imageBucket, filename)
-                    .getObjectContent();
+            S3ObjectInputStream in = s3Client.getObject(imageBucket, filename).getObjectContent();
             BufferedImage img = ImageIO.read(in);
+            in.close();   // As soon as possible.
             return img;
         } catch (IOException e) {
             logger.error("Error getting BufferedImage " + filename + " from Amazon S3.", e);

@@ -14,10 +14,13 @@ import com.spatialtranscriptomics.model.DatasetInfo;
 import com.spatialtranscriptomics.model.FeaturesMetadata;
 import com.spatialtranscriptomics.model.MongoUserDetails;
 import com.spatialtranscriptomics.service.FeaturesService;
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -105,11 +108,16 @@ public class FeaturesServiceImpl implements FeaturesService {
         if (currentUser.isContentManager() || currentUser.isAdmin() || datasetIsGranted(id, currentUser)) {
             try {
                 String filename = id + ".gz";
-                //System.out.println("Attempting to fetch " + filename);
+                // We cache the contents in a byte array so that the S3 stream can be closed ASAP.
+                ByteArrayOutputStream bos = new ByteArrayOutputStream(30 * 1024 * 1024);
                 S3ObjectInputStream in = s3Client.getObject(featuresBucket, filename).getObjectContent();
-                //System.out.println("Succeded in fetching " + filename);
-                return in;
+                IOUtils.copy(in, bos);
+                in.close();   // ASAP!
+                InputStream bis = new ByteArrayInputStream(bos.toByteArray());
+                bos.close();
+                return bis;
             } catch (Exception ex) {
+                logger.error("Failed to download features for dataset " + id);
                 return null;
             }
         } else {
