@@ -67,4 +67,8 @@ public interface ISelection {
     public void setCreated_at(DateTime created);
 
     public DateTime getLast_modified();
+    
+    public void setTissue_snapshot(String tissue_snapshot);
+    
+    public String getTissue_snapshot();
 }

@@ -55,6 +55,9 @@ public class Selection implements ISelection {
 
     String[] obo_foundry_terms;
 
+    //TODO this is temporary to be removed
+    String tissue_snapshot;
+    
     @CreatedDate
     private DateTime created_at;
 
@@ -200,5 +203,15 @@ public class Selection implements ISelection {
     @Override
     public DateTime getLast_modified() {
         return last_modified;
+    }
+    
+    @Override
+    public void setTissue_snapshot(String tissue_snapshot) {
+        this.tissue_snapshot = tissue_snapshot;
+    }
+    
+    @Override
+    public String getTissue_snapshot() {
+        return tissue_snapshot;
     }
 }
