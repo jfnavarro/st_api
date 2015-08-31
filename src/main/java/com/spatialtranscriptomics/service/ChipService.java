@@ -45,13 +45,20 @@ public interface ChipService {
     public Chip add(Chip chip);
 
     /**
+     * Adds a chip's file to S3.
+     * @param id the ID of the chip.
+     * @param chipFile the original file of the chip
+     */
+    public void addFileToS3(String id, byte[] chipFile);
+    
+    /**
      * Updates a chip.
      * @param chip the chip.
      */
     public void update(Chip chip);
 
     /**
-     * Deletes a chip.
+     * Deletes a chip and its file from S3.
      * @param id the chip ID.
      */
     public void delete(String id);

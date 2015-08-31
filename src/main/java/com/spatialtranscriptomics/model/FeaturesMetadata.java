@@ -5,16 +5,13 @@
  */
 package com.spatialtranscriptomics.model;
 
-import com.spatialtranscriptomics.util.StringOperations;
-import java.util.Date;
 import org.joda.time.DateTime;
-import org.springframework.data.annotation.Transient;
 
 /**
  * This class implements the FeaturesMetadata object.
  * It derives its contents from Amazon S3.
  * 
- * Features metadata holds properties of a features file stored on Amazon S3.
+ * Features meta-data holds properties of a features file stored on Amazon S3.
  */
 public class FeaturesMetadata implements IFeaturesMetadata {
 

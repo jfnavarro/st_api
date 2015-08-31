@@ -40,18 +40,19 @@ public class MongoUserDetailsServiceImpl implements UserDetailsService {
     @Override
     public MongoUserDetails loadUserByUsername(String username)
             throws UsernameNotFoundException {
-        // This call is too frequent. 
-        //logger.info("Attempting to load user " + username);
+
         isProperlyLoaded = false;
-        MongoUserDetails result = mongoTemplateUserDB.findOne(new Query(Criteria.where("username").is(username)), MongoUserDetails.class, DB_COLLECTION_NAME);
+        MongoUserDetails result =
+                mongoTemplateUserDB.findOne(new Query(Criteria.where("username").is(username)), 
+                        MongoUserDetails.class, DB_COLLECTION_NAME);
+        
         if (result == null) {
             logger.info("Failed loading user " + username);
             throw new UsernameNotFoundException(username);
         } else {
             isProperlyLoaded = true;
-            // This call is too frequent. 
-            //logger.info("Succeeded loading user " + username);
         }
+        
         return result;
     }
 

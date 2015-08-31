@@ -3,24 +3,20 @@
  * Read LICENSE for more information about licensing terms
  * Contact: Jose Fernandez Navarro <jose.fernandez.navarro@scilifelab.se>
  */
+
 package com.spatialtranscriptomics.serviceImpl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
-
-import com.spatialtranscriptomics.model.Dataset;
 import com.spatialtranscriptomics.model.MongoUserDetails;
 import com.spatialtranscriptomics.model.Selection;
-import com.spatialtranscriptomics.model.Task;
 import com.spatialtranscriptomics.service.SelectionService;
+import java.util.Iterator;
 
 /**
  * This class implements the store/retrieve logic to MongoDB for the data model
@@ -30,8 +26,7 @@ import com.spatialtranscriptomics.service.SelectionService;
 @Service
 public class SelectionServiceImpl implements SelectionService {
 
-    private static final Logger logger = Logger
-            .getLogger(SelectionServiceImpl.class);
+    private static final Logger logger = Logger.getLogger(SelectionServiceImpl.class);
 
     @Autowired
     MongoUserDetailsServiceImpl customUserDetailsService;
@@ -50,7 +45,8 @@ public class SelectionServiceImpl implements SelectionService {
     // ROLE_USER:  own account.
     @Override
     public Selection find(String id) {
-        Selection selection = mongoTemplateExperimentDB.findOne(new Query(Criteria.where("id").is(id)), Selection.class);
+        Selection selection = mongoTemplateExperimentDB.findOne(
+                new Query(Criteria.where("id").is(id)), Selection.class);
         return checkCredentials(selection);
     }
 
@@ -59,7 +55,8 @@ public class SelectionServiceImpl implements SelectionService {
     // ROLE_USER:  own account.
     @Override
     public Selection findByName(String name) {
-        Selection sel = mongoTemplateExperimentDB.findOne(new Query(Criteria.where("name").is(name)), Selection.class);
+        Selection sel = mongoTemplateExperimentDB.findOne(
+                new Query(Criteria.where("name").is(name)), Selection.class);
         return checkCredentials(sel);
     }
 
@@ -71,22 +68,17 @@ public class SelectionServiceImpl implements SelectionService {
         List<Selection> selections = mongoTemplateExperimentDB.findAll(Selection.class);
         // Filter based on user.
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-        if (currentUser.isAdmin()) {
-        } else {
-            List<Dataset> datasets = datasetService.findByAccount(currentUser.getId());
-            HashMap<String, Dataset> hash = new HashMap<String, Dataset>(datasets.size());
-            for (Dataset d : datasets) {
-                hash.put(d.getId(), d);
-            }
-            // Replace to below to enable non-owner users w access to the dataset to access the selection.
-            ArrayList<Selection> filtered = new ArrayList<Selection>(selections.size());
-            for (Selection sel : selections) {
-                if (sel.getAccount_id().equals(currentUser.getId()) /*|| hash.containsKey(sel.getDataset_id())*/) {
-                    filtered.add(sel);
+        if (!currentUser.isAdmin()) {
+            //filter out selections whose use is not current user
+            Iterator<Selection> it = selections.iterator();
+            while (it.hasNext()) {
+                Selection sel = it.next(); // must be called before you can call i.remove()
+                if (!sel.getAccount_id().equals(currentUser.getId())) {
+                    it.remove();
                 }
             }
-            selections = filtered;
         }
+        
         return selections;
     }
 
@@ -98,8 +90,9 @@ public class SelectionServiceImpl implements SelectionService {
         selection = checkCredentials(selection);
         if (selection != null) {
             mongoTemplateExperimentDB.insert(selection);
-            logger.info("Added selection " + selection.getId() + " to MongoDB.");
+            logger.info("Added selection " + selection.getId() + " to DB.");
         }
+        
         return selection;
     }
 
@@ -111,7 +104,7 @@ public class SelectionServiceImpl implements SelectionService {
         selection = checkCredentials(selection);
         if (selection != null) {
             mongoTemplateExperimentDB.save(selection);
-            logger.info("Updated selection " + selection.getId() + " to MongoDB.");
+            logger.info("Updated selection " + selection.getId() + " in DB.");
         }
     }
 
@@ -123,7 +116,7 @@ public class SelectionServiceImpl implements SelectionService {
         Selection selection = checkCredentials(find(id));
         if (selection != null) {
             mongoTemplateExperimentDB.remove(selection);
-            logger.info("Deleted account " + id + " from MongoDB.");
+            logger.info("Deleted account " + id + " from DB.");
         }
     }
 
@@ -134,8 +127,10 @@ public class SelectionServiceImpl implements SelectionService {
     public List<Selection> findByAccount(String accountId) {
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
         if (currentUser.isAdmin() || currentUser.getId().equals(accountId)) {
-            return mongoTemplateExperimentDB.find(new Query(Criteria.where("account_id").is(accountId)), Selection.class);
+            return mongoTemplateExperimentDB.find(
+                    new Query(Criteria.where("account_id").is(accountId)), Selection.class);
         }
+        
         return null;
     }
 
@@ -146,37 +141,13 @@ public class SelectionServiceImpl implements SelectionService {
     public List<Selection> findByDataset(String datasetId) {
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
         if (currentUser.isAdmin()) {
-            return mongoTemplateExperimentDB.find(new Query(Criteria.where("dataset_id").is(datasetId)), Selection.class);
+            return mongoTemplateExperimentDB.find(
+                    new Query(Criteria.where("dataset_id").is(datasetId)), Selection.class);
         }
+        
         // Replace to below to enable non-owner users w access to the dataset to access the selection.
-        return mongoTemplateExperimentDB.find(new Query(Criteria.where("account_id").is(currentUser.getId())), Selection.class);
-        //List<Dataset> datasets = datasetService.findByAccount(currentUser.getId());
-        //for (Dataset d : datasets) {
-        //	if (d.getId().equals(datasetId)) {
-        //		return mongoTemplateExperimentDB.find(new Query(Criteria.where("dataset_id").is(datasetId)), Selection.class);
-        //	}
-        //}
-        //return null;
-    }
-
-    // ROLE_ADMIN: all.
-    // ROLE_CM:    own account.
-    // ROLE_USER:  own account.
-    @Override
-    public List<Selection> findByTask(String taskId) {
-        Task t = mongoTemplateExperimentDB.findOne(new Query(Criteria.where("id").is(taskId)), Task.class);
-        if (t == null) {
-            return null;
-        }
-        String[] selids = t.getSelection_ids();
-        if (selids == null) {
-            return null;
-        }
-        ArrayList<String> ls = new ArrayList<String>(selids.length);
-        for (String id : selids) {
-            ls.add(id);
-        }
-        return mongoTemplateExperimentDB.find(new Query(Criteria.where("id").in(ls)), Selection.class);
+        return mongoTemplateExperimentDB.find(
+                new Query(Criteria.where("account_id").is(currentUser.getId())), Selection.class);
     }
 
     @Override
@@ -185,6 +156,7 @@ public class SelectionServiceImpl implements SelectionService {
         if (sels == null) {
             return;
         }
+        
         for (Selection sel : sels) {
             delete(sel.getId());
         }
@@ -196,28 +168,21 @@ public class SelectionServiceImpl implements SelectionService {
         if (sels == null) {
             return;
         }
+        
         for (Selection sel : sels) {
             delete(sel.getId());
         }
     }
 
-    // Helper.
+    // Helper to filter out if the selection is accesible by the user or not
+    // admin access all, CM or USER only their selections
     private Selection checkCredentials(Selection sel) {
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-        if (currentUser.isAdmin() || sel == null) {
+        if (currentUser.isAdmin() || sel == null 
+                || currentUser.getId().equals(sel.getAccount_id())) {
             return sel;
-        } else {
-            if (currentUser.getId().equals(sel.getAccount_id())) {
-                return sel;
-            }
-            // Add this to enable non-owner users w access to the dataset to access the selection.
-            //List<Account> accounts = accountService.findByDataset(sel.getDataset_id());
-            //for (Account acc : accounts) {
-            //	if (currentUser.getId().equals(acc.getId())) {
-            //		return sel;
-            //	}
-            //}
         }
+        
         return null;
     }
 

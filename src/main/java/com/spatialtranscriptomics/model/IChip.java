@@ -11,6 +11,7 @@ import org.joda.time.DateTime;
  * This interface defines the Chip model. Applications that use the API must
  * implement the same model.
  */
+
 public interface IChip {
 
     public String getId();
@@ -24,7 +25,7 @@ public interface IChip {
     public String getName();
 
     public void setName(String name);
-
+    
     public int getX1();
 
     public void setX1(int x1);
@@ -79,6 +80,4 @@ public interface IChip {
 
     public DateTime getLast_modified();
 
-	// Not needed.
-    // public void setLast_modified(DateTime lastModified);
 }

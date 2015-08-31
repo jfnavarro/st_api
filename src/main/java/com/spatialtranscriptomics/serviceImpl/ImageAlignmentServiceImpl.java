@@ -3,6 +3,7 @@
  * Read LICENSE for more information about licensing terms
  * Contact: Jose Fernandez Navarro <jose.fernandez.navarro@scilifelab.se>
  */
+
 package com.spatialtranscriptomics.serviceImpl;
 
 import com.spatialtranscriptomics.model.ImageAlignment;
@@ -37,7 +38,8 @@ public class ImageAlignmentServiceImpl implements ImageAlignmentService {
     // ROLE_USER:  ok.
     @Override
     public ImageAlignment find(String id) {
-        return mongoTemplateAnalysisDB.findOne(new Query(Criteria.where("id").is(id)), ImageAlignment.class);
+        return mongoTemplateAnalysisDB.findOne(
+                new Query(Criteria.where("id").is(id)), ImageAlignment.class);
     }
 
     // ROLE_ADMIN: ok.
@@ -45,7 +47,8 @@ public class ImageAlignmentServiceImpl implements ImageAlignmentService {
     // ROLE_USER:  ok.
     @Override
     public ImageAlignment findByName(String name) {
-        return mongoTemplateAnalysisDB.findOne(new Query(Criteria.where("name").is(name)), ImageAlignment.class);
+        return mongoTemplateAnalysisDB.findOne(
+                new Query(Criteria.where("name").is(name)), ImageAlignment.class);
     }
 
     // ROLE_ADMIN: ok.
@@ -53,10 +56,8 @@ public class ImageAlignmentServiceImpl implements ImageAlignmentService {
     // ROLE_USER:  ok.
     @Override
     public List<ImageAlignment> findByChip(String chipId) {
-        //System.out.println("Finding for chip");
-        List<ImageAlignment> imals = mongoTemplateAnalysisDB.find(new Query(Criteria.where("chip_id").is(chipId)), ImageAlignment.class);
-        //System.out.println("Found " + (imals == null ? 0 :  imals.size()));
-        return imals;
+        return mongoTemplateAnalysisDB.find(
+                new Query(Criteria.where("chip_id").is(chipId)), ImageAlignment.class);
     }
 
     // ROLE_ADMIN: ok.
@@ -73,7 +74,7 @@ public class ImageAlignmentServiceImpl implements ImageAlignmentService {
     @Override
     public ImageAlignment add(ImageAlignment imal) {
         mongoTemplateAnalysisDB.insert(imal);
-        logger.info("Added image alignment " + imal.getId() + " to MongoDB.");
+        logger.info("Added image alignment " + imal.getId() + " to DB.");
         return imal;
     }
 
@@ -83,7 +84,7 @@ public class ImageAlignmentServiceImpl implements ImageAlignmentService {
     @Override
     public void update(ImageAlignment imal) {
         mongoTemplateAnalysisDB.save(imal);
-        logger.info("Updated image alignment " + imal.getId() + " to MongoDB.");
+        logger.info("Updated image alignment " + imal.getId() + " in DB.");
     }
 
     
@@ -91,7 +92,7 @@ public class ImageAlignmentServiceImpl implements ImageAlignmentService {
     @Override
     public void delete(String id) {
         mongoTemplateAnalysisDB.remove(find(id));
-        logger.info("Deleted image alignment " + id + " from MongoDB.");
+        logger.info("Deleted image alignment " + id + " from DB.");
     }
 
     // ROLE_ADMIN: ok.
@@ -103,17 +104,20 @@ public class ImageAlignmentServiceImpl implements ImageAlignmentService {
         return (currentUser.isAdmin() || currentUser.isContentManager()) && find(id) != null;
     }
 
+    // ROLE_ADMIN: ok.
+    // ROLE_CM:    ok.
+    // ROLE_USER:  nope.
     @Override
     public List<ImageAlignment> deleteForChip(String chipId) {
-        //System.out.println("about to delete chip");
         List<ImageAlignment> imals = findByChip(chipId);
-        //System.out.println("imal size" + (imals == null ? 0 : imals.size()));
         if (imals == null) {
             return null;
         }
+        
         for (ImageAlignment imal : imals) {
             delete(imal.getId());
         }
+        
         return imals;
     }
 

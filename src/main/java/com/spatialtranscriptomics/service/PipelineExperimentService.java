@@ -39,6 +39,13 @@ public interface PipelineExperimentService {
     public List<PipelineExperiment> findByAccount(String accountId);
 
     /**
+     * Finds all experiments with a given chip ID
+     * @param chipId the ID of the chip
+     * @return the list of experiments
+     */
+    public List<PipelineExperiment> findByChip(String chipId);
+    
+    /**
      * Lists all experiments.
      * @return the list.
      */
@@ -63,6 +70,12 @@ public interface PipelineExperimentService {
      */
     public void delete(String id);
 
+    /**
+     * Deletes all experiments of a given account id.
+     * @param accountId the account ID.
+     */
+    public void deleteForAccount(String accountId);
+    
     /**
      * Clears the account field for all experiments of a certain account.
      * @param accountId the account ID.

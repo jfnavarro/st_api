@@ -3,6 +3,7 @@
  * Read LICENSE for more information about licensing terms
  * Contact: Jose Fernandez Navarro <jose.fernandez.navarro@scilifelab.se>
  */
+
 package com.spatialtranscriptomics.controller;
 
 import com.spatialtranscriptomics.exceptions.BadRequestResponse;
@@ -16,12 +17,12 @@ import com.spatialtranscriptomics.exceptions.NotModifiedResponse;
 import com.spatialtranscriptomics.model.ImageAlignment;
 import com.spatialtranscriptomics.model.ImageMetadata;
 import com.spatialtranscriptomics.model.LastModifiedDate;
-import com.spatialtranscriptomics.model.S3Resource;
+import com.spatialtranscriptomics.serviceImpl.ImageAlignmentServiceImpl;
 import com.spatialtranscriptomics.serviceImpl.ImageServiceImpl;
 import com.spatialtranscriptomics.util.DateOperations;
+import static com.spatialtranscriptomics.util.DateOperations.checkIfModified;
 import java.awt.image.BufferedImage;
 import java.util.List;
-import javax.validation.Valid;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +32,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -46,15 +46,18 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * It implements the methods available at this endpoint. Note that the images
  * are stored on Amazon S3, and not in Mongo.
  */
+
 @Controller
 @RequestMapping("/rest/image")
 public class ImageController {
 
     @Autowired
     ImageServiceImpl imageService;
+    
+    @Autowired
+    ImageAlignmentServiceImpl imagealignmentService;
 
-    private static final Logger logger = Logger
-            .getLogger(ImageController.class);
+    private static final Logger logger = Logger.getLogger(ImageController.class);
 
     /**
      * GET|HEAD /image/
@@ -65,13 +68,15 @@ public class ImageController {
      */
     @Secured({"ROLE_CM", "ROLE_ADMIN"})
     @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD})
-    public @ResponseBody
-    List<ImageMetadata> listMetadata() {
+    public @ResponseBody List<ImageMetadata> listMetadata() {
+        
         List<ImageMetadata> list = imageService.list();
         if (list == null) {
             logger.info("Returning empty list of image metedata");
-            throw new CustomNotFoundException("No image metadata found or you dont have permissions to access them.");
+            throw new CustomNotFoundException("No image metadata found or "
+                    + "you don't have permissions to access");
         }
+        
         logger.info("Returning list of image metadata");
         return list;
     }
@@ -80,23 +85,26 @@ public class ImageController {
      * GET|HEAD /image/{id}
      * 
      * Returns image payload as a decompressed BufferedImage. NOTE: When
-     * possible, use getCompressed() or getCompressedAsJSON instead, due to size
+     * possible, use getCompressed() instead, due to size
      * limitations.
      *
      * @param id the image name.
      * @return the image as a BufferedImage.
      */
     @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
-    @RequestMapping(value = "{id:.+}", produces = MediaType.IMAGE_JPEG_VALUE, method = {RequestMethod.GET, RequestMethod.HEAD})
-    public @ResponseBody
-    BufferedImage get(@PathVariable String id) {
+    @RequestMapping(value = "{id:.+}",
+            produces = MediaType.IMAGE_JPEG_VALUE, 
+            method = {RequestMethod.GET, RequestMethod.HEAD})
+    public @ResponseBody BufferedImage get(@PathVariable String id) {
         // this {id:.+} is a workaround for a spring bug that truncates path
         // variables containing a dot
         BufferedImage img = imageService.getBufferedImage(id);
         if (img == null) {
             logger.info("Returning empty BufferedImage image");
-            throw new CustomNotFoundException("No image found or you dont have permissions to access them.");
+            throw new CustomNotFoundException("No image found or you don't "
+                    + "have permissions to access");
         }
+        
         logger.info("Returning BufferedImage image " + id);
         return img;
     }
@@ -111,15 +119,16 @@ public class ImageController {
      */
     @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
     @RequestMapping(value = "/lastmodified/{id:.+}", method = {RequestMethod.GET, RequestMethod.HEAD})
-    public @ResponseBody
-    LastModifiedDate getLastModified(@PathVariable String id) {
+    public @ResponseBody LastModifiedDate getLastModified(@PathVariable String id) {
         // this {id:.+} is a workaround for a spring bug that truncates path
         // variables containing a dot
         ImageMetadata img = imageService.getImageMetadata(id);
         if (img == null) {
             logger.info("Failed to return last modified time of image " + id);
-            throw new CustomNotFoundException("An image with this name does not exist or you do not have permissions to access it.");
+            throw new CustomNotFoundException("An image with name " + id 
+                    + "doesn't exist or you don't have permissions to access");
         }
+        
         logger.info("Returning last modified time of image " + id);
         return new LastModifiedDate(img.getLastModified());
     }
@@ -130,72 +139,45 @@ public class ImageController {
      * Returns image payload as a compressed JPEG.
      *
      * @param id the image name.
+     * @param ifModifiedSince client's last date of modification of the object
      * @return the image as a JPEG.
      */
     @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
-    @RequestMapping(value = "/compressed/{id:.+}", produces = MediaType.IMAGE_JPEG_VALUE, method = {RequestMethod.GET, RequestMethod.HEAD})
-    public @ResponseBody
-    byte[] getCompressed(@PathVariable String id) {
+    @RequestMapping(value = "/compressed/{id:.+}", 
+            produces = MediaType.IMAGE_JPEG_VALUE,
+            method = {RequestMethod.GET, RequestMethod.HEAD})
+    public @ResponseBody HttpEntity<byte[]> getCompressed(
+            @PathVariable String id, 
+            @RequestHeader(value="If-Modified-Since", defaultValue="") String ifModifiedSince) {
         // this {id:.+} is a workaround for a spring bug that truncates path
         // variables containing a dot
         byte[] image = imageService.getCompressedImage(id);
         if (image == null) {
             logger.info("Returning empty JPEG image");
-            throw new CustomNotFoundException("An image with this name does not exist or you do not have permissions to access it.");
+            throw new CustomNotFoundException("An image with name " + id 
+                    + " doesn't exist or you don't have permissions to access");
         }
-        logger.info("Returning JPEG image");
-        return image;
-        //HttpHeaders headers = new HttpHeaders();
-        //headers.setContentType(MediaType.IMAGE_JPEG);
-        //headers.setContentLength(image.length);
-        //return new HttpEntity<byte[]>(image, headers);
-    }
-
-    /**
-     * GET|HEAD /image/compressedjson/{id}
-     * 
-     * Returns image payload as a JPEG wrapped in JSON.
-     *
-     * @param id the image name.
-     * @param ifModifiedSince request mod date info.
-     * @return the image as JSON.
-     */
-    @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
-    @RequestMapping(value = "/compressedjson/{id:.+}", method = {RequestMethod.GET, RequestMethod.HEAD})
-    public @ResponseBody
-    HttpEntity<S3Resource> getCompressedAsJSON(@PathVariable String id, @RequestHeader(value="If-Modified-Since", defaultValue="") String ifModifiedSince) {
-        // this {id:.+} is a workaround for a spring bug that truncates path
-        // variables containing a dot
-        byte[] image = imageService.getCompressedImage(id);
+        
         ImageMetadata meta = imageService.getImageMetadata(id);
-        if (image == null || meta == null) {
-            logger.info("Returning empty S3Resource image");
-            throw new CustomNotFoundException("An image with this name does not exist or you do not have permissions to access it.");
-        }
         // Check if already newest.
         DateTime reqTime = DateOperations.parseHTTPDate(ifModifiedSince);
-        if (reqTime != null) {
-            DateTime resTime = meta.getLastModified() == null ? new DateTime(2012,1,1,0,0) : meta.getLastModified();
-            // NOTE: Only precision within day.
-            resTime = new DateTime(resTime.getYear(), resTime.getMonthOfYear(), resTime.getDayOfMonth(), resTime.getHourOfDay(), resTime.getMinuteOfHour(), resTime.getSecondOfMinute());
-            if (!resTime.isAfter(reqTime)) {
-                logger.info("Not returning S3Resource image " + id + " since not modified");
-                throw new CustomNotModifiedException("This image has not been modified");
-            }
+        if (reqTime != null && !checkIfModified(meta.getLastModified(), reqTime)) {
+            logger.info("Not returning S3Resource image " + id + " since not modified");
+            throw new CustomNotModifiedException("This image has not been modified");
         }
-        S3Resource wrapper = new S3Resource("image/jpeg", id, image);
+        
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setContentType(MediaType.IMAGE_JPEG);
+        headers.setContentLength(image.length);
         headers.add("Cache-Control", "public, must-revalidate, no-transform");
         headers.add("Vary", "Accept-Encoding");
         headers.add("Last-modified", DateOperations.getHTTPDateSafely(meta.getLastModified()));
-        HttpEntity<S3Resource> entity = new HttpEntity<S3Resource>(wrapper, headers);
-        logger.info("Returning S3Resource image " + id);
-        return entity;
+        logger.info("Returning JPEG image");
+        return new HttpEntity<byte[]>(image, headers);
     }
 
     /**
-     * PUT /imagealignment/
+     * PUT /image/
      * 
      * Adds an image as a BufferedImage.
      * NOTE: When possible use addAsJSON() instead.
@@ -205,52 +187,19 @@ public class ImageController {
      */
     @Secured({"ROLE_CM", "ROLE_ADMIN"})
     @RequestMapping(value = "{id:.+}", method = RequestMethod.PUT)
-    public @ResponseBody
-    void add(@PathVariable String id, @RequestBody BufferedImage img) {
+    public @ResponseBody void add(
+            @PathVariable String id, 
+            @RequestBody BufferedImage img) {
         // this {id:.+} is a workaround for a spring bug that truncates path
         // variables containing a dot
         if (imageService.getImageMetadata(id) != null) {
             logger.info("Cannot add JPEG image: exists " + id);
             throw new CustomBadRequestException(
-                    "An image with this name exists already. Image names are unique.");
+                    "An image with this name exists already. Image names are unique");
         }
+        
         imageService.add(id, img);
         logger.info("Succesfully added BufferedImage image " + id);
-    }
-
-    /**
-     * PUT /imagealignment/compressedjson/{id}
-     * 
-     * Adds an JPEG image wrapped in JSON.
-     * 
-     * @param id the image filename.
-     * @param image the image.
-     * @param result the binding.
-     */
-    @Secured({"ROLE_CM", "ROLE_ADMIN"})
-    @RequestMapping(value = "/compressedjson/{id:.+}", method = RequestMethod.PUT)
-    public @ResponseBody
-    void addAsJSON(@PathVariable String id, @RequestBody @Valid S3Resource image, BindingResult result) {
-        // this {id:.+} is a workaround for a spring bug that truncates path
-        // variables containing a dot
-        if (imageService.getImageMetadata(id) != null) {
-            logger.info("Cannot add S3Resource image: exists " + id);
-            throw new CustomBadRequestException(
-                    "An image with this name exists already. Image names are unique.");
-        }
-        byte[] img = image.getFile();
-        if (id == null || image.getFilename() == null || image.getFilename().equals("")
-                || img == null || img.length == 0) {
-            logger.info("Cannot add empty or nameless S3Resource image.");
-            throw new CustomBadRequestException("The image seems to be empty or lacking name.");
-
-        }
-        if (!id.equals(image.getFilename())) {
-            logger.info("Failed to add S3Resource image. Filename and ID mismatch.");
-            throw new CustomBadRequestException("Filename and ID mismatch.");
-        }
-        imageService.addCompressed(image.getFilename(), img);
-        logger.info("Successfully added S3Resource image " + id);
     }
 
     /**
@@ -262,10 +211,19 @@ public class ImageController {
      */
     @Secured({"ROLE_CM", "ROLE_ADMIN"})
     @RequestMapping(value = "{id:.+}", method = RequestMethod.DELETE)
-    public @ResponseBody
-    void delete(@PathVariable String id) {
+    public @ResponseBody void delete(@PathVariable String id) {
         // this {id:.+} is a workaround for a spring bug that truncates path
         // variables containing a dot
+        //check that the image is not used in an image alignment object
+        List<ImageAlignment> imals = imagealignmentService.list();
+        for (ImageAlignment ia : imals) {
+            if (ia.getFigure_blue().equals(id) || ia.getFigure_red().equals(id)) {
+                logger.info("Trying to delete an image " + id + " that is used");
+                throw new CustomBadRequestException("Trying to delete an image " + id 
+                        + "that used in an Image Alignment object");
+            }
+        }
+        
         imageService.delete(id);
         logger.info("Successfully deleted image " + id);
     }

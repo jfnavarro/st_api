@@ -11,6 +11,7 @@ import org.joda.time.DateTime;
  * This interface defines the PipelineExperiment model. Applications that use
  * the API must implement the same model.
  */
+
 public interface IPipelineExperiment {
 
     public String getId();
@@ -44,6 +45,30 @@ public interface IPipelineExperiment {
     public String getEmr_last_state_change_reason();
 
     public void setEmr_last_state_change_reason(String lastStateChangeReason);
+    
+    public String getInput_files();
+
+    public void setInput_files(String input_files);
+    
+    public String getMapper_tool();
+
+    public void setMapper_tool(String mapper_tool);
+
+    public String getMapper_genome();
+
+    public void setMapper_genome(String mapper_genome);
+
+    public String getAnnotation_tool();
+
+    public void setAnnotation_tool(String annotation_tool);
+
+    public String getAnnotation_genome();
+
+    public void setAnnotation_genome(String annotation_genome);
+    
+    public String getChip_id();
+    
+    public void setChip_id(String chip_id);
 
     public DateTime getCreated_at();
 

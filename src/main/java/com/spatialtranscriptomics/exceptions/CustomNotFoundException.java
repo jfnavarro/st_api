@@ -16,7 +16,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(value = HttpStatus.NOT_FOUND)
 public class CustomNotFoundException extends RuntimeException {
 
-    /** Auto-gen ID. */
+    /**
+     * Auto-gen ID.
+     */
     private static final long serialVersionUID = 7644203240854556553L;
 
     /**

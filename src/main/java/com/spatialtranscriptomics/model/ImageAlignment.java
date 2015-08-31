@@ -41,8 +41,6 @@ public class ImageAlignment implements IImageAlignment {
     @NotBlank(message = "Figure blue must not be blank.")
     String figure_blue;
 
-    // Not possible.
-    //@NotEmpty(message = "Alignment matrix must not be empty.")
     double[] alignment_matrix;
 
     @CreatedDate

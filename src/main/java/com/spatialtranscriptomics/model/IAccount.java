@@ -76,6 +76,5 @@ public interface IAccount {
     @Transient
     public void setGranted_datasets(List<String> datasets);
 
-    // HACK.
     public void updateGranted_datasets();
 }

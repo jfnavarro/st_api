@@ -42,9 +42,8 @@ public interface FeaturesService {
      * Adds or updates a features file.
      * @param id the dataset ID.
      * @param gzipfile the file, gzipped in BASE64-encoding.
-     * @return true if file was updated; false if added.
      */
-    public boolean addUpdate(String id, byte[] gzipfile);
+    public void addUpdate(String id, byte[] gzipfile);
     
     /**
      * Finds a features file.

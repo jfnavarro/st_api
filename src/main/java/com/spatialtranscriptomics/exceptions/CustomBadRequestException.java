@@ -17,8 +17,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(value = HttpStatus.BAD_REQUEST)
 public class CustomBadRequestException extends RuntimeException {
 
-	/**
-	 * 
+    	/**
+	 * Auto-gen ID.
 	 */
 	private static final long serialVersionUID = 3398438496792631729L;
 

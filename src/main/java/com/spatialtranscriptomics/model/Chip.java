@@ -17,12 +17,13 @@ import org.springframework.data.mongodb.core.mapping.Document;
  * This class maps the Chip data model object into a MongoDB Document We use the
  *
  * @Document annotation of Spring Data for the mapping. We also do data
- * validation using Hibernate validator constraints.
+ * validation using Hibernate validation constraints.
  * 
  * Chips represent the physical chip on which an experiment has been performed.
  * As such, it has a outer "total" dimensions, border dimensions, and inner
  * dimensions for coordinates, and the total number of barcodes.
  */
+
 @Document(collection = "chip")
 public class Chip implements IChip {
 
@@ -32,7 +33,7 @@ public class Chip implements IChip {
     @Indexed(unique = true)
     @NotBlank(message = "Name must not be blank.")
     String name;
-
+    
     int barcodes;
 
     int x1;

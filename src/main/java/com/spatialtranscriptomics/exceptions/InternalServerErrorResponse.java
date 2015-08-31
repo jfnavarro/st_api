@@ -9,7 +9,6 @@ package com.spatialtranscriptomics.exceptions;
 /**
  * This class defines the JSON error response body for the CustomInternalServerErrorException
  */
-
 public class InternalServerErrorResponse {
 
     public String error;

@@ -53,7 +53,7 @@ public interface DatasetInfoService {
 
     /**
      * Updates a dataset info.
-     * @param dsi the info.
+     * @param dsi the dataset info object.
      */
     public void update(DatasetInfo dsi);
 
@@ -63,8 +63,16 @@ public interface DatasetInfoService {
      */
     public void delete(String id);
 
+    /**
+     * Deletes a dataset info for a given dataset.
+     * @param datasetId the dataset ID.
+     */
     public void deleteForDataset(String datasetId);
 
+    /**
+     * Deletes a dataset info for a given account.
+     * @param accountId the account ID.
+     */
     public void deleteForAccount(String accountId);
 
 }

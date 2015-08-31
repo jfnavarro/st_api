@@ -42,22 +42,19 @@ public class Selection implements ISelection {
     @NotBlank(message = "Account must not be blank.")
     String account_id;
 
+    //right now we store genes
+    //as array[(gene,reads,norm_reads,pixel_intensity),...]
     @NotEmpty(message = "Gene nomenclatures with stats must not be empty.")
     List<String[]> gene_hits = new ArrayList<String[]>();
 
+    @NotEmpty(message = "Features uniques Ids must not be empty.")
+    String[] features_ids;
+        
     boolean enabled;
-
     String type;
-
     String status;
-
     String comment;
 
-    String[] obo_foundry_terms;
-
-    //TODO this is temporary to be removed
-    String tissue_snapshot;
-    
     @CreatedDate
     private DateTime created_at;
 
@@ -100,6 +97,16 @@ public class Selection implements ISelection {
         this.gene_hits = gene_hits;
     }
 
+    @Override
+    public String[] getFeature_ids() {
+        return features_ids;
+    }
+
+    @Override
+    public void setFeature_ids(String[] features_ids) {
+        this.features_ids = features_ids;
+    }
+    
     @Override
     public String getDataset_id() {
         return dataset_id;
@@ -161,36 +168,6 @@ public class Selection implements ISelection {
     }
 
     @Override
-    public String[] getObo_foundry_terms() {
-        return obo_foundry_terms;
-    }
-
-    @Override
-    public void setObo_foundry_terms(String[] obo_foundry_terms) {
-        this.obo_foundry_terms = obo_foundry_terms;
-    }
-
-    @Override
-    public String getGene(int i) {
-        return (String) (gene_hits.get(i)[0]);
-    }
-
-    @Override
-    public int getHit_count(int i) {
-        return Integer.parseInt(gene_hits.get(i)[1]);
-    }
-
-    @Override
-    public double getNormalized_hit_count(int i) {
-        return Double.parseDouble(gene_hits.get(i)[2]);
-    }
-
-    @Override
-    public double getNormalized_pixel_intensity(int i) {
-        return Double.parseDouble(gene_hits.get(i)[3]);
-    }
-
-    @Override
     public DateTime getCreated_at() {
         return created_at;
     }
@@ -203,15 +180,5 @@ public class Selection implements ISelection {
     @Override
     public DateTime getLast_modified() {
         return last_modified;
-    }
-    
-    @Override
-    public void setTissue_snapshot(String tissue_snapshot) {
-        this.tissue_snapshot = tissue_snapshot;
-    }
-    
-    @Override
-    public String getTissue_snapshot() {
-        return tissue_snapshot;
     }
 }

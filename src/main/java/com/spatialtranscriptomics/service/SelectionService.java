@@ -6,9 +6,7 @@
 package com.spatialtranscriptomics.service;
 
 import java.util.List;
-
 import org.springframework.stereotype.Service;
-
 import com.spatialtranscriptomics.model.Selection;
 
 /**
@@ -50,13 +48,6 @@ public interface SelectionService {
      * @return the list.
      */
     public List<Selection> findByDataset(String datasetId);
-
-    /**
-     * Returns all selections for a task.
-     * @param taskId the task ID.
-     * @return the list.
-     */
-    public List<Selection> findByTask(String taskId);
 
     /**
      * Adds a selection.

@@ -3,6 +3,7 @@
  * Read LICENSE for more information about licensing terms
  * Contact: Jose Fernandez Navarro <jose.fernandez.navarro@scilifelab.se>
  */
+
 package com.spatialtranscriptomics.exceptions;
 
 import org.springframework.http.HttpStatus;
@@ -16,7 +17,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 public class CustomNotModifiedException extends RuntimeException {
 
     /**
-     * Auto-generated serial number.
+     * Auto-gen ID.
      */
     private static final long serialVersionUID = 3398348494792632720L;
 

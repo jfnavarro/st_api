@@ -149,12 +149,6 @@
 			secret="${oauth.viewer.secret}"
 			authorized-grant-types="implicit,authorization_code,client_credentials,refresh_token,password"
 			authorities="ROLE_USER,ROLE_CM,ROLE_ADMIN" scope="read,write" />
-
-		<!-- <oauth:client client-id="client" resource-ids="security" authorized-grant-types="authorization_code,implicit,refresh_token" 
-			authorities="ROLE_CLIENT" scope="read,write" secret="secret" <oauth:client 
-			client-id="st-viewer-client" secret="secret" authorized-grant-types="authorization_code,client_credentials" 
-			authorities="ROLE_USER" redirect-uri="http://www.google.com" scope="read" 
-			/> redirect-uri="${oauth.viewer.redirect}" /> -->
 	</oauth:client-details-service>
 
 	<bean id="clientDetailsUserService"

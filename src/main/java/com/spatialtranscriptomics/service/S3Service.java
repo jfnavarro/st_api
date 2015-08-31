@@ -21,4 +21,10 @@ public interface S3Service {
      * @param experimentId the experiment ID.
      */
     public void deleteExperimentData(String experimentId);
+    
+    /**
+     * Deletes all the experiments that were created by account given 
+     * @param accountId the ID of the account
+     */
+    public void deleteExperimentDataForAccount(String accountId);
 }

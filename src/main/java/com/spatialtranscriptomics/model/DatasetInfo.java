@@ -15,11 +15,12 @@ import org.springframework.data.mongodb.core.mapping.Document;
 /**
  * This class maps the DatasetInfo data model object into a MongoDB Document We
  * use the @Document annotation of Spring Data for the mapping. We also do data
- * validation using Hibernate validator constraints.
+ * validation using Hibernate validation constraints.
  *
  * A dataset info is a join-table-like entity allowing an account to access
  * a dataset.
  */
+
 @Document(collection = "datasetinfo")
 @CompoundIndexes({
     @CompoundIndex(name = "account_id_1_dataset_id_1", def = "{'account_id': 1, 'dataset_id': 1}")
@@ -45,7 +46,7 @@ public class DatasetInfo implements IDatasetInfo {
      */
     public DatasetInfo() {}
 
-    // HACK. Only for admin editing.
+    // Used Only for admin editing.
     public DatasetInfo(String accountId, String datasetId, String comment) {
         this.account_id = accountId;
         this.dataset_id = datasetId;

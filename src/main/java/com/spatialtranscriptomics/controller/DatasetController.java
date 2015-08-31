@@ -22,6 +22,8 @@ import com.spatialtranscriptomics.serviceImpl.DatasetServiceImpl;
 import com.spatialtranscriptomics.serviceImpl.FeaturesServiceImpl;
 import com.spatialtranscriptomics.serviceImpl.SelectionServiceImpl;
 import com.spatialtranscriptomics.util.DateOperations;
+import static com.spatialtranscriptomics.util.DateOperations.checkIfModified;
+import static com.spatialtranscriptomics.util.HTTPOperations.getHTTPHeaderWithCache;
 import java.util.Iterator;
 import java.util.List;
 import javax.validation.Valid;
@@ -29,9 +31,7 @@ import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Repository;
@@ -47,7 +47,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
- * This class is Spring MVC controller class for the API endpoint "rest/dataset". It implements the methods available at this endpoint.
+ * This class is Spring MVC controller class for the API endpoint "rest/dataset". 
+ * It implements the methods available at this endpoint.
  */
 
 @Repository
@@ -56,8 +57,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 public class DatasetController {
 
     @SuppressWarnings("unused")
-    private static final Logger logger = Logger
-            .getLogger(DatasetController.class);
+    private static final Logger logger = Logger.getLogger(DatasetController.class);
 
     @Autowired
     DatasetServiceImpl datasetService;
@@ -70,144 +70,85 @@ public class DatasetController {
 
     @Autowired
     DatasetInfoServiceImpl datasetInfoService;
-
+    
     /**
      * GET|HEAD /dataset/
      * GET|HEAD /dataset/?account={accountId}
      * 
      * Lists enabled datasets.
      * @param accountId the account ID.
+     * @param onlyEnabled when true filters out disabled datasets
      * @return the list.
      */
     @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
     @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD})
-    public @ResponseBody
-    List<Dataset> list(@RequestParam(value = "account", required = false) String accountId) {
-        List<Dataset> ds;
+    public @ResponseBody List<Dataset> list(
+            @RequestParam(value = "account", required = false) String accountId,
+            @RequestParam(value = "onlyEnabled", required = false, defaultValue = "false") boolean onlyEnabled) {
+        
+        List<Dataset> datasets;
         if (accountId != null) {
-            ds = datasetService.findByAccount(accountId);
+            datasets = datasetService.findByAccount(accountId);
         } else {
-            ds = datasetService.list();
+            datasets = datasetService.list();
         }
-        if (ds == null) {
+        
+        if (datasets == null) {
             logger.info("Returning empty list of datasets");
-            throw new CustomNotFoundException("No datasets found or you dont have permissions to access them.");
-        } 
-        Iterator<Dataset> i = ds.iterator();
-        while (i.hasNext()) {
-            Dataset d = i.next(); // must be called before you can call i.remove()
-            if (!d.getEnabled()) {
-                i.remove();
+            throw new CustomNotFoundException("No datasets found or you don't have "
+                    + "permissions to access");
+        }
+        
+        if (onlyEnabled) {
+            Iterator<Dataset> it = datasets.iterator();
+            while (it.hasNext()) {
+                Dataset dataset = it.next(); // must be called before you can call i.remove()
+                if (!dataset.getEnabled()) {
+                    it.remove();
+                }
             }
         }
-        logger.info("Returning list of enabled datasets");
-        return ds;
-    }
-
-    /**
-     * GET|HEAD /dataset/all/
-     * GET|HEAD /dataset/all/?account={accountId}
-     * 
-     * Lists enabled/disabled dataset.
-     * @param accountId the account ID.
-     * @return the list.
-     */
-    @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
-    @RequestMapping(value = "/all", method = {RequestMethod.GET, RequestMethod.HEAD})
-    public @ResponseBody
-    List<Dataset> listAll(@RequestParam(value = "account", required = false) String accountId) {
-        List<Dataset> ds;
-        if (accountId != null) {
-            logger.info("Returning list of enabled/disabled datasets for dataset " + accountId);
-            ds = datasetService.findByAccount(accountId);
-        } else {
-            logger.info("Returning list of enabled/disabled datasets");
-            ds = datasetService.list();
-        }
-        if (ds == null) {
-            logger.info("Returning empty list of enabled/disabled datasets");
-            throw new CustomNotFoundException("No datasets found or you dont have permissions to access them.");
-        }
-        return ds;
+        
+        logger.info("Returning list of datasets");
+        return datasets;
     }
 
     /**
      * GET|HEAD /dataset/{id}
      * 
-     * Finds enabled datasets.
+     * Finds an enabled dataset.
      * @param id the dataset ID.
+     * @param onlyEnabled if true only a dataset that is enabled can be returned
      * @param ifModifiedSince request timestamp.
      * @return the dataset.
      */
     @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
     @RequestMapping(value = "{id}", method = {RequestMethod.GET, RequestMethod.HEAD})
-    public @ResponseBody
-    HttpEntity<Dataset> get(@PathVariable String id, @RequestHeader(value="If-Modified-Since", defaultValue="") String ifModifiedSince) {
-        Dataset ds = datasetService.find(id);
-        if (ds == null || !ds.getEnabled()) {
+    public @ResponseBody HttpEntity<Dataset> get(
+            @PathVariable String id,
+            @RequestParam(value = "onlyEnabled", required = false, defaultValue = "false") boolean onlyEnabled,
+            @RequestHeader(value="If-Modified-Since", defaultValue="") String ifModifiedSince) {
+        
+        Dataset dataset = datasetService.find(id);
+        if (dataset == null || (onlyEnabled && !dataset.getEnabled())) {
             logger.info("Failed to return enabled dataset " + id);
-            throw new CustomNotFoundException("A dataset with this ID does not exist, is disabled, or you dont have permissions to access it.");
+            throw new CustomNotFoundException("A dataset with ID " + id + " doesn't exist, "
+                    + "is disabled, or you don't have permissions to access");
         }
+        
         // Check if already newest.
         DateTime reqTime = DateOperations.parseHTTPDate(ifModifiedSince);
-        if (reqTime != null) {
-            DateTime resTime = ds.getLast_modified() == null ? new DateTime(2012,1,1,0,0) : ds.getLast_modified();
-            // NOTE: Only precision within day.
-            resTime = new DateTime(resTime.getYear(), resTime.getMonthOfYear(), resTime.getDayOfMonth(), resTime.getHourOfDay(), resTime.getMinuteOfHour(), resTime.getSecondOfMinute());
-            if (!resTime.isAfter(reqTime)) {
-                logger.info("Not returning enabled dataset " + id + " since not modified");
-                throw new CustomNotModifiedException("This dataset has not been modified");
-            }
+        if (reqTime != null && !checkIfModified(dataset.getLast_modified(), reqTime)) {
+            logger.info("Not returning enabled dataset " + id + " since not modified");
+            throw new CustomNotModifiedException("This dataset has not been modified");
         }
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.add("Cache-Control", "public, must-revalidate, no-transform");
-        headers.add("Vary", "Accept-Encoding");
-        headers.add("Last-modified", DateOperations.getHTTPDateSafely(ds.getLast_modified()));
-        HttpEntity<Dataset> entity = new HttpEntity<Dataset>(ds, headers);
+        
+        HttpEntity<Dataset> entity = new HttpEntity<Dataset>(dataset, 
+                getHTTPHeaderWithCache(dataset.getLast_modified()));
         logger.info("Returning enabled dataset " + id);
         return entity;
     }
-
-    /**
-     * GET|HEAD /dataset/all/{id}
-     * 
-     * Finds enabled/disabled datasets.
-     * @param id the dataset ID.
-     * @param ifModifiedSince request timestamp.
-     * @return the dataset.
-     */
-    @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
-    @RequestMapping(value = "/all/{id}", method = {RequestMethod.GET, RequestMethod.HEAD})
-    public @ResponseBody
-    HttpEntity<Dataset> getAll(@PathVariable String id, @RequestHeader(value="If-Modified-Since", defaultValue="") String ifModifiedSince) {
-        Dataset ds = datasetService.find(id);
-        if (ds == null) {
-            logger.info("Failed to return enabled/disabled dataset " + id);
-            throw new CustomNotFoundException("A dataset with this ID does not exist, or you dont have permissions to access it.");
-        }
-        // Check if already newest.
-        DateTime reqTime = DateOperations.parseHTTPDate(ifModifiedSince);
-        if (reqTime != null) {
-            DateTime resTime = ds.getLast_modified() == null ? new DateTime(2012,1,1,0,0) : ds.getLast_modified();
-            // NOTE: Only precision within day.
-            resTime = new DateTime(resTime.getYear(), resTime.getMonthOfYear(), resTime.getDayOfMonth(), resTime.getHourOfDay(), resTime.getMinuteOfHour(), resTime.getSecondOfMinute());
-            if (!resTime.isAfter(reqTime)) {
-                logger.info("Not returning enabled/disabled dataset " + id + " since not modified");
-                throw new CustomNotModifiedException("This dataset has not been modified");
-            }
-        }
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.add("Cache-Control", "public, must-revalidate, no-transform");
-        headers.add("Vary", "Accept-Encoding");
-        headers.add("Last-modified", DateOperations.getHTTPDateSafely(ds.getLast_modified()));
-        HttpEntity<Dataset> entity = new HttpEntity<Dataset>(ds, headers);
-        logger.info("Returning enabled/disabled dataset " + id);
-        return entity;
-    }
-
-    
+   
     /**
      * GET|HEAD /dataset/lastmodified/{id}
      *
@@ -217,42 +158,50 @@ public class DatasetController {
      */
     @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
     @RequestMapping(value = "/lastmodified/{id}", method = {RequestMethod.GET, RequestMethod.HEAD})
-    public @ResponseBody
-    LastModifiedDate getLastModified(@PathVariable String id) {
-        Dataset ds = datasetService.find(id);
-        if (ds == null) {
+    public @ResponseBody LastModifiedDate getLastModified(@PathVariable String id) {
+        
+        Dataset dataset = datasetService.find(id);
+        if (dataset == null) {
             logger.info("Failed to return last modified time of dataset " + id);
-            throw new CustomNotFoundException("A dataset with this ID does not exist, or you dont have permissions to access it.");
+            throw new CustomNotFoundException("A dataset with ID " + id + " doesn't exist, "
+                    + "or you don't have permissions to access");
         }
+        
         logger.info("Returning last modified time of dataset " + id);
-        return new LastModifiedDate(ds.getLast_modified());
+        return new LastModifiedDate(dataset.getLast_modified());
     }
 
     /**
      * POST /dataset/
      * 
      * Adds a dataset.
-     * @param ds the chip.
-     * @param result binding.
+     * @param dataset the dataset.
+     * @param result binding object from the view.
      * @return the dataset with ID assigned.
      */
     @Secured({"ROLE_CM", "ROLE_ADMIN"})
     @RequestMapping(method = RequestMethod.POST)
-    public @ResponseBody
-    Dataset add(@RequestBody @Valid Dataset ds, BindingResult result) {
+    public @ResponseBody Dataset add(
+            @RequestBody @Valid Dataset dataset, 
+            BindingResult result) {
+        
         // Data model validation
         if (result.hasErrors()) {
             logger.info("Failed to add dataset. Missing fields?");
             throw new CustomBadRequestException("Dataset is invalid. Missing required fields?");
         }
-        if (ds.getId() != null) {
-            logger.info("Failed to add dataset. ID set by user.");
-            throw new CustomBadRequestException("The dataset you want to add must not have an ID. The ID will be autogenerated.");
-        } else if (datasetService.findByNameInternal(ds.getName()) != null) {
-            logger.info("Failed to add dataset. Duplicate name.");
-            throw new CustomBadRequestException("A dataset with this name exists already. Dataset names are unique.");
+        
+        if (dataset.getId() != null) {
+            logger.info("Failed to add dataset. ID set by user");
+            throw new CustomBadRequestException("The dataset you want to add must "
+                    + "not have an ID. The ID will be autogenerated");
+        } else if (datasetService.findByNameInternal(dataset.getName()) != null) {
+            logger.info("Failed to add dataset. Duplicate name");
+            throw new CustomBadRequestException("A dataset with this name exists already. "
+                    + "Dataset names are unique");
         }
-        Dataset d = datasetService.add(ds);
+        
+        Dataset d = datasetService.add(dataset);
         // HACK: Id needs to be autogenerated at persisting before updating DatasetInfos.
         d.updateGranted_accounts();
         logger.info("Successfully added dataset " + d.getId());
@@ -264,32 +213,39 @@ public class DatasetController {
      * 
      * Updates a dataset.
      * @param id the dataset ID.
-     * @param ds the dataset.
-     * @param result binding.
+     * @param dataset the dataset.
+     * @param result binding object from the view.
      */
     @Secured({"ROLE_CM", "ROLE_ADMIN", "ROLE_USER"})
     @RequestMapping(value = "{id}", method = RequestMethod.PUT)
-    public @ResponseBody
-    void update(@PathVariable String id, @RequestBody @Valid Dataset ds, BindingResult result) {
+    public @ResponseBody void update(
+            @PathVariable String id, 
+            @RequestBody @Valid Dataset dataset, 
+            BindingResult result) {
+        
         // Data model validation
         if (result.hasErrors()) {
             logger.info("Failed to update dataset. Missing fields?");
             throw new CustomBadRequestException("Dataset is invalid. Missing required fields?");
         }
-        if (!id.equals(ds.getId())) {
-            logger.info("Failed to update dataset. ID mismatch.");
-            throw new CustomBadRequestException("ID in request URL does not match ID in content body.");
+        
+        if (!id.equals(dataset.getId())) {
+            logger.info("Failed to update dataset. ID mismatch");
+            throw new CustomBadRequestException("ID in request URL does not match ID in content body");
         } else if (datasetService.find(id) == null) {
             logger.info("Failed to update dataset. Missing or failed permissions.");
-            throw new CustomBadRequestException("A dataset with this ID does not exist or you don't have permissions to access it.");
-        } else if (datasetService.findByNameInternal(ds.getName()) != null) {
-            if (!datasetService.findByNameInternal(ds.getName()).getId().equals(id)) {
-                logger.info("Failed to update dataset. Duplicate name.");
-                throw new CustomBadRequestException("Another dataset with this name exists already. Dataset names are unique.");
+            throw new CustomBadRequestException("A dataset with ID " + id + " doesn't exist or "
+                    + "you don't have permissions to access");
+        } else if (datasetService.findByNameInternal(dataset.getName()) != null) {
+            if (!datasetService.findByNameInternal(dataset.getName()).getId().equals(id)) {
+                logger.info("Failed to update dataset. Duplicated name");
+                throw new CustomBadRequestException("Another dataset with this name exists already. "
+                        + "Dataset names are unique");
             }
         }
-        logger.info("Successfully updated dataset " + ds.getId());
-        datasetService.update(ds);
+        
+        logger.info("Successfully updated dataset " + dataset.getId());
+        datasetService.update(dataset);
     }
 
     /**
@@ -297,27 +253,22 @@ public class DatasetController {
      * 
      * Deletes a dataset.
      * @param id the dataset ID.
-     * @param cascade true to cascade delete.
      */
     @Secured({"ROLE_CM", "ROLE_ADMIN", "ROLE_USER"})
     @RequestMapping(value = "{id}", method = RequestMethod.DELETE)
-    public @ResponseBody
-    void delete(@PathVariable String id,
-            @RequestParam(value = "cascade", required = false, defaultValue = "true") boolean cascade) {
+    public @ResponseBody void delete(@PathVariable String id) {
+        
         if (!datasetService.deleteIsOkForCurrUser(id)) {
-            logger.info("Failed to delete dataset " + id + " Missing permissions.");
-            throw new CustomBadRequestException("You are not allowed to delete this dataset.");
+            logger.info("Failed to delete dataset " + id + " Missing permissions");
+            throw new CustomBadRequestException("You are not allowed to delete this dataset");
         }
-        if (cascade) {
-            selectionService.deleteForDataset(id);
-            datasetInfoService.deleteForDataset(id);
-            logger.info("Successfully cascade-deleted dependencies for dataset " + id);
-        }
+        
+        datasetInfoService.deleteForDataset(id);
         datasetService.delete(id);
         featuresService.delete(id);
-        logger.info("Successfully deleted dataset and features for dataset " + id);
+        selectionService.deleteForDataset(id);
+        logger.info("Successfully deleted dataset " + id);
     }
-    
     
     /**
      * Static access to dataset service.

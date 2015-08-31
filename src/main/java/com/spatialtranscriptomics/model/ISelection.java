@@ -25,6 +25,10 @@ public interface ISelection {
     public List<String[]> getGene_hits();
 
     public void setGene_hits(List<String[]> selection_hits);
+    
+    public String[] getFeature_ids();
+    
+    public void setFeature_ids(String[] features_ids);
 
     public String getDataset_id();
 
@@ -50,25 +54,9 @@ public interface ISelection {
 
     public void setComment(String comment);
 
-    public String[] getObo_foundry_terms();
-
-    public void setObo_foundry_terms(String[] obo_foundry_terms);
-
-    public String getGene(int i);
-
-    public int getHit_count(int i);
-
-    public double getNormalized_hit_count(int i);
-
-    public double getNormalized_pixel_intensity(int i);
-
     public DateTime getCreated_at();
 
     public void setCreated_at(DateTime created);
 
     public DateTime getLast_modified();
-    
-    public void setTissue_snapshot(String tissue_snapshot);
-    
-    public String getTissue_snapshot();
 }

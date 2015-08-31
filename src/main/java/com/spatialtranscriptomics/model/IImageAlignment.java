@@ -4,6 +4,7 @@
  * validation using Hibernate validator constraints.
  *
  */
+
 package com.spatialtranscriptomics.model;
 
 import org.joda.time.DateTime;
@@ -12,6 +13,7 @@ import org.joda.time.DateTime;
  * This interface defines the ImageAlignment model. Applications that use the
  * API must implement the same model.
  */
+
 public interface IImageAlignment {
 
     public String getId();

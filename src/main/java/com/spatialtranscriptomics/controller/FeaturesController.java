@@ -15,12 +15,11 @@ import com.spatialtranscriptomics.exceptions.CustomNotModifiedException;
 import com.spatialtranscriptomics.exceptions.NotFoundResponse;
 import com.spatialtranscriptomics.exceptions.NotModifiedResponse;
 import com.spatialtranscriptomics.model.FeaturesMetadata;
-import com.spatialtranscriptomics.model.S3Resource;
 import com.spatialtranscriptomics.model.LastModifiedDate;
 import com.spatialtranscriptomics.serviceImpl.FeaturesServiceImpl;
 import com.spatialtranscriptomics.serviceImpl.MongoUserDetailsServiceImpl;
 import com.spatialtranscriptomics.util.DateOperations;
-import java.io.ByteArrayInputStream;
+import static com.spatialtranscriptomics.util.DateOperations.checkIfModified;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -29,11 +28,8 @@ import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -46,7 +42,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
- * This class is Spring MVC controller class for the API endpoint "rest/features". It implements the methods available at this endpoint.
+ * This class is Spring MVC controller class for the API endpoint "rest/features". 
+ * It implements the methods available at this endpoint.
  */
 
 @Controller
@@ -72,63 +69,18 @@ public class FeaturesController {
     @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD})
     public @ResponseBody
     List<FeaturesMetadata> listMetadata() {
-        List<FeaturesMetadata> l = featuresService.listMetadata();
-        if (l == null) {
+        
+        List<FeaturesMetadata> metadata = featuresService.listMetadata();
+        if (metadata == null) {
             logger.info("Returning empty list of features metadata");
-            throw new CustomNotFoundException("No metadata found or you dont have permissions to access them.");
+            throw new CustomNotFoundException("No metadata found or you don't "
+                    + "have permissions to access");
         }
+        
         logger.info("Returning list of features metadata");
-        return l;
+        return metadata;
     }
 
-    /**
-     * GET|HEAD /features/json/{id}
-     * 
-     * Finds features payload wrapped in JSON.
-     * 
-     * @param id the dataset ID.
-     * @param ifModifiedSince request timestamp.
-     * @return the account.
-     */
-    @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
-    @RequestMapping(value = "json/{id}", method = {RequestMethod.GET, RequestMethod.HEAD})
-    public @ResponseBody
-    HttpEntity<S3Resource> getAsJSON(@PathVariable String id, @RequestHeader(value="If-Modified-Since", defaultValue="") String ifModifiedSince) {
-        try {
-            FeaturesMetadata meta = featuresService.getMetadata(id);
-            InputStream is = featuresService.find(id);
-            if (meta == null || is == null) {
-                logger.info("Failed to return features as JSON for dataset " + id);
-                throw new CustomNotFoundException("A features file for a dataset with this ID does not exist, or you dont have permissions to access it.");
-            }
-            // Check if already newest.
-            DateTime reqTime = DateOperations.parseHTTPDate(ifModifiedSince);
-            if (reqTime != null) {
-                DateTime resTime = meta.getLastModified() == null ? new DateTime(2012,1,1,0,0) : meta.getLastModified();
-                // NOTE: Only precision within day.
-                resTime = new DateTime(resTime.getYear(), resTime.getMonthOfYear(), resTime.getDayOfMonth(), resTime.getHourOfDay(), resTime.getMinuteOfHour(), resTime.getSecondOfMinute());
-                if (!resTime.isAfter(reqTime)) {
-                    logger.info("Not returning features as JSON for dataset " + id + " since not modified");
-                    throw new CustomNotModifiedException("This features file has not been modified");
-                }
-            }
-            byte[] bytes = IOUtils.toByteArray(is);
-            S3Resource wrap = new S3Resource("application/json", "gzip", id, bytes);
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.add("Cache-Control", "public, must-revalidate, no-transform");
-            headers.add("Vary", "Accept-Encoding");
-            headers.add("Last-modified", DateOperations.getHTTPDateSafely(meta.getLastModified()));
-            HttpEntity<S3Resource> entity = new HttpEntity<S3Resource>(wrap, headers);
-            logger.info("Returning features as JSON for dataset " + id);
-            return entity;
-        } catch (IOException ex) {
-            logger.error("Error writing features file to output stream with file " + id);
-            throw new CustomInternalServerErrorException("IOError writing features file to output stream");
-        }
-    }
-    
-    
     /**
      * Returns the zipped features payload as a file.
      *
@@ -138,26 +90,27 @@ public class FeaturesController {
      */
     @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
     @RequestMapping(value = "{id}", method = {RequestMethod.GET, RequestMethod.HEAD})
-    public void getAsFile(@PathVariable String id, HttpServletResponse response,
+    public void getAsFile(
+            @PathVariable String id, 
+            HttpServletResponse response,
             @RequestHeader(value="If-Modified-Since", defaultValue="") String ifModifiedSince) {
+        
         try {
             FeaturesMetadata meta = featuresService.getMetadata(id);
             InputStream is = featuresService.find(id);
             if (meta == null || is == null) {
                 logger.info("Failed to return features as JSON for dataset " + id);
-                throw new CustomNotFoundException("A features file for a dataset with this ID does not exist, or you dont have permissions to access it.");
+                throw new CustomNotFoundException("A features file for a dataset with ID " 
+                        + id + " does not exist, or you don't have permissions to access");
             }
+            
             // Check if already newest.
             DateTime reqTime = DateOperations.parseHTTPDate(ifModifiedSince);
-            if (reqTime != null) {
-                DateTime resTime = meta.getLastModified() == null ? new DateTime(2012,1,1,0,0) : meta.getLastModified();
-                // NOTE: Only precision within day.
-                resTime = new DateTime(resTime.getYear(), resTime.getMonthOfYear(), resTime.getDayOfMonth(), resTime.getHourOfDay(), resTime.getMinuteOfHour(), resTime.getSecondOfMinute());
-                if (!resTime.isAfter(reqTime)) {
-                    logger.info("Not returning features as JSON for dataset " + id + " since not modified");
-                    throw new CustomNotModifiedException("This features file has not been modified");
-                }
+            if (reqTime != null && !checkIfModified(meta.getLastModified(), reqTime)) {
+                logger.info("Not returning features as JSON for dataset " + id + " since not modified");
+                throw new CustomNotModifiedException("This features file has not been modified");
             }
+            
             // Copy raw stream into response.
             IOUtils.copy(is, response.getOutputStream());
             response.setContentType("application/json");
@@ -168,7 +121,7 @@ public class FeaturesController {
             logger.info("Returning features as raw gzip file for dataset " + id);
             response.flushBuffer();
         } catch (IOException ex) {
-            logger.error("Error writing features file to output stream with file " + id);
+            logger.error("Error writing features file to output stream with file " + id, ex);
             throw new RuntimeException("IOError writing features file to HTTP response", ex);
         }
     }
@@ -176,24 +129,24 @@ public class FeaturesController {
     /**
      * PUT /features/
      * 
-     * Adds a features file payload wrapped in JSON.
-     * @param id the dataset ID.
-     * @param feats the features.
+     * Adds a gziped JSON features file to S3
+     * 
+     * @param id the features file name (must be dataset ID).
+     * @param features the compressed features file.
      */
     @Secured({"ROLE_CM", "ROLE_ADMIN"})
-    @RequestMapping(value = "{id}", method = RequestMethod.PUT)
-    public @ResponseBody
-    void addOrUpdate(@PathVariable String id, @RequestBody S3Resource feats) {
-        byte[] bytes = feats.getFile();
-        if (id != null && bytes != null && bytes.length != 0) {
-            boolean updated = featuresService.addUpdate(id, bytes);
-            logger.info((updated ? "Updated" : "Added") + " features file for dataset " + id);
-        } else {
-            logger.error("Failed to add features for dataset " + id +". Empty file?");
-            throw new CustomBadRequestException("Failed to add features for dataset " + id +". Is the file empty?");
-        }
+    @RequestMapping(value = "{id:.+}", method = RequestMethod.PUT)
+    public @ResponseBody void add(
+            @PathVariable String id, 
+            @RequestBody HttpEntity<byte[]> features) {
+        // this {id:.+} is a workaround for a spring bug that truncates path
+        // variables containing a dot
+  
+        //add the features file, if present already update
+        featuresService.addUpdate(id, features.getBody());
+        logger.info("Succesfully added BufferedImage image " + id);
     }
-
+    
     /**
      * DELETE /features/{id}
      * 
@@ -202,8 +155,7 @@ public class FeaturesController {
      */
     @Secured({"ROLE_CM", "ROLE_ADMIN"})
     @RequestMapping(value = "{id}", method = RequestMethod.DELETE)
-    public @ResponseBody
-    void delete(@PathVariable String id) {
+    public @ResponseBody void delete(@PathVariable String id) {
         featuresService.delete(id);
         logger.info("Successfully deleted features file for dataset " + id);
     }
@@ -217,13 +169,15 @@ public class FeaturesController {
      */
     @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
     @RequestMapping(value = "/lastmodified/{id}", method = {RequestMethod.GET, RequestMethod.HEAD})
-    public @ResponseBody
-    LastModifiedDate getLastModified(@PathVariable String id) {
+    public @ResponseBody LastModifiedDate getLastModified(@PathVariable String id) {
+        
         FeaturesMetadata feat = featuresService.getMetadata(id);
         if (feat == null) {
             logger.info("Failed to return last modified time of features file for dataset " + id);
-            throw new CustomNotFoundException("A features file with this id does not exist or you do not have permissions to access it.");
+            throw new CustomNotFoundException("A features file with ID " + id + 
+                    " doesn't exist or you don't have permissions to access");
         }
+        
         logger.info("Returning last modified time of features file for dataset " + id);
         return new LastModifiedDate(feat.getLastModified());
     }

@@ -17,12 +17,14 @@ import org.springframework.stereotype.Service;
 import com.spatialtranscriptomics.model.DatasetInfo;
 import com.spatialtranscriptomics.model.MongoUserDetails;
 import com.spatialtranscriptomics.service.DatasetInfoService;
+import java.util.Iterator;
 
 /**
  * This class implements the store/retrieve logic to MongoDB for the data model
  * class "DatasetInfo". The DB connection is handled in a MongoOperations
  * object, which is configured in mvc-dispather-servlet.xml
  */
+
 @Service
 public class DatasetInfoServiceImpl implements DatasetInfoService {
 
@@ -39,11 +41,14 @@ public class DatasetInfoServiceImpl implements DatasetInfoService {
     // ROLE_USER:  if for own account.
     @Override
     public DatasetInfo find(String id) {
-        DatasetInfo dsi = mongoTemplateUserDB.findOne(new Query(Criteria.where("id").is(id)), DatasetInfo.class);
+        DatasetInfo dsi = mongoTemplateUserDB.findOne(
+                new Query(Criteria.where("id").is(id)), DatasetInfo.class);
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-        if (currentUser.isAdmin() || currentUser.isContentManager() || dsi.getAccount_id().equals(currentUser.getId())) {
+        if (currentUser.isAdmin() || currentUser.isContentManager() 
+                || dsi.getAccount_id().equals(currentUser.getId())) {
             return dsi;
         }
+        
         return null;
     }
 
@@ -52,14 +57,18 @@ public class DatasetInfoServiceImpl implements DatasetInfoService {
     // ROLE_USER:  for own account.
     @Override
     public List<DatasetInfo> findByAccount(String accountId) {
-        List<DatasetInfo> dsis = mongoTemplateUserDB.find(new Query(Criteria.where("account_id").is(accountId)), DatasetInfo.class);
+        List<DatasetInfo> dsis = mongoTemplateUserDB.find(
+                new Query(Criteria.where("account_id").is(accountId)), DatasetInfo.class);
         if (dsis == null) {
             return null;
         }
+        
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-        if (currentUser.isAdmin() || currentUser.isContentManager() || accountId.equals(currentUser.getId())) {
+        if (currentUser.isAdmin() || currentUser.isContentManager() 
+                || accountId.equals(currentUser.getId())) {
             return dsis;
         }
+        
         return null;
     }
 
@@ -68,19 +77,26 @@ public class DatasetInfoServiceImpl implements DatasetInfoService {
     // ROLE_USER:  granted datasets.
     @Override
     public List<DatasetInfo> findByDataset(String datasetId) {
-        List<DatasetInfo> dsis = mongoTemplateUserDB.find(new Query(Criteria.where("dataset_id").is(datasetId)), DatasetInfo.class);
+        List<DatasetInfo> dsis = mongoTemplateUserDB.find(
+                new Query(Criteria.where("dataset_id").is(datasetId)), DatasetInfo.class);
         if (dsis == null) {
             return null;
         }
+        
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
         if (currentUser.isAdmin() || currentUser.isContentManager()) {
             return dsis;
         }
-        for (int i = dsis.size() - 1; i >= 0; i--) {
-            if (!dsis.get(i).getAccount_id().equals(currentUser.getId())) {
-                dsis.remove(i);
+        
+        //for role user only return its datasets
+        Iterator<DatasetInfo> it = dsis.iterator();
+        while (it.hasNext()) {
+            DatasetInfo dat_info = it.next(); // must be called before you can call i.remove()
+            if (!dat_info.getAccount_id().equals(currentUser.getId())) {
+                it.remove();
             }
         }
+        
         return dsis;
     }
 
@@ -93,15 +109,21 @@ public class DatasetInfoServiceImpl implements DatasetInfoService {
         if (dsis == null) {
             return null;
         }
+        
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
         if (currentUser.isAdmin() || currentUser.isContentManager()) {
             return dsis;
         }
-        for (int i = dsis.size() - 1; i >= 0; i--) {
-            if (!dsis.get(i).getAccount_id().equals(currentUser.getId())) {
-                dsis.remove(i);
+        
+        //for role user only return its datasets
+        Iterator<DatasetInfo> it = dsis.iterator();
+        while (it.hasNext()) {
+            DatasetInfo dat_info = it.next(); // must be called before you can call i.remove()
+            if (!dat_info.getAccount_id().equals(currentUser.getId())) {
+                it.remove();
             }
         }
+        
         return dsis;
     }
 
@@ -111,7 +133,7 @@ public class DatasetInfoServiceImpl implements DatasetInfoService {
     @Override
     public DatasetInfo add(DatasetInfo dsi) {
         mongoTemplateUserDB.insert(dsi);
-        logger.info("Added dataset info " + dsi.getId() + " to MongoDB.");
+        logger.info("Added dataset info " + dsi.getId() + " to DB.");
         return dsi;
     }
 
@@ -121,7 +143,7 @@ public class DatasetInfoServiceImpl implements DatasetInfoService {
     @Override
     public void update(DatasetInfo dsi) {
         mongoTemplateUserDB.save(dsi);
-        logger.info("Updated dataset info " + dsi.getId() + " to MongoDB.");
+        logger.info("Updated dataset info " + dsi.getId() + " in DB.");
     }
 
     // ROLE_ADMIN: ok.
@@ -130,26 +152,36 @@ public class DatasetInfoServiceImpl implements DatasetInfoService {
     @Override
     public void delete(String id) {
         mongoTemplateUserDB.remove(find(id));
-        logger.info("Removed dataset info " + id + " from MongoDB.");
+        logger.info("Removed dataset info " + id + " from DB.");
     }
 
+    // ROLE_ADMIN: ok.
+    // ROLE_CM:    ok.
+    // ROLE_USER:  nope.
     @Override
     public void deleteForDataset(String datasetId) {
         List<DatasetInfo> dsis = findByDataset(datasetId);
+        
         if (dsis == null) {
             return;
         }
+        
         for (DatasetInfo dsi : dsis) {
             delete(dsi.getId());
         }
     }
 
+    // ROLE_ADMIN: ok.
+    // ROLE_CM:    ok.
+    // ROLE_USER:  nope.
     @Override
     public void deleteForAccount(String accountId) {
         List<DatasetInfo> dsis = findByAccount(accountId);
+        
         if (dsis == null) {
             return;
         }
+        
         for (DatasetInfo dsi : dsis) {
             delete(dsi.getId());
         }

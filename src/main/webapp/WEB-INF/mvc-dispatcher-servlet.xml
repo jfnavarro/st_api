@@ -66,16 +66,30 @@
 	<context:component-scan base-package="com.spatialtranscriptomics.service" />
 	<context:component-scan base-package="com.spatialtranscriptomics.serviceImpl" />
 
-	<!-- Enable Property Placeholder -->
+        <bean id="jacksonMessageConverter" class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter"></bean>
+        <bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
+            <property name="messageConverters">
+                <list>
+                    <ref bean="jacksonMessageConverter"/>
+                </list>
+            </property>
+        </bean>
 
+	<!-- Enable Property Placeholder -->
 	<context:property-placeholder location="classpath:application.properties" />
 
 	<!-- Amazon S3 Config -->
 
 	<!-- We create a simple AmazonS3Client instance here. It is Autowired and 
 		used in com.spatialtranscriptomics.serviceImpl.ImageServiceImpl.class -->
-
-	<bean id="s3Client" class="com.amazonaws.services.s3.AmazonS3Client">
+        <!--REMOVE THIS WHEN RELEASING -->       
+        <bean id="awsCredentials" class="com.amazonaws.auth.BasicAWSCredentials">
+            <constructor-arg index="0" value="${aws.id}"/>
+            <constructor-arg index="1" value="${aws.secret}"/>
+        </bean>        
+	
+        <bean id="s3Client" class="com.amazonaws.services.s3.AmazonS3Client">
+            <constructor-arg ref="awsCredentials"></constructor-arg>
 	</bean>
 
        

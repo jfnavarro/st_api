@@ -3,8 +3,10 @@
  * Read LICENSE for more information about licensing terms
  * Contact: Jose Fernandez Navarro <jose.fernandez.navarro@scilifelab.se>
  */
+
 package com.spatialtranscriptomics.serviceImpl;
 
+import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -41,29 +43,31 @@ public class ImageServiceImpl implements ImageService {
     private @Value("${s3.imagebucket}")
     String imageBucket;
 
-    private static final Logger logger = Logger
-            .getLogger(ImageServiceImpl.class);
+    private static final Logger logger = Logger.getLogger(ImageServiceImpl.class);
 
     // ROLE_ADMIN: ok.
     // ROLE_CM:    ok.
     // ROLE_USER:  nope.
     @Override
     public List<ImageMetadata> list() {
-        ObjectListing objects = s3Client.listObjects(imageBucket);
-
-        List<S3ObjectSummary> objs = objects.getObjectSummaries();
-
-        List<ImageMetadata> imageMetadataList = new ArrayList<ImageMetadata>();
-        for (S3ObjectSummary o : objs) {
-            ImageMetadata im = new ImageMetadata();
-            im.setImageType("jpeg");
-            im.setFilename(o.getKey());
-            im.setLastModified(new DateTime(o.getLastModified()));
-            im.setCreated(new DateTime(o.getLastModified()));
-            im.setSize(o.getSize());
-            imageMetadataList.add(im);
+        try {
+            ObjectListing objects = s3Client.listObjects(imageBucket);
+            List<S3ObjectSummary> objs = objects.getObjectSummaries();
+            List<ImageMetadata> imageMetadataList = new ArrayList<ImageMetadata>();
+            for (S3ObjectSummary o : objs) {
+                ImageMetadata im = new ImageMetadata();
+                im.setImageType("jpeg");
+                im.setFilename(o.getKey());
+                im.setLastModified(new DateTime(o.getLastModified()));
+                im.setCreated(new DateTime(o.getLastModified()));
+                im.setSize(o.getSize());
+                imageMetadataList.add(im);
+            } 
+            return imageMetadataList;
+         } catch(AmazonClientException e) {
+            logger.error("Error getting list of images from Amazon S3.", e);
+            return null;
         }
-        return imageMetadataList;
     }
 
     // ROLE_ADMIN: ok.
@@ -72,12 +76,12 @@ public class ImageServiceImpl implements ImageService {
     @Override
     public ImageMetadata getImageMetadata(String filename) {
         List<ImageMetadata> imList = this.list();
-
         for (ImageMetadata im : imList) {
             if (im.getFilename().equals(filename)) {
                 return im;
             }
         }
+        
         return null;
     }
 
@@ -85,34 +89,38 @@ public class ImageServiceImpl implements ImageService {
     // ROLE_CM:    ok.
     // ROLE_USER:  ok.
     @Override
-    public byte[] getCompressedImage(String filename) {
+    public byte[] getCompressedImage(String filename) {  
         try {
             S3ObjectInputStream in = s3Client.getObject(imageBucket, filename).getObjectContent();
             byte[] bytes = IOUtils.toByteArray(in);
             in.close();   // As soon as possible.
             return bytes;
+        } catch (AmazonClientException e) {
+            logger.error("Error getting JPEG " + filename + " from Amazon S3.", e);
+            return null;
         } catch (IOException e) {
             logger.error("Error getting JPEG " + filename + " from Amazon S3.", e);
             return null;
         }
-
     }
 
     // ROLE_ADMIN: ok.
     // ROLE_CM:    ok.
     // ROLE_USER:  ok.
     @Override
-    public BufferedImage getBufferedImage(String filename) {
+    public BufferedImage getBufferedImage(String filename) {     
         try {
             S3ObjectInputStream in = s3Client.getObject(imageBucket, filename).getObjectContent();
             BufferedImage img = ImageIO.read(in);
             in.close();   // As soon as possible.
             return img;
+        } catch (AmazonClientException e) {
+            logger.error("Error getting BufferedImage " + filename + " from Amazon S3.", e);
+            return null;
         } catch (IOException e) {
             logger.error("Error getting BufferedImage " + filename + " from Amazon S3.", e);
             return null;
         }
-
     }
 
     // ROLE_ADMIN: ok.
@@ -123,17 +131,17 @@ public class ImageServiceImpl implements ImageService {
         try {
             ObjectMetadata om = new ObjectMetadata();
             om.setContentType("image/jpeg");
-
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ImageIO.write(img, "jpeg", baos);
             InputStream is = new ByteArrayInputStream(baos.toByteArray());
-
             s3Client.putObject(imageBucket, filename, is, om);
             logger.info("Added image from BuffereedImage " + filename + " to Amazon S3.");
+        } catch (AmazonClientException e) { 
+            logger.error("Error adding image " + filename + " to Amazon S3:" + e.getMessage());
+            throw new RuntimeException("Error adding image " + filename + " to Amazon S3", e);
         } catch (IOException e) {
             logger.error("Error adding image " + filename + " to Amazon S3:" + e.getMessage());
             throw new RuntimeException("Error adding image " + filename + " to Amazon S3", e);
-            //e.printStackTrace();
         }
     }
 
@@ -145,8 +153,13 @@ public class ImageServiceImpl implements ImageService {
         ObjectMetadata om = new ObjectMetadata();
         om.setContentType("image/jpeg");
         InputStream is = new ByteArrayInputStream(img);
-        s3Client.putObject(imageBucket, filename, is, om);
-        logger.info("Added image from JPEG " + filename + " to Amazon S3.");
+        try {
+            s3Client.putObject(imageBucket, filename, is, om);
+            logger.info("Added image from JPEG " + filename + " to Amazon S3.");
+        } catch (AmazonClientException e) { 
+            logger.error("Error adding compressed image " + filename + " to Amazon S3:" + e.getMessage());
+            throw new RuntimeException("Error adding compressed image " + filename + " to Amazon S3", e);
+        } 
     }
 
     // ROLE_ADMIN: ok.
@@ -154,8 +167,13 @@ public class ImageServiceImpl implements ImageService {
     // ROLE_USER:  nope.
     @Override
     public void delete(String filename) {
-        s3Client.deleteObject(imageBucket, filename);
-        logger.info("Deleted image " + filename + " from Amazon S3.");
+        try {
+            s3Client.deleteObject(imageBucket, filename);
+            logger.info("Deleted image " + filename + " from Amazon S3.");
+        } catch (AmazonClientException e) { 
+            logger.error("Error deleting image " + filename + " to Amazon S3:" + e.getMessage());
+            throw new RuntimeException("Error deleting image " + filename + " to Amazon S3", e);
+        }
     }
 
 }

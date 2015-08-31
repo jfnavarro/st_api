@@ -38,6 +38,13 @@ public interface DatasetService {
      * @return the list.
      */
     public List<Dataset> findByAccount(String accountId);
+    
+    /**
+     * Finds all datasets of an image alignment
+     * @param imageAlignmentId the image alignment ID.
+     * @return the list.
+     */
+    public List<Dataset> findByImageAlignment(String imageAlignmentId);
 
     /**
      * Adds a dataset.
@@ -71,21 +78,15 @@ public interface DatasetService {
     public void clearAccountCreator(String accountId);
 
     /**
-     * Unables all datasets referencing an image alignment.
-     * @param imalId the image alignment ID.
-     */
-    public void setUnabledForImageAlignment(String imalId);
-
-    /**
      * Returns true if a user has access to a specific dataset.
      * @param datasetId the dataset ID.
      * @param user the user.
-     * @return true ig user has access.
+     * @return true if user has access.
      */
     public boolean datasetIsGranted(String datasetId, MongoUserDetails user);
 
     /**
-     * Finds a dataset by name, irrespective of the current user's privelegies.
+     * Finds a dataset by name, irrespective of the current user's privileges.
      * @param name the dataset name.
      * @return the dataset.
      */

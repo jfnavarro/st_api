@@ -11,8 +11,8 @@ import org.joda.time.DateTime;
  * This class implements the ImageMetadata object. It derives its properties
  * from Amazon S3.
  *
- * Image metadata holds characterstics of a tissue microscopy image obtained
- * in an exeperiment. Images are stored on Amazon S3.
+ * Image metadata holds characteristics of a tissue microscopy image obtained
+ * in an experiment. Images are stored on Amazon S3.
  */
 public class ImageMetadata implements IImageMetadata {
 
