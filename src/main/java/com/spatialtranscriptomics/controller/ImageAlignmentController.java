@@ -234,6 +234,15 @@ public class ImageAlignmentController {
         logger.info("Successfully updated image alignment " + id);
     }
 
+    private boolean isRefrerencedByDataset(String imageAlignmentId) {
+        List<Dataset> datasets = datasetService.findByImageAlignment(imageAlignmentId);
+        if (datasets == null) {
+            return false;
+        }
+
+        return datasets.size() != 0;
+    }
+
     /**
      * DELETE /imagealignment/{id}
      * 
@@ -250,8 +259,7 @@ public class ImageAlignmentController {
             throw new CustomBadRequestException("You don't have permission to delete this image alignment");
         }
         
-        List<Dataset> datasets = datasetService.findByImageAlignment(id);
-        if (datasets != null) {
+        if (isRefrerencedByDataset(id)) {
             logger.info("Failed to delete image alignment " + id + " it belongs to dataset/s");
             throw new CustomBadRequestException("The image alignment cannot be "
                     + "deleted as it is part of a dataset. You must delete the dataset first!");  
