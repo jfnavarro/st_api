@@ -9,3 +9,7 @@ bin/
 # Eclipse and NetBeans stuff
 
 .settings/
+
+# IntelliJ IDE stuff
+.idea/
+
