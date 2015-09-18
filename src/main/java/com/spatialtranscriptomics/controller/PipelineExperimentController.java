@@ -271,15 +271,23 @@ public class PipelineExperimentController {
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     public @ResponseBody
     BadRequestResponse handleBadRequestException(CustomBadRequestException ex) {
+        logger.warn(ex);
         return new BadRequestResponse(ex.getMessage());
+    }
+
+    @ExceptionHandler(CustomInternalServerErrorException.class)
+    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
+    public @ResponseBody
+    CustomInternalServerErrorResponse handleInternalServerException(CustomInternalServerErrorException ex) {
+        logger.error(ex);
+        return new CustomInternalServerErrorResponse(ex.getMessage());
     }
 
     @ExceptionHandler(RuntimeException.class)
     @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
     public @ResponseBody
-    CustomInternalServerErrorResponse handleRuntimeException(CustomInternalServerErrorException ex) {
+    CustomInternalServerErrorResponse handleRuntimeException(RuntimeException ex) {
         logger.error("Unknown error in pipeline experiment controller: " + ex.getMessage());
         return new CustomInternalServerErrorResponse(ex.getMessage());
     }
-
 }

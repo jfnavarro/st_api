@@ -385,15 +385,23 @@ public class AccountController {
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     public @ResponseBody
     BadRequestResponse handleBadRequestException(CustomBadRequestException ex) {
+        logger.warn(ex);
         return new BadRequestResponse(ex.getMessage());
     }
-    
-    @ExceptionHandler(RuntimeException.class)
+
+    @ExceptionHandler(CustomInternalServerErrorException.class)
     @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
     public @ResponseBody
-    CustomInternalServerErrorResponse handleRuntimeException(CustomInternalServerErrorException ex) {
-        logger.error("Unknown error in account controller: " + ex.getMessage());
+    CustomInternalServerErrorResponse handleInternalServerException(CustomInternalServerErrorException ex) {
+        logger.error(ex);
         return new CustomInternalServerErrorResponse(ex.getMessage());
     }
 
+    @ExceptionHandler(RuntimeException.class)
+    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
+    public @ResponseBody
+    CustomInternalServerErrorResponse handleRuntimeException(RuntimeException ex) {
+        logger.error("Unknown error in account controller.", ex);
+        return new CustomInternalServerErrorResponse(ex.getMessage());
+    }
 }
