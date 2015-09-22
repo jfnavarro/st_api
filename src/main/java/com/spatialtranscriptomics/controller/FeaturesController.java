@@ -132,18 +132,18 @@ public class FeaturesController {
      * Adds a gziped JSON features file to S3
      * 
      * @param id the features file name (must be dataset ID).
-     * @param features the compressed features file.
+     * @param featuresFile the compressed features file.
      */
     @Secured({"ROLE_CM", "ROLE_ADMIN"})
     @RequestMapping(value = "{id:.+}", method = RequestMethod.PUT)
     public @ResponseBody void add(
             @PathVariable String id, 
-            @RequestBody HttpEntity<byte[]> features) {
+            @RequestBody byte[] featuresFile) {
         // this {id:.+} is a workaround for a spring bug that truncates path
         // variables containing a dot
   
         //add the features file, if present already update
-        featuresService.addUpdate(id, features.getBody());
+        featuresService.addUpdate(id, featuresFile);
         logger.info("Succesfully added BufferedImage image " + id);
     }
     
