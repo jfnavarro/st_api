@@ -117,6 +117,33 @@
 		<constructor-arg name="password" value="${mongodb.password}" />
 	</bean>
 
+	<!--
+		Mongo Database Factories
+	-->
+	<mongo:db-factory id="mongoAnalysisDBFactory" dbname="${mongodb.database.analysis}"
+					  username="${mongodb.user}" password="${mongodb.password}" />
+	<mongo:db-factory id="mongoExperimentDBFactory" dbname="${mongodb.database.experiment}"
+					  username="${mongodb.user}" password="${mongodb.password}" />
+
+    <mongo:mapping-converter id="mongoConverterAnalysis"   db-factory-ref="mongoAnalysisDBFactory" />
+	<mongo:mapping-converter id="mongoConverterExperiment" db-factory-ref="mongoExperimentDBFactory" />
+
+	<!--
+	    GridFS Templates
+	-->
+	<bean id="mongoGridFsTemplateAnalysisDB" class="org.springframework.data.mongodb.gridfs.GridFsTemplate">
+		<constructor-arg ref="mongoAnalysisDBFactory" />
+		<constructor-arg ref="mongoConverterAnalysis" />
+	</bean>
+
+	<bean id="mongoGridFsTemplateExperimentDB" class="org.springframework.data.mongodb.gridfs.GridFsTemplate">
+		<constructor-arg ref="mongoExperimentDBFactory" />
+		<constructor-arg ref="mongoConverterExperiment" />
+	</bean>
+
+	<!--
+	    Mongo Templates
+	-->
 	<bean id="mongoTemplateAnalysisDB" class="org.springframework.data.mongodb.core.MongoTemplate">
 		<constructor-arg ref="mongo" />
 		<constructor-arg name="databaseName" value="${mongodb.database.analysis}" />
