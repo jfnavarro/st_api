@@ -6,7 +6,10 @@
 
 package com.spatialtranscriptomics.util;
 
+import java.util.Date;
 import java.util.Locale;
+
+import org.apache.commons.lang.NullArgumentException;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -32,6 +35,29 @@ public class DateOperations {
         
         return RFC1123_DATE_TIME_FORMATTER.print(date);
     }
+
+    /**
+     * Creates an HTTP (RFC1123) date string.
+     * @param date
+     * @return
+     */
+    public static String getHTTPDate(DateTime date) {
+        if(date == null) {
+            throw new NullArgumentException("Date can not be null.");
+        }
+
+        return RFC1123_DATE_TIME_FORMATTER.print(date);
+    }
+
+    /**
+     * Creates an HTTP (RFC1123) date string.
+     * @param date
+     * @return
+     */
+    public static String getHTTPDate(Date date) {
+        DateTime jodaDateTime = new DateTime(date);
+        return getHTTPDate(jodaDateTime);
+    }
     
     /**
      * Parses a HTTP (RFC1123) date string.
@@ -42,7 +68,7 @@ public class DateOperations {
         if (str == null || str.equals("")) {
             return null;
         }
-        
+
         return RFC1123_DATE_TIME_FORMATTER.parseDateTime(str);
     }
     

@@ -1,9 +1,9 @@
 package com.spatialtranscriptomics.serviceimpl;
 
 import com.mongodb.Mongo;
-import com.mongodb.gridfs.GridFSDBFile;
-import com.spatialtranscriptomics.service.GridFSService;
-import com.spatialtranscriptomics.serviceImpl.GridFSServiceImpl;
+import com.spatialtranscriptomics.file.File;
+import com.spatialtranscriptomics.service.FileService;
+import com.spatialtranscriptomics.serviceImpl.GridfsFileServiceImpl;
 import de.flapdoodle.embed.mongo.distribution.Version;
 import de.flapdoodle.embed.mongo.tests.MongodForTestsFactory;
 import org.apache.commons.io.IOUtils;
@@ -32,17 +32,17 @@ import static org.junit.Assert.assertNull;
 /**
  * Created by henriktreadup on 9/30/15.
  */
-public class GridFSServiceIntegrationTest {
+public class GridfsFileServiceImplIntegrationTest {
 
     private static final String TEST_DATA = "ABCDEFGHIJKLMNOPQRSTUVXYZ";
-    private static final String FILENAME = "GridFSServicecIntegrationTestFile.data";
+    private static final String FILENAME = "GridfsFileServicecImplIntegrationTestFile.data";
 
     @Test
     public void testDatabaseCreated() {
         assertNotNull(gridFSService);
     }
 
-    private GridFSService gridFSService;
+    private FileService gridFSService;
 
     private byte[] getTestFileBytes() {
         return TEST_DATA.getBytes();
@@ -57,28 +57,6 @@ public class GridFSServiceIntegrationTest {
         assertNotNull(gridFSService);
     }
 
-    // Store, Get, Delete
-    @Test
-    public void testStoringBytesGettingAndDeleting() throws IOException {
-        byte[] testData = getTestFileBytes();
-
-        // Store
-        gridFSService.storeFile(testData, FILENAME);
-
-        GridFSDBFile file = gridFSService.getFile(FILENAME);
-
-        byte[] actualTestData = IOUtils.toByteArray(file.getInputStream());
-        assertArrayEquals(getTestFileBytes(), actualTestData);
-
-        // Delete
-        gridFSService.deleteFile(FILENAME);
-
-        // Get non existing file.
-        GridFSDBFile missingFile = gridFSService.getFile(FILENAME);
-
-        assertNull(missingFile);
-    }
-
     @Test
     public void testStoringInputStreamGettingAndDeleting() throws IOException {
         InputStream testInputStream = getTestFileInputStream();
@@ -86,7 +64,7 @@ public class GridFSServiceIntegrationTest {
         // Store
         gridFSService.storeFile(testInputStream, FILENAME);
 
-        GridFSDBFile file = gridFSService.getFile(FILENAME);
+        File file = gridFSService.getFile(FILENAME);
 
         byte[] actualTestData = IOUtils.toByteArray(file.getInputStream());
         assertArrayEquals(getTestFileBytes(), actualTestData);
@@ -95,7 +73,7 @@ public class GridFSServiceIntegrationTest {
         gridFSService.deleteFile(FILENAME);
 
         // Get non existing file.
-        GridFSDBFile missingFile = gridFSService.getFile(FILENAME);
+        File missingFile = gridFSService.getFile(FILENAME);
 
         assertNull(missingFile);
     }
@@ -119,7 +97,7 @@ public class GridFSServiceIntegrationTest {
 
     @Before
     public void setUpGridFSService() throws Exception {
-       this.gridFSService = getGridFSService();
+       this.gridFSService = getGridfsFileService();
     }
 
     public Mongo getMongo() throws Exception {
@@ -147,10 +125,10 @@ public class GridFSServiceIntegrationTest {
         return new GridFsTemplate(getMongoDbFactory(), getMongoConverter());
     }
 
-    public GridFSService getGridFSService() throws Exception {
-        GridFSServiceImpl gridFSService = new GridFSServiceImpl();
-        gridFSService.setMongoGridFsTemplate(getGridFsTemplate());
+    public FileService getGridfsFileService() throws Exception {
+        GridfsFileServiceImpl gridfsFileService = new GridfsFileServiceImpl();
+        gridfsFileService.setMongoGridFsTemplate(getGridFsTemplate());
 
-        return gridFSService;
+        return gridfsFileService;
     }
 }
