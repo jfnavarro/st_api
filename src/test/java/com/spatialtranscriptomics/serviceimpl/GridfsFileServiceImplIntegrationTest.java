@@ -1,6 +1,7 @@
 package com.spatialtranscriptomics.serviceimpl;
 
 import com.mongodb.Mongo;
+import com.spatialtranscriptomics.exceptions.CustomBadRequestException;
 import com.spatialtranscriptomics.file.File;
 import com.spatialtranscriptomics.service.FileService;
 import com.spatialtranscriptomics.serviceImpl.GridfsFileServiceImpl;
@@ -34,6 +35,7 @@ import static org.junit.Assert.assertNull;
  */
 public class GridfsFileServiceImplIntegrationTest {
 
+    private static final String CONTENT_TYPE = "application/octet-stream";
     private static final String TEST_DATA = "ABCDEFGHIJKLMNOPQRSTUVXYZ";
     private static final String FILENAME = "GridfsFileServicecImplIntegrationTestFile.data";
 
@@ -58,11 +60,11 @@ public class GridfsFileServiceImplIntegrationTest {
     }
 
     @Test
-    public void testStoringInputStreamGettingAndDeleting() throws IOException {
+    public void testStoringGettingAndDeleting() throws IOException {
         InputStream testInputStream = getTestFileInputStream();
 
         // Store
-        gridFSService.storeFile(testInputStream, FILENAME);
+        gridFSService.storeFile(testInputStream, FILENAME, CONTENT_TYPE);
 
         File file = gridFSService.getFile(FILENAME);
 
@@ -76,6 +78,21 @@ public class GridfsFileServiceImplIntegrationTest {
         File missingFile = gridFSService.getFile(FILENAME);
 
         assertNull(missingFile);
+    }
+
+    @Test(expected = CustomBadRequestException.class)
+    public void testStoringWithNullContentType() {
+        gridFSService.storeFile(getTestFileInputStream(), FILENAME, null);
+    }
+
+    @Test(expected = CustomBadRequestException.class)
+    public void testStoringWithEmptyContentType() {
+        gridFSService.storeFile(getTestFileInputStream(), FILENAME, "");
+    }
+
+    @Test(expected = CustomBadRequestException.class)
+    public void testStoringWithBlankContentType() {
+        gridFSService.storeFile(getTestFileInputStream(), FILENAME, "   ");
     }
 
     //
@@ -97,7 +114,8 @@ public class GridfsFileServiceImplIntegrationTest {
 
     @Before
     public void setUpGridFSService() throws Exception {
-       this.gridFSService = getGridfsFileService();
+        this.gridFSService = getGridfsFileService();
+
     }
 
     public Mongo getMongo() throws Exception {

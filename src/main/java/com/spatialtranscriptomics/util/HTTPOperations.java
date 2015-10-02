@@ -10,11 +10,13 @@ import org.springframework.http.HttpHeaders;
 import org.joda.time.DateTime;
 import org.springframework.http.MediaType;
 
+import java.util.LinkedList;
+import java.util.List;
+
 /**
- * Mist operations for HTTP operations, mainly related to caching
+ * Misc operations for HTTP operations, mainly related to caching
  */
 public class HTTPOperations {
-    
     
     /**
      * Returns the HTTP headers with cache information for the corresponding
@@ -28,6 +30,23 @@ public class HTTPOperations {
         headers.add("Cache-Control", "public, must-revalidate, no-transform");
         headers.add("Vary", "Accept-Encoding");
         headers.add("Last-modified", DateOperations.getHTTPDateSafely(lastmodified));
+        return headers;
+    }
+
+    /**
+     * Parses an Accept header into a list of acceptable content types.
+     * @param acceptHeader
+     * @return The list of the acceptable content types.
+     */
+    public static List<String> parseAcceptHeader(String acceptHeader) {
+
+        String[] parts = acceptHeader.split(",");
+
+        List<String> headers = new LinkedList<String>();
+        for(String contentType : parts) {
+            headers.add(contentType.trim());
+        }
+
         return headers;
     }
 }

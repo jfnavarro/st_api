@@ -25,5 +25,14 @@ public class StringOperations {
         String pre = ("KMGTPE").charAt(exp-1) + ("i");
         return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
     }
-    
+
+    /**
+     * Checks if the string is a blank string. A blank string is defined as being a null string,
+     * and empty string or a string consisting only of whitespace characters.
+     * @param str
+     * @return
+     */
+    public static boolean isBlank(String str) {
+        return str == null || str.trim().length() == 0;
+    }
 }

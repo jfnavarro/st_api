@@ -2,23 +2,32 @@ package com.spatialtranscriptomics.serviceImpl;
 
 import com.mongodb.gridfs.GridFSDBFile;
 import com.mongodb.gridfs.GridFSFile;
+import com.spatialtranscriptomics.exceptions.CustomBadRequestException;
 import com.spatialtranscriptomics.file.File;
 import com.spatialtranscriptomics.file.GridfsDBFile;
 import com.spatialtranscriptomics.file.GridfsFile;
+import com.spatialtranscriptomics.model.LastModifiedDate;
 import com.spatialtranscriptomics.service.FileService;
+import com.spatialtranscriptomics.util.StringOperations;
+import org.joda.time.DateTime;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.gridfs.GridFsCriteria;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
+import org.springframework.stereotype.Service;
+
 import java.io.InputStream;
 
 /**
  * The GridFSService is used to perform CRUD operations on files in GridFS.
  */
+@Service
 public class GridfsFileServiceImpl implements FileService {
 
     // This should be injected with the specific version that you want to use.
     // In other words here is where you decide which database should be used
     // by this GridFSServiceImpl instance.
+    @Autowired
     private GridFsTemplate mongoGridFsTemplate;
 
     // Have two classes of methods.
@@ -31,14 +40,28 @@ public class GridfsFileServiceImpl implements FileService {
      * @return
      */
     @Override
-    public File storeFile(InputStream inputStream, String filename) {
-        GridFSFile gridFSFile =  mongoGridFsTemplate.store(inputStream, filename);
+    public File storeFile(InputStream inputStream, String filename, String contentType) {
+        validateContentType(contentType);
+
+        GridFSFile gridFSFile =  mongoGridFsTemplate.store(inputStream, filename, contentType);
 
         if(gridFSFile == null) {
             return null;
         }
 
         return new GridfsFile(gridFSFile);
+    }
+
+    /**
+     * Validates the content type.
+     * The only rule right now is that the content type can not be blank.
+     * @param contentType
+     */
+    private void validateContentType(String contentType) {
+        if(StringOperations.isBlank(contentType)) {
+            String message = "Content-Type is required. Can not store a file in the file store without specifying the Content-Type.";
+            throw new CustomBadRequestException(message);
+        }
     }
 
     /**
@@ -74,6 +97,14 @@ public class GridfsFileServiceImpl implements FileService {
     @Override
     public void deleteFile(String filename) {
         mongoGridFsTemplate.delete(getFilenameQuery(filename));
+    }
+
+    @Override
+    public LastModifiedDate getLastModified(String filename) {
+        File file = getFile(filename);
+        DateTime uploadDate = new DateTime(file.getUploadDate());
+
+        return new LastModifiedDate(uploadDate);
     }
 
     /**

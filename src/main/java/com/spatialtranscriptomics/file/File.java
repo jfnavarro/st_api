@@ -34,4 +34,16 @@ public interface File {
      * @return
      */
     String getEtag();
+
+    /**
+     * The content type of the file.
+     * @return
+     */
+    String getContentType();
+
+    /**
+     * The length of the file in bytes.
+     * @return
+     */
+    long getLength();
 }

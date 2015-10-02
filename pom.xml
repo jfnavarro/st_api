@@ -327,11 +327,21 @@
 
 		<!--
 		    Used to spin up an instance of MongoDB for our integration tests.
+		    TODO: This should no longer be here. It should be using EmbedMongo
+		    directly. Need to figure out exact version of EmbedMongo to use
+		    that supports MongoDB v2.6
 		-->
 		<dependency>
 			<groupId>cz.jirutka.spring</groupId>
 			<artifactId>embedmongo-spring</artifactId>
 			<version>1.3.1</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<version>1.10.19</version>
 			<scope>test</scope>
 		</dependency>
                 

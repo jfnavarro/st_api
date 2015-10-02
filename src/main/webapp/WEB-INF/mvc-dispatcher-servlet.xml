@@ -37,7 +37,6 @@
                         <bean class="org.springframework.http.converter.ByteArrayHttpMessageConverter" >
                             <property name="supportedMediaTypes">
                                 <list>
-                                    <value>image/jpeg</value>
                                     <value>application/gzip</value>
                                 </list>
                             </property>
@@ -61,10 +60,7 @@
 	<!-- Enable Annotations -->
 
 	<context:annotation-config />
-	<context:component-scan base-package="com.spatialtranscriptomics.controller" />
-	<context:component-scan base-package="com.spatialtranscriptomics.model" />
-	<context:component-scan base-package="com.spatialtranscriptomics.service" />
-	<context:component-scan base-package="com.spatialtranscriptomics.serviceImpl" />
+	<context:component-scan base-package="com.spatialtranscriptomics" />
 
         <bean id="jacksonMessageConverter" class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter"></bean>
         <bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
@@ -122,11 +118,8 @@
 	-->
 	<mongo:db-factory id="mongoAnalysisDBFactory" dbname="${mongodb.database.analysis}"
 					  username="${mongodb.user}" password="${mongodb.password}" />
-	<mongo:db-factory id="mongoExperimentDBFactory" dbname="${mongodb.database.experiment}"
-					  username="${mongodb.user}" password="${mongodb.password}" />
 
     <mongo:mapping-converter id="mongoConverterAnalysis"   db-factory-ref="mongoAnalysisDBFactory" />
-	<mongo:mapping-converter id="mongoConverterExperiment" db-factory-ref="mongoExperimentDBFactory" />
 
 	<!--
 	    GridFS Templates
@@ -134,11 +127,6 @@
 	<bean id="mongoGridFsTemplateAnalysisDB" class="org.springframework.data.mongodb.gridfs.GridFsTemplate">
 		<constructor-arg ref="mongoAnalysisDBFactory" />
 		<constructor-arg ref="mongoConverterAnalysis" />
-	</bean>
-
-	<bean id="mongoGridFsTemplateExperimentDB" class="org.springframework.data.mongodb.gridfs.GridFsTemplate">
-		<constructor-arg ref="mongoExperimentDBFactory" />
-		<constructor-arg ref="mongoConverterExperiment" />
 	</bean>
 
 	<!--

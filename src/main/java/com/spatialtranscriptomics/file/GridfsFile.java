@@ -1,7 +1,7 @@
 package com.spatialtranscriptomics.file;
 
 import com.mongodb.gridfs.GridFSFile;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import org.apache.commons.lang.NotImplementedException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,5 +36,15 @@ public class GridfsFile implements File {
     @Override
     public String getEtag() {
         return this.gridFSFile.getMD5();
+    }
+
+    @Override
+    public String getContentType() {
+        return this.gridFSFile.getContentType();
+    }
+
+    @Override
+    public long getLength() {
+        return this.gridFSFile.getLength();
     }
 }
