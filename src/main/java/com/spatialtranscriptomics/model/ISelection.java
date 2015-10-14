@@ -59,4 +59,8 @@ public interface ISelection {
     public void setCreated_at(DateTime created);
 
     public DateTime getLast_modified();
+
+    public Color getColor();
+
+    public void setColor(Color color);
 }

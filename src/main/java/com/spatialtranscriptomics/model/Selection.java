@@ -61,6 +61,8 @@ public class Selection implements ISelection {
     @LastModifiedDate
     private DateTime last_modified;
 
+    private Color color;
+
      /**
      * Default constructor is needed by Jackson, in
      * case other constructors are added.
@@ -181,4 +183,10 @@ public class Selection implements ISelection {
     public DateTime getLast_modified() {
         return last_modified;
     }
+
+    @Override
+    public Color getColor() { return color; }
+
+    @Override
+    public void setColor(Color color) { this.color = color; }
 }
