@@ -172,9 +172,16 @@ public class SelectionController {
             @RequestHeader(value="If-Modified-Since", defaultValue="") String ifModifiedSince) {
         
         Selection selection = selectionService.find(id);
+
+        if(selection == null) {
+            String message = String.format("Failed to return selection %s. Permission denied or missing selection.", id);
+            logger.info(message);
+            throw new CustomNotFoundException(message);
+        }
+
         Dataset dataset = datasetService.find(selection.getDataset_id());
-        if (selection == null || (onlyEnabled && !selection.getEnabled()) 
-                || dataset == null || !dataset.getEnabled()) {
+
+        if ((onlyEnabled && !selection.getEnabled()) || dataset == null || !dataset.getEnabled()) {
             logger.info("Failed to return selection " + id + ". Permission denied or missing");
             throw new CustomNotFoundException("A selection with ID " + id 
                     + " doesn't exist, is disabled, or you dont have permissions to access it");
