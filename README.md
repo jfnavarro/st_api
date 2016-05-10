@@ -1,4 +1,5 @@
-# st_api
+# Spatial Transcriptomics Research API
+
 A RESTFul API to provide access to the Spatial Transcriptomics Research data stored in a database.
 
 This is a source cofe of our RESTful API from
@@ -10,3 +11,5 @@ A full manual on how to build and deploly will be added soon.
 A full manual of the endpoints will be added soon. 
 
 Currently the API is deployed in www.sptialrnaseq/api 
+
+See LICENSE file for licensing and references. 
