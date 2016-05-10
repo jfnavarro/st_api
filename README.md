@@ -7,7 +7,9 @@ which we can access the data stored in our databases.
 Authorization trough OAuth2 is required.
 The ids and passwords are updated prior
 deployment and obviously not included in the source code.
+
 A full manual on how to build and deploly will be added soon.
+
 A full manual of the endpoints will be added soon. 
 
 Currently the API is deployed in www.sptialrnaseq/api 
