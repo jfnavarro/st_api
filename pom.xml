@@ -5,7 +5,7 @@
 	<artifactId>api</artifactId>
 	<packaging>war</packaging>
 	<version>0.6.1</version>
-	<name>Spatial Transcriptomics API Server</name>
+	<name>Spatial Transcriptomics Research API Server</name>
 	<url>http://maven.apache.org</url>
 
 	<!-- VERSION CONFIG -->
