@@ -12,6 +12,8 @@ A full manual on how to build and deploly will be added soon.
 
 A full manual of the endpoints will be added soon. 
 
+A full mnnual on how to create and deploy the MongoDB database will be added soon.
+
 Currently the API is deployed in www.sptialrnaseq/api 
 
 See LICENSE file for licensing and references. 
