@@ -1,6 +1,6 @@
 # Spatial Transcriptomics Research API
 
-A RESTFul API to provide access to the Spatial Transcriptomics Research data stored in a  MongoDB database.
+A RESTFul API to provide access to the Spatial Transcriptomics Research data stored in a MongoDB database.
 
 This is the source code of our RESTful API from
 which we can access the data stored in our database. 
@@ -159,9 +159,12 @@ https://your-server.com/api/rest/account?access_token=<access token>
 
 ## Database Documentation 
 
-You must have MongoDB installed in your server https://www.mongodb.com/
+You must have MongoDB installed in your database server https://www.mongodb.com/
 
-You can see the test database in db_test.tar.gz as a template 
+You can see the test database in db_test.tar.gz as a template to create your database
+
+You must make sure that the users (admin and st-viewer-rw) and their passwords
+as well as the DB server IP are correctly configured in the API prior deployment
 
 ###### How to clone a Mongodb database
 
@@ -207,15 +210,15 @@ On the new computer now run:
 
 * LOCAL/DEV
 
-Mongo admin user: admin: sp8tial
+     Mongo admin user: admin: <password>
 
-Mongo app user: stviewer_rw: sp8tial
+     Mongo app user: stviewer_rw: <password>
 
 * PRODUCTION
 
-Mongo admin user: admin: 5QTQaRefC2vL
+     Mongo admin user: admin: <password>
 
-Mongo app user: stviewer_rw: PVtSJ9uT4PVB
+     Mongo app user: stviewer_rw: <password>
 
 If you haven’t cloned a Mongo db (see How to clone a Mongodb database), you will
 need to add a Mongo admin user.
