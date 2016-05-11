@@ -1,10 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>spatialtranscriptomics</groupId>
+	<groupId>spatialtranscriptomicsresearch</groupId>
 	<artifactId>api</artifactId>
 	<packaging>war</packaging>
-	<version>0.6.1</version>
+	<version>0.6.2</version>
 	<name>Spatial Transcriptomics Research API Server</name>
 	<url>http://maven.apache.org</url>
 
@@ -163,6 +163,11 @@
 			<artifactId>log4j</artifactId>
 			<version>1.2.17</version>
 		</dependency>
+                <dependency>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-simple</artifactId>
+                    <version>1.6.2</version>
+                </dependency>
 
 		<!-- Spring -->
 		<dependency>

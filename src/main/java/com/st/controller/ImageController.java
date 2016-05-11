@@ -8,7 +8,6 @@ import com.st.exceptions.CustomNotFoundException;
 import com.st.exceptions.CustomNotModifiedException;
 import com.st.exceptions.NotFoundResponse;
 import com.st.exceptions.NotModifiedResponse;
-import com.st.model.ImageAlignment;
 import com.st.model.ImageMetadata;
 import com.st.model.LastModifiedDate;
 import com.st.model.S3Resource;

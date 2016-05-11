@@ -78,8 +78,7 @@ public class SelectionController {
     public @ResponseBody
     List<Selection> list(
             @RequestParam(value = "account", required = false) String accountId,
-            @RequestParam(value = "dataset", required = false) String datasetId,
-            @RequestParam(value = "task", required = false) String taskId
+            @RequestParam(value = "dataset", required = false) String datasetId
     ) {
         List<Selection> selections = null;
         if (accountId != null) {
@@ -88,10 +87,7 @@ public class SelectionController {
         } else if (datasetId != null) {
             logger.info("Returning list of enabled user's selections for dataset " + datasetId);
             selections = selectionService.findByDataset(datasetId);
-        } else if (taskId != null) {
-            logger.info("Returning list of enabled user's selections for task " + taskId);
-            selections = selectionService.findByTask(taskId);
-        } else {
+        }  else {
             // NOTE: Only current user's selections, even for admin.
             MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
             selections = selectionService.findByAccount(currentUser.getId());
@@ -121,7 +117,6 @@ public class SelectionController {
      * All list / list for account / list for dataset / list for task.
      * @param accountId accout ID.
      * @param datasetId dataset ID.
-     * @param taskId task ID.
      * @return list.
      */
     @Secured({"ROLE_USER", "ROLE_CM", "ROLE_ADMIN"})
@@ -129,8 +124,7 @@ public class SelectionController {
     public @ResponseBody
     List<Selection> listAll(
             @RequestParam(value = "account", required = false) String accountId,
-            @RequestParam(value = "dataset", required = false) String datasetId,
-            @RequestParam(value = "task", required = false) String taskId
+            @RequestParam(value = "dataset", required = false) String datasetId
     ) {
         List<Selection> selections = null;
         if (accountId != null) {
@@ -139,9 +133,6 @@ public class SelectionController {
         } else if (datasetId != null) {
             selections = selectionService.findByDataset(datasetId);
             logger.info("Returning list of all selections for dataset " + datasetId);
-        } else if (taskId != null) {
-            logger.info("Returning list of all selections for task " + taskId);
-            selections = selectionService.findByTask(taskId);
         } else {
             selections = selectionService.list();
             logger.info("Returning list of all selections");

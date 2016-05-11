@@ -13,7 +13,6 @@ import com.st.model.LastModifiedDate;
 import com.st.serviceImpl.DatasetServiceImpl;
 import com.st.serviceImpl.ImageAlignmentServiceImpl;
 import com.st.serviceImpl.ImageServiceImpl;
-import com.st.serviceImpl.S3ServiceImpl;
 import com.st.util.DateOperations;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -60,9 +59,6 @@ public class ImageAlignmentController {
     
     @Autowired
     DatasetServiceImpl datasetService;
-
-    @Autowired
-    S3ServiceImpl s3Service;
 
     /**
      * GET|HEAD /imagealignment/
@@ -235,7 +231,7 @@ public class ImageAlignmentController {
         if (cascade && imal != null) {
             imagealignmentService.delete(id);
             datasetService.setUnabledForImageAlignment(id);
-            HashSet<String> todel = new HashSet<String>(1024);
+            HashSet<String> todel = new HashSet<>(1024);
             todel.add(imal.getFigure_blue());
             todel.add(imal.getFigure_red());
             List<ImageAlignment> imals = imagealignmentService.list();
@@ -245,7 +241,7 @@ public class ImageAlignmentController {
                     todel.remove(ia.getFigure_red());
                 }
             }
-            for (String sid : new ArrayList<String>(todel)) {
+            for (String sid : new ArrayList<>(todel)) {
                 imageService.delete(sid);
             }
             logger.info("Successfully cascade-deleted dependencies for image alignment " + id);

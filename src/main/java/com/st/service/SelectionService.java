@@ -47,13 +47,6 @@ public interface SelectionService {
     public List<Selection> findByDataset(String datasetId);
 
     /**
-     * Returns all selections for a task.
-     * @param taskId the task ID.
-     * @return the list.
-     */
-    public List<Selection> findByTask(String taskId);
-
-    /**
      * Adds a selection.
      * @param sel the selection.
      * @return the selection with ID assigned.

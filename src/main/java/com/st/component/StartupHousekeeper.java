@@ -1,9 +1,3 @@
-/*
- *Copyright © 2012 Spatial Transcriptomics AB
- *Read LICENSE for more information about licensing terms
- *Contact: Jose Fernandez Navarro <jose.fernandez.navarro@scilifelab.se>
- * 
- */
 package com.st.component;
 
 import org.apache.log4j.Logger;
@@ -25,6 +19,7 @@ public class StartupHousekeeper implements ApplicationListener<ContextRefreshedE
      *
      * @param event.
      */
+    @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         // Set the default timezone to UTC.
         logger.info("Setting the default time zone to UTC.");

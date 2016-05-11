@@ -1,10 +1,3 @@
-/*
-*Copyright © 2012 Spatial Transcriptomics AB
-*Read LICENSE for more information about licensing terms
-*Contact: Jose Fernandez Navarro <jose.fernandez.navarro@scilifelab.se>
-* 
-*/
-
 package com.st.component;
 
 import javax.annotation.PostConstruct;
@@ -33,6 +26,7 @@ public class StaticContextAccessor {
     /**
      * Returns a bean by name.
      * @param <T> the bean class.
+     * @param clazz
      * @return the bean instance.
      */
     public static <T> T getBean(Class<T> clazz) {

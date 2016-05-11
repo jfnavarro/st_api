@@ -140,18 +140,22 @@ public class AccountController {
     @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
     @RequestMapping(value = "{id}", method = {RequestMethod.GET, RequestMethod.HEAD})
     public @ResponseBody
-    HttpEntity<Account> get(@PathVariable String id, @RequestHeader(value="If-Modified-Since", defaultValue="") String ifModifiedSince) {
+    HttpEntity<Account> get(@PathVariable String id, @RequestHeader(value="If-Modified-Since", 
+            defaultValue="") String ifModifiedSince) {
         Account account = accountService.find(id);
         if (account == null || !account.isEnabled()) {
             logger.info("Failed to return enabled account " + id);
-            throw new CustomNotFoundException("An account with this ID does not exist, is disabled, or you dont have permissions to access it.");
+            throw new CustomNotFoundException("An account with this ID does not exist, "
+                    + "is disabled, or you dont have permissions to access it.");
         }
         // Check if already newest.
         DateTime reqTime = DateOperations.parseHTTPDate(ifModifiedSince);
         if (reqTime != null) {
-            DateTime resTime = account.getLast_modified() == null ? new DateTime(2012,1,1,0,0) : account.getLast_modified();
+            DateTime resTime = account.getLast_modified() == null ? 
+                    new DateTime(2012,1,1,0,0) : account.getLast_modified();
             // NOTE: Only precision within day.
-            resTime = new DateTime(resTime.getYear(), resTime.getMonthOfYear(), resTime.getDayOfMonth(), resTime.getHourOfDay(), resTime.getMinuteOfHour(), resTime.getSecondOfMinute());
+            resTime = new DateTime(resTime.getYear(), resTime.getMonthOfYear(), 
+                    resTime.getDayOfMonth(), resTime.getHourOfDay(), resTime.getMinuteOfHour(), resTime.getSecondOfMinute());
             if (!resTime.isAfter(reqTime)) {
                 logger.info("Not returning enabled account " + id + " since not modified");
                 throw new CustomNotModifiedException("This account has not been modified");
@@ -162,7 +166,7 @@ public class AccountController {
         headers.add("Cache-Control", "public, must-revalidate, no-transform");
         headers.add("Vary", "Accept-Encoding");
         headers.add("Last-modified", DateOperations.getHTTPDateSafely(account.getLast_modified()));
-        HttpEntity<Account> entity = new HttpEntity<Account>(account, headers);
+        HttpEntity<Account> entity = new HttpEntity<>(account, headers);
         logger.info("Returning enabled account " + id);
         return entity;
     }
@@ -179,18 +183,24 @@ public class AccountController {
     @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
     @RequestMapping(value = "/all/{id}", method = RequestMethod.GET)
     public @ResponseBody
-    HttpEntity<Account> getAll(@PathVariable String id, @RequestHeader(value="If-Modified-Since", defaultValue="") String ifModifiedSince) {
+    HttpEntity<Account> getAll(@PathVariable String id, 
+            @RequestHeader(value="If-Modified-Since", defaultValue="") 
+                    String ifModifiedSince) {
         Account account = accountService.find(id);
         if (account == null) {
             logger.info("Failed to return enabled/disabled account " + id);
-            throw new CustomNotFoundException("An account with this ID does not exist, or you dont have permissions to access it.");
+            throw new CustomNotFoundException("An account with this ID does not exist, "
+                    + "or you dont have permissions to access it.");
         }
         // Check if already newest.
         DateTime reqTime = DateOperations.parseHTTPDate(ifModifiedSince);
         if (reqTime != null) {
-            DateTime resTime = account.getLast_modified() == null ? new DateTime(2012,1,1,0,0) : account.getLast_modified();
+            DateTime resTime = account.getLast_modified() == null ? 
+                    new DateTime(2012,1,1,0,0) : account.getLast_modified();
             // NOTE: Only precision within day.
-            resTime = new DateTime(resTime.getYear(), resTime.getMonthOfYear(), resTime.getDayOfMonth(), resTime.getHourOfDay(), resTime.getMinuteOfHour(), resTime.getSecondOfMinute());
+            resTime = new DateTime(resTime.getYear(), resTime.getMonthOfYear(), 
+                    resTime.getDayOfMonth(), resTime.getHourOfDay(), 
+                    resTime.getMinuteOfHour(), resTime.getSecondOfMinute());
             if (!resTime.isAfter(reqTime)) {
                 logger.info("Not returning enabled/disabled account " + id + " since not modified");
                 throw new CustomNotModifiedException("This account has not been modified");
@@ -220,7 +230,8 @@ public class AccountController {
         Account account = accountService.find(id);
         if (account == null) {
             logger.info("Failed to return last modified time of enabled/disabled account " + id);
-            throw new CustomNotFoundException("An account with this ID does not exist, or you dont have permissions to access it.");
+            throw new CustomNotFoundException("An account with this ID does not exist, "
+                    + "or you dont have permissions to access it.");
         }
         logger.info("Returning last modified time of enabled/disabled account " + id);
         return new LastModifiedDate(account.getLast_modified());
@@ -359,18 +370,6 @@ public class AccountController {
         }
     }
 
-    // // encode Password
-    // this is only a utility endpoint for development. Not part of API
-    // specification.
-    // // You can use it to create encoded passwords from plain text. You need
-    // this if you want to enter a Pwd to MongoDB manually
-    // @RequestMapping(value = "/encode", method = RequestMethod.GET)
-    // public @ResponseBody
-    // String encodePwd(@RequestParam(value = "pwd", required = true) String
-    // pwd) {
-    // return passwordEncoder.encode(pwd);
-    // }
-    
     /**
      * Static access to account service.
      * @return the bean.

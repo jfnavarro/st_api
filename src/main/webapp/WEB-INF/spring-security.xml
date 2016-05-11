@@ -110,7 +110,7 @@
 	</authentication-manager>
 
 	<bean id="customUserDetailsService"
-		class="com.spatialtranscriptomics.serviceImpl.MongoUserDetailsServiceImpl" />
+		class="com.st.serviceImpl.MongoUserDetailsServiceImpl" />
 
 	<bean id="passwordEncoder"
 		class="org.springframework.security.crypto.password.StandardPasswordEncoder" />

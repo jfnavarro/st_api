@@ -68,12 +68,12 @@ public class SelectionServiceImpl implements SelectionService {
         if (currentUser.isAdmin()) {
         } else {
             List<Dataset> datasets = datasetService.findByAccount(currentUser.getId());
-            HashMap<String, Dataset> hash = new HashMap<String, Dataset>(datasets.size());
+            HashMap<String, Dataset> hash = new HashMap<>(datasets.size());
             for (Dataset d : datasets) {
                 hash.put(d.getId(), d);
             }
             // Replace to below to enable non-owner users w access to the dataset to access the selection.
-            ArrayList<Selection> filtered = new ArrayList<Selection>(selections.size());
+            ArrayList<Selection> filtered = new ArrayList<>(selections.size());
             for (Selection sel : selections) {
                 if (sel.getAccount_id().equals(currentUser.getId()) /*|| hash.containsKey(sel.getDataset_id())*/) {
                     filtered.add(sel);
@@ -195,10 +195,4 @@ public class SelectionServiceImpl implements SelectionService {
         }
         return null;
     }
-
-    @Override
-    public List<Selection> findByTask(String taskId) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
 }

@@ -26,12 +26,10 @@
 	<mvc:default-servlet-handler />
 
 	<!--  Enable startup bean, etc. -->
-	
-	<bean id="startupHousekeeper" class="com.spatialtranscriptomics.component.StartupHousekeeper"/>
-	<bean id="staticContextAccessor" class="com.spatialtranscriptomics.component.StaticContextAccessor"/>
+	<bean id="startupHousekeeper" class="com.st.component.StartupHousekeeper"/>
+	<bean id="staticContextAccessor" class="com.st.component.StaticContextAccessor"/>
 
 	<!-- Enable Image uploads (used in ImageController.class) -->
-
 	<mvc:annotation-driven content-negotiation-manager="contentNegotiationManager">
 		<mvc:message-converters register-defaults="true">
                         <bean class="org.springframework.http.converter.ByteArrayHttpMessageConverter" >
@@ -61,10 +59,10 @@
 	<!-- Enable Annotations -->
 
 	<context:annotation-config />
-	<context:component-scan base-package="com.spatialtranscriptomics.controller" />
-	<context:component-scan base-package="com.spatialtranscriptomics.model" />
-	<context:component-scan base-package="com.spatialtranscriptomics.service" />
-	<context:component-scan base-package="com.spatialtranscriptomics.serviceImpl" />
+	<context:component-scan base-package="com.st.controller" />
+	<context:component-scan base-package="com.st.model" />
+	<context:component-scan base-package="com.st.service" />
+	<context:component-scan base-package="com.st.serviceImpl" />
 
 	<!-- Enable Property Placeholder -->
 
@@ -73,7 +71,7 @@
 	<!-- Amazon S3 Config -->
 
 	<!-- We create a simple AmazonS3Client instance here. It is Autowired and 
-		used in com.spatialtranscriptomics.serviceImpl.ImageServiceImpl.class -->
+		used in com.st.serviceImpl.ImageServiceImpl.class -->
 
 	<bean id="s3Client" class="com.amazonaws.services.s3.AmazonS3Client">
 	</bean>
@@ -114,12 +112,11 @@
 		<constructor-arg name="databaseName" value="${mongodb.database.user}" />
 		<constructor-arg name="userCredentials" ref="mongoCredentials" />
 	</bean>
-
+        
 	<bean id="mongoTemplateExperimentDB" class="org.springframework.data.mongodb.core.MongoTemplate">
 		<constructor-arg ref="mongo" />
 		<constructor-arg name="databaseName" value="${mongodb.database.experiment}" />
 		<constructor-arg name="userCredentials" ref="mongoCredentials" />
 	</bean> 
-
 
 </beans>
