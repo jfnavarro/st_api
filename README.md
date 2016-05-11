@@ -62,19 +62,16 @@ You have to define one of these profiles (local, dev, prod) when you build the a
 
 ###### Build and deploy to server, e.g. for a release
 
-*Right-click project -> Clean and build
-*Make a copy of the generated .war file in the target folder (see in your file system) (most likely to be inside the *repository in the folder target).
-*Alternatively you can use the Tomcat manager SERVER:8080/manager 
-*You will need an admin account (check Server documentation for admin password in DEV and PROD)
-*You will need the role manager-gui in the tomcat configuration
-*Deploy this .war with the Tomcat manager 
-*SSH into the server.
-*Enter the webapps directory, e.g. /var/lib/tomcat7/webapps
-*Stop the services, e.g. sudo service tomcat7 stop
-*Delete a previous deployed folder if desired, and make a backup of its war file.
-*Upload the new war file into this directory.
-*Start the service, e.g. sudo service tomcat7 start
-
+* Right-click project -> Clean and build
+* Make a copy of the generated .war file in the target folder (see in your file system) (most likely to be inside the repository in the folder target). 
+* Alternatively you can use the Tomcat manager SERVER:8080/manager. You will need an admin account (check Server documentation for admin password in DEV and PROD). You will need the role manager-gui in the tomcat configuration
+* Deploy this .war with the Tomcat manager 
+     - SSH into the server.
+     - Enter the webapps directory, e.g. /var/lib/tomcat7/webapps
+     - Stop the services, e.g. sudo service tomcat7 stop
+     - Delete a previous deployed folder if desired, and make a backup of its war file.
+     - Upload the new war file into this directory.
+     - Start the service, e.g. sudo service tomcat7 start
 
 Note: We had Java heap space errors after re-deploying applications sometimes without restarting the services, although this might not be required in theory.
 
