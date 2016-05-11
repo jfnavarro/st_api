@@ -10,8 +10,6 @@ A full manual and descriptions of the endpoints will be added soon
 but you can now see the documents api_endpoints.doc and datamodel.doc
 for a basic description.
 
-A full manual on how to create and deploy the MongoDB database will be added soon.
-
 The ST Viewer (link here) can be built and configured to work with this API
 to access and visualize the data, you just need to make sure that the
 in the ST Viewer configuration the URL and clientID are the same as the API. 
@@ -158,3 +156,132 @@ API Requests
 After successful authorization, the applications send the access token in the header of each HTTP request to the API. For testing purposes you can also send the access token as a query string parameter (avoid, may be logged), e.g.:
 
 https://your-server.com/api/rest/account?access_token=<access token>
+
+## Database Documentation 
+
+You must have MongoDB installed in your server https://www.mongodb.com/
+
+You can see the test database in db_test.tar.gz as a template 
+
+###### How to clone a Mongodb database
+
+On the old computer run:
+
+     sudo su -
+     mkdir /data/mongodb_dump
+     service mongod stop
+     mongodump --dbpath=/data/db -o /data/mongodb_dump
+     service mongod start
+     cd /data
+     tar cfz /data/mongodb_dump.tar.gz mongodb_dump
+     rm -rf /data/mongodb_dump
+     exit
+
+Now copy the file
+
+/data/mongodb_dump.tar.gz
+
+to the new computer (via your local desktop). 
+On the new computer now run:
+
+     sudo su -
+     cd /data
+     tar xfz /data/mongodb_dump.tar.gz
+     service mongod stop
+     # setting environment variables to avoid the mongorestore error:
+     # “Failed global initialization: BadValue Invalid or no user locale set.“
+     export LC_ALL=C
+     export LANC=C
+     mongorestore --dbpath /data/db /data/mongodb_dump
+     # It seems mongorestore doesn’t set the correct
+     # ownership of the files.
+     chown -R mongodb.nogroup /data/db/*
+     # Just to reset ownership as it was before
+     chown mongodb.mongodb /data/db/logs
+     service mongod start
+     rm -rf /data/mongodb_dump
+     rm /data/mongodb_dump.tar.gz
+     service mongod restart
+
+###### How to configure Mongodb admin account and stviewer_rw user
+
+* LOCAL/DEV
+
+Mongo admin user: admin: sp8tial
+
+Mongo app user: stviewer_rw: sp8tial
+
+* PRODUCTION
+
+Mongo admin user: admin: 5QTQaRefC2vL
+
+Mongo app user: stviewer_rw: PVtSJ9uT4PVB
+
+If you haven’t cloned a Mongo db (see How to clone a Mongodb database), you will
+need to add a Mongo admin user.
+
+Add admin user:
+* start mongo 
+
+          sudo service mongodb start 
+
+* start mongo console 
+
+          $mongo
+          use admin
+          db.addUser( { user: "admin", pwd: "ADMINPWD", roles: [ "userAdminAnyDatabase" ] } )
+
+* Add DB and DB user for each DB:
+     
+          use admin 
+          db.auth({user: "admin", pwd : "ADMINPWD"}) 
+          use experiment, user, analysis (you must add the stviewer use for each database
+          db.addUser( { user: "stviewer_rw", pwd: "PWD", roles: [ "readWrite" ] } )
+
+Note : make sure the password PWD is in sync with the password expected from the API
+
+* Add initial content manager (to be able to add more application users in Admin console)
+
+          use user
+          db.account.insert({ "username" : "cm1", "role" : "ROLE_CM", "password" :                     "9c1edea9702d547eccc9cb804b9a63f2a2029d5c7240a2d4bbe4f180e10b252b967f98bed37b8fe1", "grantedDatasets" : [ ], "enabled" : true }) 
+          
+Note: this pwd will be “1234”
+
+Note (to activate auth mode)
+
+     sudo su -
+     echo "auth = true" >> /etc/mongod.conf
+     service mongod restart
+
+## How to do common tasks on Admin server
+
+###### Start/Stop Tomcat:
+
+     sudo service tomcat7 start|stop|status
+     
+(install dir: sudo nano /etc/default/tomcat7)
+
+###### Start/Stop Nginx:
+
+     sudo service nginx start|stop|status
+
+###### View Tomcat logs:
+
+     sudo less /var/lib/tomcat7/logs/catalina.out
+
+## How to do common tasks on DB server
+
+###### Start/Stop Mongo:
+
+     sudo service mongodb start|stop
+
+###### View Mongo logs:
+
+     sudo nano /data/db/logs
+
+######Configure Mongo:
+
+     sudo nano /etc/mongod.conf
+
+Data directory:
+/data/db/ (mounted EBS data volume)
