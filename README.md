@@ -6,14 +6,15 @@ This is the source code of our RESTful API from
 which we can access the data stored in our database. 
 Authorization trough OAuth2 is required.
 
-A full manual on how to build and deploly will be added soon.
-
-A full manual and descriptions of the endpoints will be added soon. 
+A full manual and descriptions of the endpoints will be added soon
+but you can now see the documents api_endpoints.doc and datamodel.doc
+for a basic description.
 
 A full manual on how to create and deploy the MongoDB database will be added soon.
 
 The ST Viewer (link here) can be built and configured to work with this API
-to access and visualize the data. 
+to access and visualize the data, you just need to make sure that the
+in the ST Viewer configuration the URL and clientID are the same as the API. 
 
 See LICENSE file for licensing and references. 
 
@@ -126,30 +127,30 @@ The authorization server responds with a HTTP 200 and JSON payload containing th
 
 Server Response OK
 
-HTTP/1.1 200 OK
-     Content-Type: application/json;charset=UTF-8
-     Cache-Control: no-store
-     Pragma: no-cache
-     {
-       "access_token":"2YotnFZFEjr1zCsicMWpAA",
-       "token_type":"example",
-       "expires_in":3600,
-       "refresh_token":"tGzv3JOkF0XG5Qx2TlKWIA",
-       "example_parameter":"example_value"
-     }
+     HTTP/1.1 200 OK
+          Content-Type: application/json;charset=UTF-8
+          Cache-Control: no-store
+          Pragma: no-cache
+          {
+               "access_token":"2YotnFZFEjr1zCsicMWpAA",
+               "token_type":"example",
+               "expires_in":3600,
+               "refresh_token":"tGzv3JOkF0XG5Qx2TlKWIA",
+               "example_parameter":"example_value"
+          }
 
 
 
 Server Response ERROR
 
-HTTP/1.1 400 Bad Request
-     Content-Type: application/json;charset=UTF-8
-     Cache-Control: no-store
-     Pragma: no-cache
+     HTTP/1.1 400 Bad Request
+          Content-Type: application/json;charset=UTF-8
+          Cache-Control: no-store
+          Pragma: no-cache
 
-     {
-       "error":"invalid_request"
-     }
+          {
+               "error":"invalid_request"
+          }
 
 
 API Requests
