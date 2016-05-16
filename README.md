@@ -1,6 +1,9 @@
 # Spatial Transcriptomics Research API
 
-A RESTFul API to provide access to the Spatial Transcriptomics Research data stored in a MongoDB database.
+"ADD TRAVIS BUILD STATUS HERE"
+
+A RESTFul API to provide access to the Spatial Transcriptomics Research 
+data stored in a database.
 
 This is the source code of our RESTful API from
 which we can access the data stored in our database. 
@@ -14,6 +17,12 @@ The ST Viewer (link here) can be built and configured to work with this API
 to access and visualize the data, you just need to make sure that the
 in the ST Viewer configuration the URL and clientID are the same as the API. 
 
+The ST Data consist of tissue images, spot-gene counts and a transformation
+from array coordinates (spots) to pixel image coordinates and 
+information on the dataset (stats, general info, user, etc..).
+
+## License
+
 See LICENSE file for licensing and references. 
 
 ## General Documentation
@@ -24,13 +33,16 @@ We run a Java web application  in a Tomcat servlet container. We use Java 1.6 an
 
 The main frameworks used are Spring 3.2.x, spring-security, spring-security-oauth, spring-data-mongodb, AWS SDK.
 
+We use MongoDB as the database system but we plan to change it soon.
+
 ###### OAuth2
 We use OAuth2 to authenticate at the API. The API application implements an OAuth2 server. The Admin application implements an OAuth2 client. The application uses the OAuth2 password flow to authenticate at the API/OAuth server. The Admin tool uses OAuth2 and a normal Spring Security auth mechanism. It authenticates at the API be sending the credentials that the user has entered through a OAuth2 password flow. If it successfully authenticated the API, it gets the current Account details from the API and checks the “role”. If the role is “ROLE_CM” or “ROLE_ADMIN” it authorizes the user to access the Admin application. ROLE_CM does not have access to the accounts section of the application.  
 
 See API Authorization documentation for more info on OAuth2.
 
 ###### AWS SDK
-Both web applications use the (Amazon) AWS SDK to access the S3 file system and EMR jobs. They use the accesskey and secretkey of the AWS account to authenticate.
+Both web applications use the (Amazon) AWS SDK to access the S3 file system. 
+They use the accesskey and secretkey of the AWS account to authenticate.
 
 ###### Development
 
@@ -159,6 +171,10 @@ https://your-server.com/api/rest/account?access_token=<access token>
 You must have MongoDB installed in your database server https://www.mongodb.com/
 
 You can see the test database in db_test.tar.gz as a template to create your database
+The usernams for this test database are :
+
+- admin user: admin: sp8tial
+- app user: stviewer_rw: sp8tial
 
 You must make sure that the users (admin and st-viewer-rw) and their passwords
 as well as the DB server IP are correctly configured in the API prior deployment
