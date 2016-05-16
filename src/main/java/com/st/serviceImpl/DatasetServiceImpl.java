@@ -56,14 +56,17 @@ public class DatasetServiceImpl implements DatasetService {
     public Dataset find(String id) {
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
         if (currentUser.isAdmin() || datasetIsGranted(id, currentUser)) {
-            return mongoTemplateAnalysisDB.findOne(new Query(Criteria.where("id").is(id)), Dataset.class);
+            return mongoTemplateAnalysisDB.findOne(
+                    new Query(Criteria.where("id").is(id)), Dataset.class);
         }
         return null;
     }
 
     @Override
     public boolean datasetIsGranted(String datasetId, MongoUserDetails user) {
-        List<DatasetInfo> dsis = mongoTemplateUserDB.find(new Query(Criteria.where("dataset_id").is(datasetId).and("account_id").is(user.getId())), DatasetInfo.class);
+        List<DatasetInfo> dsis = mongoTemplateUserDB.find(
+                new Query(Criteria.where("dataset_id").is(datasetId).and("account_id").is(user.getId())), 
+                DatasetInfo.class);
         return (dsis != null && dsis.size() > 0);
     }
 
@@ -153,11 +156,12 @@ public class DatasetServiceImpl implements DatasetService {
 
         if (currentUser.isAdmin() || currentUser.getId().equals(accountId)) {
             try {
-                List<DatasetInfo> dsis = mongoTemplateUserDB.find(new Query(Criteria.where("account_id").is(accountId)), DatasetInfo.class);
+                List<DatasetInfo> dsis = mongoTemplateUserDB.find(
+                        new Query(Criteria.where("account_id").is(accountId)), DatasetInfo.class);
                 if (dsis == null) {
                     return null;
                 }
-                List<String> strs = new ArrayList<String>(dsis.size());
+                List<String> strs = new ArrayList<>(dsis.size());
                 for (DatasetInfo dsi : dsis) {
                     strs.add(dsi.getDataset_id());
                 }

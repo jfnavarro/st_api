@@ -77,7 +77,7 @@ public class AccountController {
      * @param datasetId the dataset ID.
      * @return the list.
      */
-    @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
+    @Secured({"ROLE_CM","ROLE_ADMIN"})
     @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD})
     public @ResponseBody
     List<Account> list(@RequestParam(value = "dataset", required = false) String datasetId) {
@@ -110,7 +110,7 @@ public class AccountController {
      * @param datasetId the dataset ID.
      * @return the list.
      */
-    @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
+    @Secured({"ROLE_CM","ROLE_ADMIN"})
     @RequestMapping(value = "/all", method = {RequestMethod.GET, RequestMethod.HEAD})
     public @ResponseBody
     List<Account> listAll(@RequestParam(value = "dataset", required = false) String datasetId) {
@@ -155,7 +155,8 @@ public class AccountController {
                     new DateTime(2012,1,1,0,0) : account.getLast_modified();
             // NOTE: Only precision within day.
             resTime = new DateTime(resTime.getYear(), resTime.getMonthOfYear(), 
-                    resTime.getDayOfMonth(), resTime.getHourOfDay(), resTime.getMinuteOfHour(), resTime.getSecondOfMinute());
+                    resTime.getDayOfMonth(), resTime.getHourOfDay(), 
+                    resTime.getMinuteOfHour(), resTime.getSecondOfMinute());
             if (!resTime.isAfter(reqTime)) {
                 logger.info("Not returning enabled account " + id + " since not modified");
                 throw new CustomNotModifiedException("This account has not been modified");
@@ -211,7 +212,7 @@ public class AccountController {
         headers.add("Cache-Control", "public, must-revalidate, no-transform");
         headers.add("Vary", "Accept-Encoding");
         headers.add("Last-modified", DateOperations.getHTTPDateSafely(account.getLast_modified()));
-        HttpEntity<Account> entity = new HttpEntity<Account>(account, headers);
+        HttpEntity<Account> entity = new HttpEntity<>(account, headers);
         logger.info("Returning enabled/disabled account " + id);
         return entity;
     }
@@ -310,7 +311,7 @@ public class AccountController {
      * @param account the account.
      * @param result binding.
      */
-    @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
+    @Secured({"ROLE_CM", "ROLE_ADMIN"})
     @RequestMapping(value = "{id}", method = RequestMethod.PUT)
     public @ResponseBody
     void update(@PathVariable String id, @RequestBody @Valid Account account, BindingResult result) {
@@ -351,7 +352,7 @@ public class AccountController {
      * @param id the account ID.
      * @param cascade true to cascade delete.
      */
-    @Secured("ROLE_ADMIN")
+    @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "{id}", method = RequestMethod.DELETE)
     public @ResponseBody
     void delete(@PathVariable String id,

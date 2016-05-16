@@ -50,11 +50,4 @@ public interface ChipService {
      * @param id the chip ID.
      */
     public void delete(String id);
-
-    /**
-     * Returns true if the current user may delete a chip.
-     * @param id the chip ID.
-     * @return true if granted delete rights.
-     */
-    public boolean deleteIsOkForCurrUser(String id);
 }

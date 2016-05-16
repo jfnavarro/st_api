@@ -41,7 +41,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
- * This class is Spring MVC controller class for the API endpoint "rest/dataset". It implements the methods available at this endpoint.
+ * This class is Spring MVC controller class for the API endpoint "rest/dataset". 
+ * It implements the methods available at this endpoint.
  */
 
 @Repository
@@ -136,18 +137,23 @@ public class DatasetController {
     @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
     @RequestMapping(value = "{id}", method = {RequestMethod.GET, RequestMethod.HEAD})
     public @ResponseBody
-    HttpEntity<Dataset> get(@PathVariable String id, @RequestHeader(value="If-Modified-Since", defaultValue="") String ifModifiedSince) {
+    HttpEntity<Dataset> get(@PathVariable String id, 
+            @RequestHeader(value="If-Modified-Since", defaultValue="") String ifModifiedSince) {
         Dataset ds = datasetService.find(id);
         if (ds == null || !ds.getEnabled()) {
             logger.info("Failed to return enabled dataset " + id);
-            throw new CustomNotFoundException("A dataset with this ID does not exist, is disabled, or you dont have permissions to access it.");
+            throw new CustomNotFoundException("A dataset with this ID does not exist, "
+                    + "is disabled, or you dont have permissions to access it.");
         }
         // Check if already newest.
         DateTime reqTime = DateOperations.parseHTTPDate(ifModifiedSince);
         if (reqTime != null) {
-            DateTime resTime = ds.getLast_modified() == null ? new DateTime(2012,1,1,0,0) : ds.getLast_modified();
+            DateTime resTime = ds.getLast_modified() == null ? 
+                    new DateTime(2012,1,1,0,0) : ds.getLast_modified();
             // NOTE: Only precision within day.
-            resTime = new DateTime(resTime.getYear(), resTime.getMonthOfYear(), resTime.getDayOfMonth(), resTime.getHourOfDay(), resTime.getMinuteOfHour(), resTime.getSecondOfMinute());
+            resTime = new DateTime(resTime.getYear(), resTime.getMonthOfYear(), 
+                    resTime.getDayOfMonth(), resTime.getHourOfDay(), 
+                    resTime.getMinuteOfHour(), resTime.getSecondOfMinute());
             if (!resTime.isAfter(reqTime)) {
                 logger.info("Not returning enabled dataset " + id + " since not modified");
                 throw new CustomNotModifiedException("This dataset has not been modified");
@@ -158,7 +164,7 @@ public class DatasetController {
         headers.add("Cache-Control", "public, must-revalidate, no-transform");
         headers.add("Vary", "Accept-Encoding");
         headers.add("Last-modified", DateOperations.getHTTPDateSafely(ds.getLast_modified()));
-        HttpEntity<Dataset> entity = new HttpEntity<Dataset>(ds, headers);
+        HttpEntity<Dataset> entity = new HttpEntity<>(ds, headers);
         logger.info("Returning enabled dataset " + id);
         return entity;
     }
@@ -174,18 +180,24 @@ public class DatasetController {
     @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
     @RequestMapping(value = "/all/{id}", method = {RequestMethod.GET, RequestMethod.HEAD})
     public @ResponseBody
-    HttpEntity<Dataset> getAll(@PathVariable String id, @RequestHeader(value="If-Modified-Since", defaultValue="") String ifModifiedSince) {
+    HttpEntity<Dataset> getAll(@PathVariable String id, 
+            @RequestHeader(value="If-Modified-Since", defaultValue="") String ifModifiedSince) {
         Dataset ds = datasetService.find(id);
         if (ds == null) {
             logger.info("Failed to return enabled/disabled dataset " + id);
-            throw new CustomNotFoundException("A dataset with this ID does not exist, or you dont have permissions to access it.");
+            throw new CustomNotFoundException("A dataset with this ID does not exist, "
+                    + "or you dont have permissions to access it.");
         }
         // Check if already newest.
         DateTime reqTime = DateOperations.parseHTTPDate(ifModifiedSince);
         if (reqTime != null) {
-            DateTime resTime = ds.getLast_modified() == null ? new DateTime(2012,1,1,0,0) : ds.getLast_modified();
+            DateTime resTime = ds.getLast_modified() == null 
+                    ? new DateTime(2012,1,1,0,0) : ds.getLast_modified();
             // NOTE: Only precision within day.
-            resTime = new DateTime(resTime.getYear(), resTime.getMonthOfYear(), resTime.getDayOfMonth(), resTime.getHourOfDay(), resTime.getMinuteOfHour(), resTime.getSecondOfMinute());
+            resTime = new DateTime(resTime.getYear(), 
+                    resTime.getMonthOfYear(), resTime.getDayOfMonth(), 
+                    resTime.getHourOfDay(), resTime.getMinuteOfHour(), 
+                    resTime.getSecondOfMinute());
             if (!resTime.isAfter(reqTime)) {
                 logger.info("Not returning enabled/disabled dataset " + id + " since not modified");
                 throw new CustomNotModifiedException("This dataset has not been modified");
@@ -196,7 +208,7 @@ public class DatasetController {
         headers.add("Cache-Control", "public, must-revalidate, no-transform");
         headers.add("Vary", "Accept-Encoding");
         headers.add("Last-modified", DateOperations.getHTTPDateSafely(ds.getLast_modified()));
-        HttpEntity<Dataset> entity = new HttpEntity<Dataset>(ds, headers);
+        HttpEntity<Dataset> entity = new HttpEntity<>(ds, headers);
         logger.info("Returning enabled/disabled dataset " + id);
         return entity;
     }
@@ -216,7 +228,8 @@ public class DatasetController {
         Dataset ds = datasetService.find(id);
         if (ds == null) {
             logger.info("Failed to return last modified time of dataset " + id);
-            throw new CustomNotFoundException("A dataset with this ID does not exist, or you dont have permissions to access it.");
+            throw new CustomNotFoundException("A dataset with this ID does not exist, "
+                    + "or you dont have permissions to access it.");
         }
         logger.info("Returning last modified time of dataset " + id);
         return new LastModifiedDate(ds.getLast_modified());
@@ -275,11 +288,13 @@ public class DatasetController {
             throw new CustomBadRequestException("ID in request URL does not match ID in content body.");
         } else if (datasetService.find(id) == null) {
             logger.info("Failed to update dataset. Missing or failed permissions.");
-            throw new CustomBadRequestException("A dataset with this ID does not exist or you don't have permissions to access it.");
+            throw new CustomBadRequestException("A dataset with this ID does not exist "
+                    + "or you don't have permissions to access it.");
         } else if (datasetService.findByNameInternal(ds.getName()) != null) {
             if (!datasetService.findByNameInternal(ds.getName()).getId().equals(id)) {
                 logger.info("Failed to update dataset. Duplicate name.");
-                throw new CustomBadRequestException("Another dataset with this name exists already. Dataset names are unique.");
+                throw new CustomBadRequestException("Another dataset with this name exists already. "
+                        + "Dataset names are unique.");
             }
         }
         logger.info("Successfully updated dataset " + ds.getId());

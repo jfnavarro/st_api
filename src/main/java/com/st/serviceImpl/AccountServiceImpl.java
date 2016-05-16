@@ -33,39 +33,39 @@ public class AccountServiceImpl implements AccountService {
     MongoUserDetailsServiceImpl customUserDetailsService;
 
     // ROLE_ADMIN: ok.
-    // ROLE_CM:    ok.
+    // ROLE_CM:    own.
     // ROLE_USER:  own.
     @Override
     public Account find(String id) {
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-        if (currentUser.isAdmin() || currentUser.isContentManager() || currentUser.getId().equals(id)) {
+        if (currentUser.isAdmin() || currentUser.getId().equals(id)) {
             return mongoTemplateUserDB.findOne(new Query(Criteria.where("id").is(id)), Account.class);
         }
         return null;
     }
 
     // ROLE_ADMIN: ok.
-    // ROLE_CM:    ok.
+    // ROLE_CM:    own.
     // ROLE_USER:  own.
     @Override
     public Account findByUsername(String username) {
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-        if (currentUser.isAdmin() || currentUser.isContentManager() || currentUser.getUsername().equals(username)) {
+        if (currentUser.isAdmin() || currentUser.getUsername().equals(username)) {
             return mongoTemplateUserDB.findOne(new Query(Criteria.where("username").is(username)), Account.class);
         }
         return null;
     }
 
     // ROLE_ADMIN: all.
-    // ROLE_CM:    all.
+    // ROLE_CM:    own.
     // ROLE_USER:  own.
     @Override
     public List<Account> list() {
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-        if (currentUser.isAdmin() || currentUser.isContentManager()) {
+        if (currentUser.isAdmin()) {
             return mongoTemplateUserDB.findAll(Account.class);
         }
-        ArrayList<Account> l = new ArrayList<Account>(1);
+        ArrayList<Account> l = new ArrayList<>(1);
         l.add(mongoTemplateUserDB.findOne(new Query(Criteria.where("id").is(currentUser.getId())), Account.class));
         return l;
     }
@@ -75,6 +75,10 @@ public class AccountServiceImpl implements AccountService {
     // ROLE_USER:  none.
     @Override
     public Account add(Account account) {
+        MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+        if (!currentUser.isAdmin()) {
+            return null;
+        }
         mongoTemplateUserDB.insert(account);
         logger.info("Added account " + account.getId() + " to MongoDB.");
         return account;
@@ -92,11 +96,15 @@ public class AccountServiceImpl implements AccountService {
         }
     }
 
-    // See deleteIsOkForCurrUser(). Internal use may be different
+    // ROLE_ADMIN: ok.
+    // ROLE_CM:    none.
+    // ROLE_USER:  none.
     @Override
     public void delete(String id) {
-        mongoTemplateUserDB.remove(find(id));
-        logger.info("Deleted account " + id + " from MongoDB.");
+        if (deleteIsOkForCurrUser(id)) {
+            mongoTemplateUserDB.remove(find(id));
+            logger.info("Deleted account " + id + " from MongoDB.");
+        }
     }
 
     // ROLE_ADMIN: ok.
@@ -113,24 +121,19 @@ public class AccountServiceImpl implements AccountService {
     // ROLE_USER:  own.
     @Override
     public List<Account> findByDataset(String datasetId) {
-        List<DatasetInfo> dsis = mongoTemplateUserDB.find(new Query(Criteria.where("dataset_id").is(datasetId)), DatasetInfo.class);
+        List<DatasetInfo> dsis = mongoTemplateUserDB.find(
+                new Query(Criteria.where("dataset_id").is(datasetId)), DatasetInfo.class);
         if (dsis == null) {
             return null;
         }
-        List<String> strs = new ArrayList<String>(dsis.size());
+        List<String> strs = new ArrayList<>(dsis.size());
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-        if (currentUser.isAdmin()) {
-            for (DatasetInfo dsi : dsis) {
+        final boolean isAdmin = currentUser.isAdmin();
+        for (DatasetInfo dsi : dsis) {
+            if (isAdmin || dsi.getAccount_id().equals(currentUser.getId())) {
                 strs.add(dsi.getAccount_id());
             }
-        } else {
-            for (DatasetInfo dsi : dsis) {
-                if (dsi.getAccount_id().equals(currentUser.getId())) {
-                    strs.add(dsi.getAccount_id());
-                    break;
-                }
-            }
-        }
+        } 
         return mongoTemplateUserDB.find(new Query(Criteria.where("id").in(strs)), Account.class);
     }
 

@@ -14,7 +14,6 @@ import com.st.model.LastModifiedDate;
 import com.st.serviceImpl.FeaturesServiceImpl;
 import com.st.serviceImpl.MongoUserDetailsServiceImpl;
 import com.st.util.DateOperations;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -23,7 +22,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -40,7 +38,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
- * This class is Spring MVC controller class for the API endpoint "rest/features". It implements the methods available at this endpoint.
+ * This class is Spring MVC controller class for the API endpoint "rest/features". 
+ * It implements the methods available at this endpoint.
  */
 
 @Controller
@@ -87,20 +86,25 @@ public class FeaturesController {
     @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
     @RequestMapping(value = "json/{id}", method = {RequestMethod.GET, RequestMethod.HEAD})
     public @ResponseBody
-    HttpEntity<S3Resource> getAsJSON(@PathVariable String id, @RequestHeader(value="If-Modified-Since", defaultValue="") String ifModifiedSince) {
+    HttpEntity<S3Resource> getAsJSON(@PathVariable String id, 
+            @RequestHeader(value="If-Modified-Since", defaultValue="") String ifModifiedSince) {
         try {
             FeaturesMetadata meta = featuresService.getMetadata(id);
             InputStream is = featuresService.find(id);
             if (meta == null || is == null) {
                 logger.info("Failed to return features as JSON for dataset " + id);
-                throw new CustomNotFoundException("A features file for a dataset with this ID does not exist, or you dont have permissions to access it.");
+                throw new CustomNotFoundException("A features file for a dataset with t"
+                        + "his ID does not exist, or you dont have permissions to access it.");
             }
             // Check if already newest.
             DateTime reqTime = DateOperations.parseHTTPDate(ifModifiedSince);
             if (reqTime != null) {
-                DateTime resTime = meta.getLastModified() == null ? new DateTime(2012,1,1,0,0) : meta.getLastModified();
+                DateTime resTime = meta.getLastModified() == null ? 
+                        new DateTime(2012,1,1,0,0) : meta.getLastModified();
                 // NOTE: Only precision within day.
-                resTime = new DateTime(resTime.getYear(), resTime.getMonthOfYear(), resTime.getDayOfMonth(), resTime.getHourOfDay(), resTime.getMinuteOfHour(), resTime.getSecondOfMinute());
+                resTime = new DateTime(resTime.getYear(), 
+                        resTime.getMonthOfYear(), resTime.getDayOfMonth(), 
+                        resTime.getHourOfDay(), resTime.getMinuteOfHour(), resTime.getSecondOfMinute());
                 if (!resTime.isAfter(reqTime)) {
                     logger.info("Not returning features as JSON for dataset " + id + " since not modified");
                     throw new CustomNotModifiedException("This features file has not been modified");
@@ -113,7 +117,7 @@ public class FeaturesController {
             headers.add("Cache-Control", "public, must-revalidate, no-transform");
             headers.add("Vary", "Accept-Encoding");
             headers.add("Last-modified", DateOperations.getHTTPDateSafely(meta.getLastModified()));
-            HttpEntity<S3Resource> entity = new HttpEntity<S3Resource>(wrap, headers);
+            HttpEntity<S3Resource> entity = new HttpEntity<>(wrap, headers);
             logger.info("Returning features as JSON for dataset " + id);
             return entity;
         } catch (IOException ex) {
@@ -139,14 +143,18 @@ public class FeaturesController {
             InputStream is = featuresService.find(id);
             if (meta == null || is == null) {
                 logger.info("Failed to return features as JSON for dataset " + id);
-                throw new CustomNotFoundException("A features file for a dataset with this ID does not exist, or you dont have permissions to access it.");
+                throw new CustomNotFoundException("A features file for a dataset with "
+                        + "this ID does not exist, or you dont have permissions to access it.");
             }
             // Check if already newest.
             DateTime reqTime = DateOperations.parseHTTPDate(ifModifiedSince);
             if (reqTime != null) {
-                DateTime resTime = meta.getLastModified() == null ? new DateTime(2012,1,1,0,0) : meta.getLastModified();
+                DateTime resTime = meta.getLastModified() == null ? 
+                        new DateTime(2012,1,1,0,0) : meta.getLastModified();
                 // NOTE: Only precision within day.
-                resTime = new DateTime(resTime.getYear(), resTime.getMonthOfYear(), resTime.getDayOfMonth(), resTime.getHourOfDay(), resTime.getMinuteOfHour(), resTime.getSecondOfMinute());
+                resTime = new DateTime(resTime.getYear(), resTime.getMonthOfYear(), 
+                        resTime.getDayOfMonth(), resTime.getHourOfDay(), 
+                        resTime.getMinuteOfHour(), resTime.getSecondOfMinute());
                 if (!resTime.isAfter(reqTime)) {
                     logger.info("Not returning features as JSON for dataset " + id + " since not modified");
                     throw new CustomNotModifiedException("This features file has not been modified");
@@ -216,7 +224,8 @@ public class FeaturesController {
         FeaturesMetadata feat = featuresService.getMetadata(id);
         if (feat == null) {
             logger.info("Failed to return last modified time of features file for dataset " + id);
-            throw new CustomNotFoundException("A features file with this id does not exist or you do not have permissions to access it.");
+            throw new CustomNotFoundException("A features file with this id does not "
+                    + "exist or you do not have permissions to access it.");
         }
         logger.info("Returning last modified time of features file for dataset " + id);
         return new LastModifiedDate(feat.getLastModified());

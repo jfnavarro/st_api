@@ -38,7 +38,7 @@ public class MongoUserDetails extends Account implements UserDetails, IMongoUser
     @Transient
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        Collection<GrantedAuthority> grantedAuthorities = new ArrayList<GrantedAuthority>();
+        Collection<GrantedAuthority> grantedAuthorities = new ArrayList<>();
         grantedAuthorities.add(new SimpleGrantedAuthority(getRole()));
         return grantedAuthorities;
     }

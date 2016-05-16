@@ -6,6 +6,7 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.st.model.ImageMetadata;
+import com.st.model.MongoUserDetails;
 import com.st.service.ImageService;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -32,7 +33,10 @@ public class ImageServiceImpl implements ImageService {
 
     @Autowired
     AmazonS3Client s3Client;
-
+    
+    @Autowired
+    MongoUserDetailsServiceImpl customUserDetailsService;
+    
     private @Value("${s3.imagebucket}")
     String imageBucket;
 
@@ -44,19 +48,20 @@ public class ImageServiceImpl implements ImageService {
     // ROLE_USER:  nope.
     @Override
     public List<ImageMetadata> list() {
-        ObjectListing objects = s3Client.listObjects(imageBucket);
-
-        List<S3ObjectSummary> objs = objects.getObjectSummaries();
-
-        List<ImageMetadata> imageMetadataList = new ArrayList<ImageMetadata>();
-        for (S3ObjectSummary o : objs) {
-            ImageMetadata im = new ImageMetadata();
-            im.setImageType("jpeg");
-            im.setFilename(o.getKey());
-            im.setLastModified(new DateTime(o.getLastModified()));
-            im.setCreated(new DateTime(o.getLastModified()));
-            im.setSize(o.getSize());
-            imageMetadataList.add(im);
+        List<ImageMetadata> imageMetadataList = new ArrayList<>();
+        MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+        if (currentUser.isAdmin() || currentUser.isContentManager()) {
+            ObjectListing objects = s3Client.listObjects(imageBucket);
+            List<S3ObjectSummary> objs = objects.getObjectSummaries();
+            for (S3ObjectSummary o : objs) {
+                ImageMetadata im = new ImageMetadata();
+                im.setImageType("jpeg");
+                im.setFilename(o.getKey());
+                im.setLastModified(new DateTime(o.getLastModified()));
+                    im.setCreated(new DateTime(o.getLastModified()));
+                im.setSize(o.getSize());
+                imageMetadataList.add(im);
+            }
         }
         return imageMetadataList;
     }
@@ -67,7 +72,6 @@ public class ImageServiceImpl implements ImageService {
     @Override
     public ImageMetadata getImageMetadata(String filename) {
         List<ImageMetadata> imList = this.list();
-
         for (ImageMetadata im : imList) {
             if (im.getFilename().equals(filename)) {
                 return im;
@@ -115,20 +119,21 @@ public class ImageServiceImpl implements ImageService {
     // ROLE_USER:  nope.
     @Override
     public void add(String filename, BufferedImage img) {
+        MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+        if (!currentUser.isAdmin() || !currentUser.isContentManager()) {
+            return;
+        }
         try {
             ObjectMetadata om = new ObjectMetadata();
             om.setContentType("image/jpeg");
-
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ImageIO.write(img, "jpeg", baos);
             InputStream is = new ByteArrayInputStream(baos.toByteArray());
-
             s3Client.putObject(imageBucket, filename, is, om);
             logger.info("Added image from BuffereedImage " + filename + " to Amazon S3.");
         } catch (IOException e) {
             logger.error("Error adding image " + filename + " to Amazon S3:" + e.getMessage());
             throw new RuntimeException("Error adding image " + filename + " to Amazon S3", e);
-            //e.printStackTrace();
         }
     }
 
@@ -137,6 +142,10 @@ public class ImageServiceImpl implements ImageService {
     // ROLE_USER:  nope.
     @Override
     public void addCompressed(String filename, byte[] img) {
+        MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+        if (!currentUser.isAdmin() || !currentUser.isContentManager()) {
+            return;
+        }
         ObjectMetadata om = new ObjectMetadata();
         om.setContentType("image/jpeg");
         InputStream is = new ByteArrayInputStream(img);
@@ -149,8 +158,11 @@ public class ImageServiceImpl implements ImageService {
     // ROLE_USER:  nope.
     @Override
     public void delete(String filename) {
-        s3Client.deleteObject(imageBucket, filename);
-        logger.info("Deleted image " + filename + " from Amazon S3.");
+        MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+        if (currentUser.isAdmin() || currentUser.isContentManager()) {
+            s3Client.deleteObject(imageBucket, filename);
+            logger.info("Deleted image " + filename + " from Amazon S3.");
+        }
     }
 
 }

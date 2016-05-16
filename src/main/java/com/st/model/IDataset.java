@@ -53,10 +53,6 @@ public interface IDataset {
 
     public void setGene_pooled_hit_quartiles(double[] quartiles);
 
-    public String[] getObo_foundry_terms();
-
-    public void setObo_foundry_terms(String[] obo_foundry_terms);
-
     public String getComment();
 
     public void setComment(String comm);

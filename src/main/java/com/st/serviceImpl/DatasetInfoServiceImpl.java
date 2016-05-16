@@ -30,45 +30,48 @@ public class DatasetInfoServiceImpl implements DatasetInfoService {
     MongoOperations mongoTemplateUserDB;
 
     // ROLE_ADMIN: all.
-    // ROLE_CM:    all.
-    // ROLE_USER:  if for own account.
+    // ROLE_CM:    own.
+    // ROLE_USER:  own.
     @Override
     public DatasetInfo find(String id) {
-        DatasetInfo dsi = mongoTemplateUserDB.findOne(new Query(Criteria.where("id").is(id)), DatasetInfo.class);
+        DatasetInfo dsi = mongoTemplateUserDB.findOne(
+                new Query(Criteria.where("id").is(id)), DatasetInfo.class);
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-        if (currentUser.isAdmin() || currentUser.isContentManager() || dsi.getAccount_id().equals(currentUser.getId())) {
+        if (currentUser.isAdmin() || dsi.getAccount_id().equals(currentUser.getId())) {
             return dsi;
         }
         return null;
     }
 
     // ROLE_ADMIN: all.
-    // ROLE_CM:    all.
-    // ROLE_USER:  for own account.
+    // ROLE_CM:    own.
+    // ROLE_USER:  own.
     @Override
     public List<DatasetInfo> findByAccount(String accountId) {
-        List<DatasetInfo> dsis = mongoTemplateUserDB.find(new Query(Criteria.where("account_id").is(accountId)), DatasetInfo.class);
+        List<DatasetInfo> dsis = mongoTemplateUserDB.find(
+                new Query(Criteria.where("account_id").is(accountId)), DatasetInfo.class);
         if (dsis == null) {
             return null;
         }
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-        if (currentUser.isAdmin() || currentUser.isContentManager() || accountId.equals(currentUser.getId())) {
+        if (currentUser.isAdmin() || accountId.equals(currentUser.getId())) {
             return dsis;
         }
         return null;
     }
 
     // ROLE_ADMIN: all.
-    // ROLE_CM:    all.
+    // ROLE_CM:    granted datasets.
     // ROLE_USER:  granted datasets.
     @Override
     public List<DatasetInfo> findByDataset(String datasetId) {
-        List<DatasetInfo> dsis = mongoTemplateUserDB.find(new Query(Criteria.where("dataset_id").is(datasetId)), DatasetInfo.class);
+        List<DatasetInfo> dsis = mongoTemplateUserDB.find(
+                new Query(Criteria.where("dataset_id").is(datasetId)), DatasetInfo.class);
         if (dsis == null) {
             return null;
         }
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-        if (currentUser.isAdmin() || currentUser.isContentManager()) {
+        if (currentUser.isAdmin()) {
             return dsis;
         }
         for (int i = dsis.size() - 1; i >= 0; i--) {
@@ -80,7 +83,7 @@ public class DatasetInfoServiceImpl implements DatasetInfoService {
     }
 
     // ROLE_ADMIN: all.
-    // ROLE_CM:    all.
+    // ROLE_CM:    granted datasets.
     // ROLE_USER:  granted datasets.
     @Override
     public List<DatasetInfo> list() {
@@ -89,7 +92,7 @@ public class DatasetInfoServiceImpl implements DatasetInfoService {
             return null;
         }
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-        if (currentUser.isAdmin() || currentUser.isContentManager()) {
+        if (currentUser.isAdmin()) {
             return dsis;
         }
         for (int i = dsis.size() - 1; i >= 0; i--) {
@@ -105,14 +108,18 @@ public class DatasetInfoServiceImpl implements DatasetInfoService {
     // ROLE_USER:  nope.
     @Override
     public DatasetInfo add(DatasetInfo dsi) {
-        mongoTemplateUserDB.insert(dsi);
-        logger.info("Added dataset info " + dsi.getId() + " to MongoDB.");
-        return dsi;
+        MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+        if (currentUser.isAdmin() || currentUser.isContentManager()) {
+            mongoTemplateUserDB.insert(dsi);
+            logger.info("Added dataset info " + dsi.getId() + " to MongoDB.");    
+            return dsi;
+        } 
+        return null;
     }
 
     // ROLE_ADMIN: ok.
     // ROLE_CM:    ok.
-    // ROLE_USER:  nope.
+    // ROLE_USER:  ok.
     @Override
     public void update(DatasetInfo dsi) {
         mongoTemplateUserDB.save(dsi);
@@ -121,7 +128,7 @@ public class DatasetInfoServiceImpl implements DatasetInfoService {
 
     // ROLE_ADMIN: ok.
     // ROLE_CM:    ok.
-    // ROLE_USER:  nope.
+    // ROLE_USER:  ok.
     @Override
     public void delete(String id) {
         mongoTemplateUserDB.remove(find(id));

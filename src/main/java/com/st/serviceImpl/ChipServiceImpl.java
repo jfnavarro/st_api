@@ -51,7 +51,11 @@ public class ChipServiceImpl implements ChipService {
     // ROLE_USER:  nope.
     @Override
     public List<Chip> list() {
-        return mongoTemplateAnalysisDB.findAll(Chip.class);
+        List<Chip> chips = null;
+        if (isValidUser()) {
+            chips = mongoTemplateAnalysisDB.findAll(Chip.class);
+        }
+        return chips;
     }
 
     // ROLE_ADMIN: ok.
@@ -59,9 +63,12 @@ public class ChipServiceImpl implements ChipService {
     // ROLE_USER:  nope.
     @Override
     public Chip add(Chip chip) {
-        mongoTemplateAnalysisDB.insert(chip);
-        logger.info("Added chip " + chip.getId() + " to MongoDB.");
-        return chip;
+        if (isValidUser()) {
+            mongoTemplateAnalysisDB.insert(chip);
+            logger.info("Added chip " + chip.getId() + " to MongoDB.");
+            return chip;
+        }
+        return null;
     }
 
     // ROLE_ADMIN: ok.
@@ -69,21 +76,32 @@ public class ChipServiceImpl implements ChipService {
     // ROLE_USER:  nope.
     @Override
     public void update(Chip chip) {
-        mongoTemplateAnalysisDB.save(chip);
-        logger.info("Updated chip " + chip.getId() + " to MongoDB.");
+        if (isValidUser()) {
+            mongoTemplateAnalysisDB.save(chip);
+            logger.info("Updated chip " + chip.getId() + " to MongoDB.");
+        }
     }
 
     // See deleteIsOkForCurrUser(). Internal use may be different
     @Override
     public void delete(String id) {
-        mongoTemplateAnalysisDB.remove(find(id));
-        logger.info("Deleted chip " + id + " from MongoDB.");
+        if (deleteIsOkForCurrUser(id)) {
+            mongoTemplateAnalysisDB.remove(find(id));
+            logger.info("Deleted chip " + id + " from MongoDB.");
+        }
     }
 
     // ROLE_ADMIN: ok.
     // ROLE_CM:    ok.
     // ROLE_USER:  nope.
-    @Override
+    public boolean isValidUser() {
+        MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+        return currentUser.isAdmin() || currentUser.isContentManager();
+    }
+    
+    // ROLE_ADMIN: ok.
+    // ROLE_CM:    ok.
+    // ROLE_USER:  nope.
     public boolean deleteIsOkForCurrUser(String id) {
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
         return (currentUser.isAdmin() || currentUser.isContentManager()) && find(id) != null;

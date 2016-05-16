@@ -32,7 +32,8 @@ public class ImageAlignmentServiceImpl implements ImageAlignmentService {
     // ROLE_USER:  ok.
     @Override
     public ImageAlignment find(String id) {
-        return mongoTemplateAnalysisDB.findOne(new Query(Criteria.where("id").is(id)), ImageAlignment.class);
+        return mongoTemplateAnalysisDB.findOne(new Query(Criteria.where("id").is(id)), 
+                ImageAlignment.class);
     }
 
     // ROLE_ADMIN: ok.
@@ -40,7 +41,8 @@ public class ImageAlignmentServiceImpl implements ImageAlignmentService {
     // ROLE_USER:  ok.
     @Override
     public ImageAlignment findByName(String name) {
-        return mongoTemplateAnalysisDB.findOne(new Query(Criteria.where("name").is(name)), ImageAlignment.class);
+        return mongoTemplateAnalysisDB.findOne(new Query(Criteria.where("name").is(name)), 
+                ImageAlignment.class);
     }
 
     // ROLE_ADMIN: ok.
@@ -48,9 +50,8 @@ public class ImageAlignmentServiceImpl implements ImageAlignmentService {
     // ROLE_USER:  ok.
     @Override
     public List<ImageAlignment> findByChip(String chipId) {
-        //System.out.println("Finding for chip");
-        List<ImageAlignment> imals = mongoTemplateAnalysisDB.find(new Query(Criteria.where("chip_id").is(chipId)), ImageAlignment.class);
-        //System.out.println("Found " + (imals == null ? 0 :  imals.size()));
+        List<ImageAlignment> imals = mongoTemplateAnalysisDB.find(
+                new Query(Criteria.where("chip_id").is(chipId)), ImageAlignment.class);
         return imals;
     }
 
@@ -59,7 +60,12 @@ public class ImageAlignmentServiceImpl implements ImageAlignmentService {
     // ROLE_USER:  nope.
     @Override
     public List<ImageAlignment> list() {
-        return mongoTemplateAnalysisDB.findAll(ImageAlignment.class);
+        List<ImageAlignment> alignments = null;
+        MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+        if (currentUser.isAdmin() || currentUser.isContentManager()) {
+            alignments =  mongoTemplateAnalysisDB.findAll(ImageAlignment.class);
+        }
+        return alignments;
     }
 
     // ROLE_ADMIN: ok.
@@ -67,9 +73,13 @@ public class ImageAlignmentServiceImpl implements ImageAlignmentService {
     // ROLE_USER:  nope.
     @Override
     public ImageAlignment add(ImageAlignment imal) {
-        mongoTemplateAnalysisDB.insert(imal);
-        logger.info("Added image alignment " + imal.getId() + " to MongoDB.");
-        return imal;
+        MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+        if (currentUser.isAdmin() || currentUser.isContentManager()) {
+            mongoTemplateAnalysisDB.insert(imal);
+            logger.info("Added image alignment " + imal.getId() + " to MongoDB.");
+            return imal;
+        } 
+        return null;
     }
 
     // ROLE_ADMIN: ok.
@@ -77,16 +87,21 @@ public class ImageAlignmentServiceImpl implements ImageAlignmentService {
     // ROLE_USER:  nope.
     @Override
     public void update(ImageAlignment imal) {
-        mongoTemplateAnalysisDB.save(imal);
-        logger.info("Updated image alignment " + imal.getId() + " to MongoDB.");
+        MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+        if (currentUser.isAdmin() || currentUser.isContentManager()) {
+            mongoTemplateAnalysisDB.save(imal);
+            logger.info("Updated image alignment " + imal.getId() + " to MongoDB.");
+        }
     }
 
     
     // See deleteIsOkForCurrUser(). Internal use may be different
     @Override
     public void delete(String id) {
-        mongoTemplateAnalysisDB.remove(find(id));
-        logger.info("Deleted image alignment " + id + " from MongoDB.");
+        if (deleteIsOkForCurrUser(id)) {
+            mongoTemplateAnalysisDB.remove(find(id));
+            logger.info("Deleted image alignment " + id + " from MongoDB.");
+        }
     }
 
     // ROLE_ADMIN: ok.
@@ -100,9 +115,7 @@ public class ImageAlignmentServiceImpl implements ImageAlignmentService {
 
     @Override
     public List<ImageAlignment> deleteForChip(String chipId) {
-        //System.out.println("about to delete chip");
         List<ImageAlignment> imals = findByChip(chipId);
-        //System.out.println("imal size" + (imals == null ? 0 : imals.size()));
         if (imals == null) {
             return null;
         }

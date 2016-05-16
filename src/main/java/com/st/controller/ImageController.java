@@ -64,7 +64,8 @@ public class ImageController {
         List<ImageMetadata> list = imageService.list();
         if (list == null) {
             logger.info("Returning empty list of image metedata");
-            throw new CustomNotFoundException("No image metadata found or you dont have permissions to access them.");
+            throw new CustomNotFoundException("No image metadata found or "
+                    + "you dont have permissions to access them.");
         }
         logger.info("Returning list of image metadata");
         return list;
@@ -81,7 +82,8 @@ public class ImageController {
      * @return the image as a BufferedImage.
      */
     @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
-    @RequestMapping(value = "{id:.+}", produces = MediaType.IMAGE_JPEG_VALUE, method = {RequestMethod.GET, RequestMethod.HEAD})
+    @RequestMapping(value = "{id:.+}", produces = MediaType.IMAGE_JPEG_VALUE, 
+            method = {RequestMethod.GET, RequestMethod.HEAD})
     public @ResponseBody
     BufferedImage get(@PathVariable String id) {
         // this {id:.+} is a workaround for a spring bug that truncates path
@@ -89,7 +91,8 @@ public class ImageController {
         BufferedImage img = imageService.getBufferedImage(id);
         if (img == null) {
             logger.info("Returning empty BufferedImage image");
-            throw new CustomNotFoundException("No image found or you dont have permissions to access them.");
+            throw new CustomNotFoundException("No image found or you dont "
+                    + "have permissions to access them.");
         }
         logger.info("Returning BufferedImage image " + id);
         return img;
@@ -104,7 +107,8 @@ public class ImageController {
      * @return the date.
      */
     @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
-    @RequestMapping(value = "/lastmodified/{id:.+}", method = {RequestMethod.GET, RequestMethod.HEAD})
+    @RequestMapping(value = "/lastmodified/{id:.+}", 
+            method = {RequestMethod.GET, RequestMethod.HEAD})
     public @ResponseBody
     LastModifiedDate getLastModified(@PathVariable String id) {
         // this {id:.+} is a workaround for a spring bug that truncates path
@@ -112,7 +116,8 @@ public class ImageController {
         ImageMetadata img = imageService.getImageMetadata(id);
         if (img == null) {
             logger.info("Failed to return last modified time of image " + id);
-            throw new CustomNotFoundException("An image with this name does not exist or you do not have permissions to access it.");
+            throw new CustomNotFoundException("An image with this name does not "
+                    + "exist or you do not have permissions to access it.");
         }
         logger.info("Returning last modified time of image " + id);
         return new LastModifiedDate(img.getLastModified());
@@ -127,7 +132,8 @@ public class ImageController {
      * @return the image as a JPEG.
      */
     @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
-    @RequestMapping(value = "/compressed/{id:.+}", produces = MediaType.IMAGE_JPEG_VALUE, method = {RequestMethod.GET, RequestMethod.HEAD})
+    @RequestMapping(value = "/compressed/{id:.+}", produces = MediaType.IMAGE_JPEG_VALUE, 
+            method = {RequestMethod.GET, RequestMethod.HEAD})
     public @ResponseBody
     byte[] getCompressed(@PathVariable String id) {
         // this {id:.+} is a workaround for a spring bug that truncates path
@@ -135,7 +141,8 @@ public class ImageController {
         byte[] image = imageService.getCompressedImage(id);
         if (image == null) {
             logger.info("Returning empty JPEG image");
-            throw new CustomNotFoundException("An image with this name does not exist or you do not have permissions to access it.");
+            throw new CustomNotFoundException("An image with this name does not exist "
+                    + "or you do not have permissions to access it.");
         }
         logger.info("Returning JPEG image");
         return image;
@@ -155,23 +162,29 @@ public class ImageController {
      * @return the image as JSON.
      */
     @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
-    @RequestMapping(value = "/compressedjson/{id:.+}", method = {RequestMethod.GET, RequestMethod.HEAD})
+    @RequestMapping(value = "/compressedjson/{id:.+}", 
+            method = {RequestMethod.GET, RequestMethod.HEAD})
     public @ResponseBody
-    HttpEntity<S3Resource> getCompressedAsJSON(@PathVariable String id, @RequestHeader(value="If-Modified-Since", defaultValue="") String ifModifiedSince) {
+    HttpEntity<S3Resource> getCompressedAsJSON(@PathVariable String id, 
+            @RequestHeader(value="If-Modified-Since", defaultValue="") String ifModifiedSince) {
         // this {id:.+} is a workaround for a spring bug that truncates path
         // variables containing a dot
         byte[] image = imageService.getCompressedImage(id);
         ImageMetadata meta = imageService.getImageMetadata(id);
         if (image == null || meta == null) {
             logger.info("Returning empty S3Resource image");
-            throw new CustomNotFoundException("An image with this name does not exist or you do not have permissions to access it.");
+            throw new CustomNotFoundException("An image with this name does not exist or "
+                    + "you do not have permissions to access it.");
         }
         // Check if already newest.
         DateTime reqTime = DateOperations.parseHTTPDate(ifModifiedSince);
         if (reqTime != null) {
-            DateTime resTime = meta.getLastModified() == null ? new DateTime(2012,1,1,0,0) : meta.getLastModified();
+            DateTime resTime = meta.getLastModified() == null 
+                    ? new DateTime(2012,1,1,0,0) : meta.getLastModified();
             // NOTE: Only precision within day.
-            resTime = new DateTime(resTime.getYear(), resTime.getMonthOfYear(), resTime.getDayOfMonth(), resTime.getHourOfDay(), resTime.getMinuteOfHour(), resTime.getSecondOfMinute());
+            resTime = new DateTime(resTime.getYear(), resTime.getMonthOfYear(), 
+                    resTime.getDayOfMonth(), resTime.getHourOfDay(), 
+                    resTime.getMinuteOfHour(), resTime.getSecondOfMinute());
             if (!resTime.isAfter(reqTime)) {
                 logger.info("Not returning S3Resource image " + id + " since not modified");
                 throw new CustomNotModifiedException("This image has not been modified");
@@ -183,7 +196,7 @@ public class ImageController {
         headers.add("Cache-Control", "public, must-revalidate, no-transform");
         headers.add("Vary", "Accept-Encoding");
         headers.add("Last-modified", DateOperations.getHTTPDateSafely(meta.getLastModified()));
-        HttpEntity<S3Resource> entity = new HttpEntity<S3Resource>(wrapper, headers);
+        HttpEntity<S3Resource> entity = new HttpEntity<>(wrapper, headers);
         logger.info("Returning S3Resource image " + id);
         return entity;
     }

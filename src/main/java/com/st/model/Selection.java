@@ -38,7 +38,7 @@ public class Selection implements ISelection {
     String account_id;
 
     @NotEmpty(message = "Gene nomenclatures with stats must not be empty.")
-    List<String[]> gene_hits = new ArrayList<String[]>();
+    List<String[]> gene_hits = new ArrayList<>();
 
     boolean enabled;
 
@@ -47,8 +47,6 @@ public class Selection implements ISelection {
     String status;
 
     String comment;
-
-    String[] obo_foundry_terms;
 
     //TODO this is temporary to be removed
     String tissue_snapshot;
@@ -153,36 +151,6 @@ public class Selection implements ISelection {
     @Override
     public void setComment(String comment) {
         this.comment = comment;
-    }
-
-    @Override
-    public String[] getObo_foundry_terms() {
-        return obo_foundry_terms;
-    }
-
-    @Override
-    public void setObo_foundry_terms(String[] obo_foundry_terms) {
-        this.obo_foundry_terms = obo_foundry_terms;
-    }
-
-    @Override
-    public String getGene(int i) {
-        return (String) (gene_hits.get(i)[0]);
-    }
-
-    @Override
-    public int getHit_count(int i) {
-        return Integer.parseInt(gene_hits.get(i)[1]);
-    }
-
-    @Override
-    public double getNormalized_hit_count(int i) {
-        return Double.parseDouble(gene_hits.get(i)[2]);
-    }
-
-    @Override
-    public double getNormalized_pixel_intensity(int i) {
-        return Double.parseDouble(gene_hits.get(i)[3]);
     }
 
     @Override

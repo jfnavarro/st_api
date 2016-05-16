@@ -1,5 +1,6 @@
 package com.st.serviceImpl;
 
+import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -9,9 +10,9 @@ import com.st.model.DatasetInfo;
 import com.st.model.FeaturesMetadata;
 import com.st.model.MongoUserDetails;
 import com.st.service.FeaturesService;
-import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,7 +53,9 @@ public class FeaturesServiceImpl implements FeaturesService {
 
     @Override
     public boolean datasetIsGranted(String datasetId, MongoUserDetails user) {
-        List<DatasetInfo> dsis = mongoTemplateUserDB.find(new Query(Criteria.where("dataset_id").is(datasetId).and("account_id").is(user.getId())), DatasetInfo.class);
+        List<DatasetInfo> dsis = mongoTemplateUserDB.find(
+                new Query(Criteria.where("dataset_id").is(datasetId).and("account_id").is(user.getId())),
+                DatasetInfo.class);
         return (dsis != null && dsis.size() > 0);
     }
 
@@ -61,21 +64,21 @@ public class FeaturesServiceImpl implements FeaturesService {
     // ROLE_USER:  nope.
     @Override
     public List<FeaturesMetadata> listMetadata() {
-        
-        ObjectListing objects = s3Client.listObjects(featuresBucket);
-
-        List<S3ObjectSummary> objs = objects.getObjectSummaries();
-
-        List<FeaturesMetadata> featuresMetadataList = new ArrayList<FeaturesMetadata>();
-        for (S3ObjectSummary o : objs) {
-            FeaturesMetadata fm = new FeaturesMetadata();
-            String fn = o.getKey();
-            fm.setFilename(fn);
-            fm.setDatasetId(fn.substring(0, fn.length() - 3)); // Remove .gz
-            fm.setLastModified(new DateTime(o.getLastModified()));
-            fm.setCreated(new DateTime(o.getLastModified()));
-            fm.setSize(o.getSize());
-            featuresMetadataList.add(fm);
+        List<FeaturesMetadata> featuresMetadataList = new ArrayList<>();
+        MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+        if (currentUser.isContentManager() || currentUser.isAdmin()) {
+            ObjectListing objects = s3Client.listObjects(featuresBucket);
+            List<S3ObjectSummary> objs = objects.getObjectSummaries();
+            for (S3ObjectSummary o : objs) {
+                FeaturesMetadata fm = new FeaturesMetadata();
+                String fn = o.getKey();
+                fm.setFilename(fn);
+                fm.setDatasetId(fn.substring(0, fn.length() - 3)); // Remove .gz
+                fm.setLastModified(new DateTime(o.getLastModified()));
+                fm.setCreated(new DateTime(o.getLastModified()));
+                fm.setSize(o.getSize());
+                featuresMetadataList.add(fm);
+            }
         }
         return featuresMetadataList;
     }
@@ -111,7 +114,7 @@ public class FeaturesServiceImpl implements FeaturesService {
                 InputStream bis = new ByteArrayInputStream(bos.toByteArray());
                 bos.close();
                 return bis;
-            } catch (Exception ex) {
+            } catch (AmazonClientException | IOException ex) {
                 logger.error("Failed to download features for dataset " + id);
                 return null;
             }
@@ -125,6 +128,7 @@ public class FeaturesServiceImpl implements FeaturesService {
     // ROLE_USER:  nope.
     /**
      * Returns true if the file already existed and was updated, false if added.
+     * @param file
      */
     @Override
     public boolean addUpdate(String id, byte[] file) {

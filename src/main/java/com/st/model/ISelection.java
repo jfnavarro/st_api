@@ -45,18 +45,6 @@ public interface ISelection {
 
     public void setComment(String comment);
 
-    public String[] getObo_foundry_terms();
-
-    public void setObo_foundry_terms(String[] obo_foundry_terms);
-
-    public String getGene(int i);
-
-    public int getHit_count(int i);
-
-    public double getNormalized_hit_count(int i);
-
-    public double getNormalized_pixel_intensity(int i);
-
     public DateTime getCreated_at();
 
     public void setCreated_at(DateTime created);
