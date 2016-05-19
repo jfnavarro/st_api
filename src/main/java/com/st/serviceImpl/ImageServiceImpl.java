@@ -120,7 +120,7 @@ public class ImageServiceImpl implements ImageService {
     @Override
     public void add(String filename, BufferedImage img) {
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-        if (!currentUser.isAdmin() || !currentUser.isContentManager()) {
+        if (currentUser.isUser()) {
             return;
         }
         try {
@@ -143,7 +143,7 @@ public class ImageServiceImpl implements ImageService {
     @Override
     public void addCompressed(String filename, byte[] img) {
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-        if (!currentUser.isAdmin() || !currentUser.isContentManager()) {
+        if (currentUser.isUser()) {
             return;
         }
         ObjectMetadata om = new ObjectMetadata();
