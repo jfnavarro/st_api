@@ -7,8 +7,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.servlet.HandlerMapping;
 
 import javax.servlet.http.HttpServletRequest;
@@ -51,11 +53,13 @@ public class FileController {
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public void post(HttpServletRequest request) throws IOException {
+    @ResponseStatus(value = HttpStatus.OK)
+    public void post(HttpServletRequest request, @RequestBody byte[] content) throws IOException {
         String contentType = request.getHeader("Content-Length");
 
-        String content = IOUtils.toString(request.getInputStream());
+        String contentString = new String(content, StandardCharsets.UTF_8);
 
-        log.info("Recieved file content: " + content);
+        log.info("Recieved file content: " + contentString);
     }
 }
+
