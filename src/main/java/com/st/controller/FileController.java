@@ -1,5 +1,6 @@
 package com.st.controller;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -12,6 +13,7 @@ import org.springframework.web.servlet.HandlerMapping;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
@@ -49,8 +51,11 @@ public class FileController {
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public void post(HttpServletRequest request) {
-        // Write output stream.
+    public void post(HttpServletRequest request) throws IOException {
+        String contentType = request.getHeader("Content-Length");
 
+        String content = IOUtils.toString(request.getInputStream());
+
+        log.info("Recieved file content: " + content);
     }
 }
