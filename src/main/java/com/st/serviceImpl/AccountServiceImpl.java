@@ -76,7 +76,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public Account add(Account account) {
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-        if (!currentUser.isAdmin()) {
+        if (currentUser.isAdmin()) {
             return null;
         }
         mongoTemplateUserDB.insert(account);
