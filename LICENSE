@@ -1,15 +1,11 @@
 The MIT License (MIT)
 Copyright (c) 2016 Jose Fernandez Navarro, Jonas Frisen, Patrik Stahl,
-Joakim Lundeberg, KTH, KI. 
+Joakim Lundeberg, Joel Sjostrand, KTH, KI. 
 All rights reserved.
 
 * Jose Fernandez Navarro <jose.fernandez.navarro@scilifelab.se>
 * Royal Institute of Technology (KTH)
 * Karolisnka Institute (KI)
-
-This software uses the following third party libraries: 
-QtWaitingSpinner, RapidJSON and Qt.
-Their licenses are listed in the file DEPENDENCIES. 
 
 Permission is hereby granted, free of charge, to any person obtaining a 
 copy of this software and associated documentation files (the "Software"), 
