@@ -1,9 +1,7 @@
 package com.st.service;
 
 import java.util.List;
-
 import org.springframework.stereotype.Service;
-
 import com.st.model.DatasetInfo;
 
 /**
@@ -25,12 +23,6 @@ public interface DatasetInfoService {
      * @return the info with ID assigned.
      */
     public DatasetInfo add(DatasetInfo ds);
-
-    /**
-     * Lists all dataset infos.
-     * @return the list.
-     */
-    public List<DatasetInfo> list();
 
     /**
      * Finds all dataset infos for an account.
@@ -58,8 +50,30 @@ public interface DatasetInfoService {
      */
     public void delete(String id);
 
+    /**
+     * Updates all the entries for account with the given datasets
+     * @param accountId the id of the account to be updated
+     * @param datasetsIds the new list of granted datasets ids
+     */
+    public void updateForAccount(String accountId, List<String> datasetsIds);
+    
+    /**
+     * Updates all the entries for dataset with the given account
+     * @param datasetId the id of the dataset to be updated
+     * @param accountsIds the new list of ids of granted accounts
+     */
+    public void updateForDataset(String datasetId, List<String> accountsIds);
+      
+    /**
+     * Delete all the entries for the given dataset id
+     * @param datasetId 
+     */
     public void deleteForDataset(String datasetId);
 
+    /**
+     * Delete all the entries for the given account id
+     * @param accountId 
+     */
     public void deleteForAccount(String accountId);
 
 }

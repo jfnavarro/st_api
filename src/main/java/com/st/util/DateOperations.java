@@ -37,4 +37,28 @@ public class DateOperations {
         }
         return RFC1123_DATE_TIME_FORMATTER.parseDateTime(str);
     }
+    
+    /**
+     * Compares the last modified dates between a web resource and a request
+     * @param resTime the time of the web resource
+     * @param reqTime the time of the request (from the client)
+     * @return true if the web resource time is after the request time which
+     * means that the requested object has been modified
+     */
+    public static boolean checkIfModified(DateTime resTime, DateTime reqTime) {
+        if (resTime == null) {
+            resTime = new DateTime(2012, 1, 1 ,0 ,0);
+        }
+  
+        // NOTE: Only precision within day.
+        resTime = new DateTime(resTime.getYear(),
+                resTime.getMonthOfYear(), 
+                resTime.getDayOfMonth(), 
+                resTime.getHourOfDay(), 
+                resTime.getMinuteOfHour(), 
+                resTime.getSecondOfMinute());
+        
+        return resTime.isAfter(reqTime);
+    }
+
 }
