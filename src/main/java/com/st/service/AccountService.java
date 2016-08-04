@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.st.model.Account;
+import com.st.model.AccountId;
 
 /**
  * Interface for the account service.
@@ -27,11 +28,11 @@ public interface AccountService {
     public Account findByUsername(String username);
 
     /**
-     * Finds all accounts granted a dataset.
+     * Finds all accounts ids granted a dataset.
      * @param datasetId the dataset ID.
-     * @return the accounts.
+     * @return the accounts ids.
      */
-    public List<Account> findByDataset(String datasetId);
+    public List<AccountId> findIdsByDataset(String datasetId);
 
     /**
      * Finds all accounts.
@@ -39,6 +40,12 @@ public interface AccountService {
      */
     public List<Account> list();
 
+    /**
+     * Finds all accounts ids.
+     * @return the accounts ids.
+     */
+    public List<AccountId> listIds();
+    
     /**
      * Adds an account.
      * @param account the account.
@@ -49,19 +56,29 @@ public interface AccountService {
     /**
      * Updates an account.
      * @param account the account.
+     * @return true if the updated went fine
      */
-    public void update(Account account);
+    public boolean update(Account account);
 
     /**
      * Deletes an account.
      * @param id the account ID.
+     * @return true if the delete went fine
      */
-    public void delete(String id);
+    public boolean delete(String id);
 
     /**
-     * Verifies that deletion is OK based on the current user.
-     * @param id the account ID.
-     * @return true if OK.
+     * Checks that there is not any account with the name given
+     * @param username the user name
+     * @return true if there exist any account with the same name
      */
-    public boolean deleteIsOkForCurrUser(String id);
+    public boolean accountNameExist(String username);
+
+    /**
+     * Checks that there is not any account with the name and id given
+     * @param username the user name
+     * @param id the unique account id
+     * @return true if there exist any account with the same name and id
+     */
+    public boolean accountNameIdExist(String username, String id);
 }

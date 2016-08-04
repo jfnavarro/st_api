@@ -1,9 +1,7 @@
 package com.st.service;
 
 import java.util.List;
-
 import org.springframework.stereotype.Service;
-
 import com.st.model.Dataset;
 import com.st.model.MongoUserDetails;
 
@@ -50,14 +48,16 @@ public interface DatasetService {
     /**
      * Updates a dataset.
      * @param ds the dataset.
+     * @return true if it was updated
      */
-    public void update(Dataset ds);
+    public boolean update(Dataset ds);
 
     /**
      * Deletes a dataset.
      * @param id the ID.
+     * @return true if it was deleted
      */
-    public void delete(String id);
+    public boolean delete(String id);
 
     /**
      * Sets all dataset created by an account to having an empty creator field.
@@ -66,7 +66,7 @@ public interface DatasetService {
     public void clearAccountCreator(String accountId);
 
     /**
-     * Unables all datasets referencing an image alignment.
+     * Disables all datasets referencing an image alignment.
      * @param imalId the image alignment ID.
      */
     public void setUnabledForImageAlignment(String imalId);
@@ -80,16 +80,17 @@ public interface DatasetService {
     public boolean datasetIsGranted(String datasetId, MongoUserDetails user);
 
     /**
-     * Finds a dataset by name, irrespective of the current user's privelegies.
+     * Checks if exists a dataset with the name given
      * @param name the dataset name.
-     * @return the dataset.
+     * @return true if the dataset exists.
      */
-    public Dataset findByNameInternal(String name);
-
+    public boolean datasetNameExist(String name);
+    
     /**
-     * Returns true if the current user may delete a dataset.
-     * @param id the dataset ID.
-     * @return true if granted delete rights.
+     * Checks if a dataset with the same Id and name exists
+     * @param name the dataset name
+     * @param id the unique id of the dataset
+     * @return true if the dataset exists
      */
-    public boolean deleteIsOkForCurrUser(String id);
+    public boolean datasetNameIdExist(String name, String id);
 }

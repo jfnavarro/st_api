@@ -10,12 +10,17 @@ import com.st.exceptions.CustomNotModifiedException;
 import com.st.exceptions.NotFoundResponse;
 import com.st.exceptions.NotModifiedResponse;
 import com.st.model.Account;
+import com.st.model.AccountId;
+import com.st.model.Dataset;
 import com.st.model.LastModifiedDate;
 import com.st.serviceImpl.AccountServiceImpl;
 import com.st.serviceImpl.DatasetInfoServiceImpl;
 import com.st.serviceImpl.DatasetServiceImpl;
+import com.st.serviceImpl.FeaturesServiceImpl;
 import com.st.serviceImpl.SelectionServiceImpl;
 import com.st.util.DateOperations;
+import static com.st.util.DateOperations.checkIfModified;
+import static com.st.util.HTTPOperations.getHTTPHeaderWithCache;
 import java.security.Principal;
 import java.util.Iterator;
 import java.util.List;
@@ -24,9 +29,7 @@ import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -69,151 +72,100 @@ public class AccountController {
     @Autowired
     PasswordEncoder passwordEncoder;
 
+    @Autowired
+    FeaturesServiceImpl featuresService;
+
     /**
      * GET|HEAD /account/
-     * GET|HEAD /account/?dataset={datasetId}
-     * 
-     * Lists enabled accounts.
-     * @param datasetId the dataset ID.
-     * @return the list.
-     */
-    @Secured({"ROLE_CM","ROLE_ADMIN"})
-    @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD})
-    public @ResponseBody
-    List<Account> list(@RequestParam(value = "dataset", required = false) String datasetId) {
-        List<Account> accs;
-        if (datasetId != null) {
-            accs = accountService.findByDataset(datasetId);
-        } else {
-            accs = accountService.list();
-        }
-        if (accs == null) {
-            logger.info("Returning empty list of accounts");
-            throw new CustomNotFoundException("No accounts found or you dont have permissions to access them.");
-        } 
-        Iterator<Account> i = accs.iterator();
-        while (i.hasNext()) {
-            Account a = i.next(); // must be called before you can call i.remove()
-            if (!a.isEnabled()) {
-                i.remove();
-            }
-        }
-        logger.info("Returning list of enabled accounts");
-        return accs;
-    }
-
-    /**
-     * GET|HEAD /account/all/
-     * GET|HEAD /account/all/?dataset={datasetId}
      * 
      * Lists enabled/disabled accounts.
+     * @param onlyEnabled when true filter out disabled accounts
+     * @return the list.
+     */
+    @Secured({"ROLE_CM", "ROLE_ADMIN"})
+    @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD})
+    public @ResponseBody List<Account> list(
+            @RequestParam(value = "onlyEnabled", required = false, defaultValue = "false") boolean onlyEnabled) {     
+        List<Account> accounts = accountService.list();
+        if (accounts == null) {
+            logger.info("Returning empty list of accounts");
+            throw new CustomNotFoundException("No accounts found or you don't have permissions to access");
+        } 
+        // remove disabled accounts
+        if (onlyEnabled) {
+            Iterator<Account> it = accounts.iterator();
+            while (it.hasNext()) {
+                Account account = it.next(); // must be called before you can call i.remove()
+                if (!account.isEnabled()) {
+                    it.remove();
+                }
+            }
+        }
+        logger.info("Returning list of accounts");
+        return accounts;
+    }
+    
+    
+    /**
+     * GET|HEAD /account/ids/
+     * GET|HEAD /account/ids/?dataset={datasetId}
+     * 
+     * Lists enabled accounts ids.
      * @param datasetId the dataset ID.
      * @return the list.
      */
-    @Secured({"ROLE_CM","ROLE_ADMIN"})
-    @RequestMapping(value = "/all", method = {RequestMethod.GET, RequestMethod.HEAD})
-    public @ResponseBody
-    List<Account> listAll(@RequestParam(value = "dataset", required = false) String datasetId) {
-        List<Account> accs;
+    @Secured({"ROLE_CM", "ROLE_ADMIN"})
+    @RequestMapping(value = "/ids/", method = {RequestMethod.GET, RequestMethod.HEAD})
+    public @ResponseBody List<AccountId> listIds(
+            @RequestParam(value = "dataset", required = false) String datasetId) {
+        List<AccountId> accounts;
         if (datasetId != null) {
-            logger.info("Returning list of enabled/disabled accounts for dataset " + datasetId);
-            accs = accountService.findByDataset(datasetId);
+            accounts = accountService.findIdsByDataset(datasetId);
         } else {
-            logger.info("Returning list of enabled/disabled accounts");
-            accs = accountService.list();
+            accounts = accountService.listIds();
         }
-        if (accs == null) {
-            logger.info("Returning empty list of enabled/disabled accounts");
-            throw new CustomNotFoundException("No accounts found or you dont have permissions to access them.");
-        }
-        return accs;
+        if (accounts == null) {
+            logger.info("Returning empty list of accounts ids");
+            throw new CustomNotFoundException("No accounts found or "
+                    + "you don't have permissions to access");
+        } 
+        logger.info("Returning list of accounts ids");
+        return accounts;
     }
-
+    
     /**
      * GET|HEAD /account/{id}
      * 
      * Finds enabled account.
      * @param id the account ID.
      * @param ifModifiedSince request timestamp.
+     * @param onlyEnabled when true filter out disabled accounts
      * @return the account.
      */
     @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
     @RequestMapping(value = "{id}", method = {RequestMethod.GET, RequestMethod.HEAD})
-    public @ResponseBody
-    HttpEntity<Account> get(@PathVariable String id, @RequestHeader(value="If-Modified-Since", 
-            defaultValue="") String ifModifiedSince) {
+    public @ResponseBody HttpEntity<Account> get(
+            @PathVariable String id, 
+            @RequestHeader(value="If-Modified-Since", defaultValue="") String ifModifiedSince,
+            @RequestParam(value = "onlyEnabled", required = false, defaultValue = "true") boolean onlyEnabled) {
+        
         Account account = accountService.find(id);
-        if (account == null || !account.isEnabled()) {
-            logger.info("Failed to return enabled account " + id);
-            throw new CustomNotFoundException("An account with this ID does not exist, "
-                    + "is disabled, or you dont have permissions to access it.");
+        if (account == null || (onlyEnabled && !account.isEnabled())) {
+            logger.error("Failed to return account " + id);
+            throw new CustomNotFoundException("An account with this ID doesn't exist, "
+                    + "is disabled, or you don't have permissions to access");
         }
+        
         // Check if already newest.
         DateTime reqTime = DateOperations.parseHTTPDate(ifModifiedSince);
-        if (reqTime != null) {
-            DateTime resTime = account.getLast_modified() == null ? 
-                    new DateTime(2012,1,1,0,0) : account.getLast_modified();
-            // NOTE: Only precision within day.
-            resTime = new DateTime(resTime.getYear(), resTime.getMonthOfYear(), 
-                    resTime.getDayOfMonth(), resTime.getHourOfDay(), 
-                    resTime.getMinuteOfHour(), resTime.getSecondOfMinute());
-            if (!resTime.isAfter(reqTime)) {
-                logger.info("Not returning enabled account " + id + " since not modified");
-                throw new CustomNotModifiedException("This account has not been modified");
-            }
+        if (reqTime != null && !checkIfModified(account.getLast_modified(), reqTime)) {
+            logger.error("Not returning account " + id + " since not modified");
+            throw new CustomNotModifiedException("This account has not been modified");
         }
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.add("Cache-Control", "public, must-revalidate, no-transform");
-        headers.add("Vary", "Accept-Encoding");
-        headers.add("Last-modified", DateOperations.getHTTPDateSafely(account.getLast_modified()));
-        HttpEntity<Account> entity = new HttpEntity<>(account, headers);
-        logger.info("Returning enabled account " + id);
-        return entity;
-    }
-    
-    
-    /**
-     * GET|HEAD /account/all/{id}
-     * 
-     * Finds enabled/disabled account.
-     * @param id the account ID.
-     * @param ifModifiedSince request timestamp.
-     * @return the account.
-     */
-    @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
-    @RequestMapping(value = "/all/{id}", method = RequestMethod.GET)
-    public @ResponseBody
-    HttpEntity<Account> getAll(@PathVariable String id, 
-            @RequestHeader(value="If-Modified-Since", defaultValue="") 
-                    String ifModifiedSince) {
-        Account account = accountService.find(id);
-        if (account == null) {
-            logger.info("Failed to return enabled/disabled account " + id);
-            throw new CustomNotFoundException("An account with this ID does not exist, "
-                    + "or you dont have permissions to access it.");
-        }
-        // Check if already newest.
-        DateTime reqTime = DateOperations.parseHTTPDate(ifModifiedSince);
-        if (reqTime != null) {
-            DateTime resTime = account.getLast_modified() == null ? 
-                    new DateTime(2012,1,1,0,0) : account.getLast_modified();
-            // NOTE: Only precision within day.
-            resTime = new DateTime(resTime.getYear(), resTime.getMonthOfYear(), 
-                    resTime.getDayOfMonth(), resTime.getHourOfDay(), 
-                    resTime.getMinuteOfHour(), resTime.getSecondOfMinute());
-            if (!resTime.isAfter(reqTime)) {
-                logger.info("Not returning enabled/disabled account " + id + " since not modified");
-                throw new CustomNotModifiedException("This account has not been modified");
-            }
-        }
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.add("Cache-Control", "public, must-revalidate, no-transform");
-        headers.add("Vary", "Accept-Encoding");
-        headers.add("Last-modified", DateOperations.getHTTPDateSafely(account.getLast_modified()));
-        HttpEntity<Account> entity = new HttpEntity<>(account, headers);
-        logger.info("Returning enabled/disabled account " + id);
+        
+        HttpEntity<Account> entity = new HttpEntity<>(account, 
+                getHTTPHeaderWithCache(account.getLast_modified()));
+        logger.info("Returning account " + id);
         return entity;
     }
 
@@ -230,7 +182,7 @@ public class AccountController {
     LastModifiedDate getLastModified(@PathVariable String id) {
         Account account = accountService.find(id);
         if (account == null) {
-            logger.info("Failed to return last modified time of enabled/disabled account " + id);
+            logger.error("Failed to return last modified time of enabled/disabled account " + id);
             throw new CustomNotFoundException("An account with this ID does not exist, "
                     + "or you dont have permissions to access it.");
         }
@@ -254,14 +206,14 @@ public class AccountController {
             throw new CustomBadRequestException("You are not logged in.");
         }
         String name = principal.getName();
-        logger.info("Attempting to acquire account for user " + name);
+        logger.info("Attempting to adquire account for user " + name);
         Account account = accountService.findByUsername(name);
         if (account == null) {
-            logger.info("Denied account for unmatched user " + name);
-            throw new CustomBadRequestException("Current user " + name + " could not be matched to an account.");
-        } else {
-            logger.info("Returning account for approved user " + name);
+            logger.error("Denied account for unmatched user " + name);
+            throw new CustomBadRequestException("Current user " + name + 
+                    " could not be matched to an account.");
         }
+        logger.info("Returning account for approved user " + name);
         return account;
     }
 
@@ -279,28 +231,34 @@ public class AccountController {
     Account add(@RequestBody @Valid Account account, BindingResult result) {
         // Data model validation
         if (result.hasErrors()) {
-            logger.info("Failed to add account. Missing fields?");
+            logger.error("Failed to add account. Missing fields?");
             throw new CustomBadRequestException(
                     "Account is invalid. Missing required fields?");
         }
         // Checks
         if (account.getId() != null) {
-            logger.info("Failed to add account. ID set by user.");
+            logger.error("Failed to add account. ID set by user.");
             throw new CustomBadRequestException(
                     "An account must not have an ID. ID will be created automatically.");
         }
         if (accountService.findByUsername(account.getUsername()) != null) {
-            logger.info("Failed to add account. Duplicate username.");
+            logger.error("Failed to add account. Duplicate username.");
             throw new CustomBadRequestException(
                     "An account with this username already exists. Usernames are unique.");
         }
         // Encode Password
         account.setPassword(passwordEncoder.encode(account.getPassword()));
         Account acc = accountService.add(account);
-        // HACK: Id needs to be autogenerated at persisting before updating DatasetInfos.
-        acc.updateGranted_datasets();
-        logger.info("Successfully added account " + acc.getId());
-        return acc;
+        if (acc != null) {
+            // We update granted datasets once the Account has been created (auto asigned Id)
+            datasetinfoService.updateForAccount(acc.getId(), acc.getGranted_datasets());
+            logger.info("Successfully added account " + acc.getId());
+            return acc;
+        } else {
+            logger.error("Failed to add account. Permissions problem.");
+            throw new CustomBadRequestException(
+                    "There was an error creating the account, probably permissions.");            
+        }
     }
 
     /**
@@ -311,38 +269,43 @@ public class AccountController {
      * @param account the account.
      * @param result binding.
      */
-    @Secured({"ROLE_CM", "ROLE_ADMIN"})
+    @Secured({"ROLE_CM", "ROLE_ADMIN", "ROLE_USER"})
     @RequestMapping(value = "{id}", method = RequestMethod.PUT)
     public @ResponseBody
     void update(@PathVariable String id, @RequestBody @Valid Account account, BindingResult result) {
         // Data model validation
         if (result.hasErrors()) {
-            logger.info("Failed to update account. Missing fields?");
+            logger.error("Failed to update account. Missing fields?");
             throw new CustomBadRequestException(
                     "Account is invalid. Missing required fields?");
         }
         if (!id.equals(account.getId())) {
-            logger.info("Failed to update account. ID mismatch.");
+            logger.error("Failed to update account. ID mismatch.");
             throw new CustomBadRequestException(
                     "Account ID in request URL does not match ID in content body.");
         } else if (accountService.find(id) == null) {
-            logger.info("Failed to update account. Missing or failed permissions.");
+            logger.error("Failed to update account. Missing or failed permissions.");
             throw new CustomBadRequestException(
                     "An account with this ID does not exist or you don't have permissions to access it.");
-        } else if (accountService.findByUsername(account.getUsername()) != null) {
-            if (!accountService.findByUsername(account.getUsername()).getId().equals(id)) {
-                logger.info("Failed to update account. Duplicate username.");
-                throw new CustomBadRequestException(
-                        "Another account with this username exists already. Usernames are unique.");
-            }
+        } else if (accountService.accountNameIdExist(account.getUsername(), id)) {
+            logger.error("Failed to update account. Duplicate username.");
+            throw new CustomBadRequestException(
+                    "Another account with this username exists already. Usernames are unique.");
         }
         Account oldAcc = accountService.find(id);
         if (!oldAcc.getPassword().equals(account.getPassword())) {
             // Update password only on change (and encrypt cleartext if updated!).
             account.setPassword(passwordEncoder.encode(account.getPassword()));
         }
-        logger.info("Successfully updated account " + account.getId());
-        accountService.update(account);
+        if (accountService.update(account)) {
+            //TODO should be performed only if the list of granted accounts changed
+            datasetinfoService.updateForAccount(account.getId(), account.getGranted_datasets());
+            logger.info("Successfully updated account " + account.getId());
+        } else {
+            logger.error("Failed to update account. Permissions error.");
+            throw new CustomBadRequestException(
+                    "Coult not update account, probably permissions error.");     
+        }
     }
 
     /**
@@ -356,18 +319,29 @@ public class AccountController {
     @RequestMapping(value = "{id}", method = RequestMethod.DELETE)
     public @ResponseBody
     void delete(@PathVariable String id,
-            @RequestParam(value = "cascade", required = false, defaultValue = "true") boolean cascade) {
-        if (!accountService.deleteIsOkForCurrUser(id)) {
-            logger.info("Failed to delete account " + id + " Missing permissions.");
-            throw new CustomBadRequestException("You do not have permission to delete this account.");
-        }
-        accountService.delete(id);
-        logger.info("Successfully deleted account " + id);
-        if (cascade) {
+            @RequestParam(value = "cascade", required = false, defaultValue = "false") boolean cascade) {
+        if (accountService.delete(id)) {
+            //TODO A error-safe transactional approach should be used here
+            if (cascade) {
+                // Deleting the datasets created by the user
+                List<Dataset> datasets = datasetService.findByAccount(id);
+                for (Dataset dataset : datasets) {
+                    featuresService.delete(dataset.getId());
+                    datasetService.delete(dataset.getId());
+                }
+                logger.info("Successfully cascade-deleted dependencies for account " + id);
+            } else {
+                // Datasets and experiments are not deleted as they can be
+                // accessed by other users so we reset their account field
+                datasetService.clearAccountCreator(id);
+            }
+            // Always delete the dataset info and selections for the deleted account
             datasetinfoService.deleteForAccount(id);
             selectionService.deleteForAccount(id);
-            datasetService.clearAccountCreator(id);
-            logger.info("Successfully cascade-deleted dependencies for account " + id);
+            logger.info("Successfully deleted account " + id);
+        } else {
+            logger.error("Failed to delete account " + id + " Missing permissions.");
+            throw new CustomBadRequestException("You do not have permission to delete this account.");           
         }
     }
 
@@ -405,13 +379,24 @@ public class AccountController {
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     public @ResponseBody
     BadRequestResponse handleBadRequestException(CustomBadRequestException ex) {
+        logger.warn(ex);
         return new BadRequestResponse(ex.getMessage());
+    }
+
+    @ExceptionHandler(CustomInternalServerErrorException.class)
+    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
+    public @ResponseBody
+    CustomInternalServerErrorResponse 
+        handleInternalServerException(CustomInternalServerErrorException ex) {
+        logger.error(ex);
+        return new CustomInternalServerErrorResponse(ex.getMessage());
     }
     
     @ExceptionHandler(RuntimeException.class)
     @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
     public @ResponseBody
-    CustomInternalServerErrorResponse handleRuntimeException(CustomInternalServerErrorException ex) {
+    CustomInternalServerErrorResponse 
+        handleRuntimeException(CustomInternalServerErrorException ex) {
         logger.error("Unknown error in account controller: " + ex.getMessage());
         return new CustomInternalServerErrorResponse(ex.getMessage());
     }

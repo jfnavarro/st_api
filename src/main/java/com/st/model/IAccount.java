@@ -3,8 +3,6 @@ package com.st.model;
 import java.util.List;
 import org.joda.time.DateTime;
 
-import org.springframework.data.annotation.Transient;
-
 /**
  * This interface defines the Account model. Applications that use the API must
  * implement the same model.
@@ -65,12 +63,8 @@ public interface IAccount {
 
     public DateTime getLast_modified();
 
-    @Transient
     public List<String> getGranted_datasets();
 
-    @Transient
     public void setGranted_datasets(List<String> datasets);
 
-    // HACK.
-    public void updateGranted_datasets();
 }

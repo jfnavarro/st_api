@@ -4,7 +4,7 @@
 	<groupId>spatialtranscriptomicsresearch</groupId>
 	<artifactId>api</artifactId>
 	<packaging>war</packaging>
-	<version>0.6.2</version>
+	<version>0.6.4</version>
 	<name>Spatial Transcriptomics Research API Server</name>
 	<url>http://maven.apache.org</url>
 

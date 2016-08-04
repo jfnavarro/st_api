@@ -46,9 +46,6 @@ public class FeaturesServiceImpl implements FeaturesService {
     private @Value("${s3.featuresbucket}")
     String featuresBucket;
 
-    private @Value("${s3.featurespath}")
-    String featuresPath;
-
     private static final Logger logger = Logger.getLogger(ImageServiceImpl.class);
 
     @Override
@@ -61,24 +58,21 @@ public class FeaturesServiceImpl implements FeaturesService {
 
     // ROLE_ADMIN: ok.
     // ROLE_CM:    ok.
-    // ROLE_USER:  nope.
+    // ROLE_USER:  ok.
     @Override
     public List<FeaturesMetadata> listMetadata() {
         List<FeaturesMetadata> featuresMetadataList = new ArrayList<>();
-        MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-        if (currentUser.isContentManager() || currentUser.isAdmin()) {
-            ObjectListing objects = s3Client.listObjects(featuresBucket);
-            List<S3ObjectSummary> objs = objects.getObjectSummaries();
-            for (S3ObjectSummary o : objs) {
-                FeaturesMetadata fm = new FeaturesMetadata();
-                String fn = o.getKey();
-                fm.setFilename(fn);
-                fm.setDatasetId(fn.substring(0, fn.length() - 3)); // Remove .gz
-                fm.setLastModified(new DateTime(o.getLastModified()));
-                fm.setCreated(new DateTime(o.getLastModified()));
-                fm.setSize(o.getSize());
-                featuresMetadataList.add(fm);
-            }
+        ObjectListing objects = s3Client.listObjects(featuresBucket);
+        List<S3ObjectSummary> objs = objects.getObjectSummaries();
+        for (S3ObjectSummary o : objs) {
+            FeaturesMetadata fm = new FeaturesMetadata();
+            String fn = o.getKey();
+            fm.setFilename(fn);
+            fm.setDatasetId(fn.substring(0, fn.length() - 3)); // Remove .gz
+            fm.setLastModified(new DateTime(o.getLastModified()));
+            fm.setCreated(new DateTime(o.getLastModified()));
+            fm.setSize(o.getSize());
+            featuresMetadataList.add(fm);
         }
         return featuresMetadataList;
     }
@@ -98,12 +92,12 @@ public class FeaturesServiceImpl implements FeaturesService {
     }
 
     // ROLE_ADMIN: all.
-    // ROLE_CM:    all.
+    // ROLE_CM:    granted datasets.
     // ROLE_USER:  granted datasets.
     @Override
     public InputStream find(String id) {
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-        if (currentUser.isContentManager() || currentUser.isAdmin() || datasetIsGranted(id, currentUser)) {
+        if (currentUser.isContentManager() || datasetIsGranted(id, currentUser)) {
             try {
                 String filename = id + ".gz";
                 // We cache the contents in a byte array so that the S3 stream can be closed ASAP.
@@ -150,15 +144,19 @@ public class FeaturesServiceImpl implements FeaturesService {
             return false;
         }
     }
-
+    
     // ROLE_ADMIN: ok.
     // ROLE_CM:    ok.
     // ROLE_USER:  nope.
     @Override
     public void delete(String id) {
         String filename = id + ".gz";
-        s3Client.deleteObject(featuresBucket, filename);
-        logger.info("Deleted features for dataset " + id + " from Amazon S3");
+        try {
+            s3Client.deleteObject(featuresBucket, filename);
+            logger.info("Deleted features for dataset " + id + " from Amazon S3");
+        } catch(AmazonClientException e) {
+            logger.info("Error deleting features for dataset " + id + " on Amazon S3.", e);
+        }
     }
 
 }

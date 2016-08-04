@@ -2,14 +2,12 @@ package com.st.serviceImpl;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
-
 import com.st.model.Dataset;
 import com.st.model.DatasetInfo;
 import com.st.model.MongoUserDetails;
@@ -62,6 +60,7 @@ public class DatasetServiceImpl implements DatasetService {
         return null;
     }
 
+    // Helper method to check if a dataset is granted to an user
     @Override
     public boolean datasetIsGranted(String datasetId, MongoUserDetails user) {
         List<DatasetInfo> dsis = mongoTemplateUserDB.find(
@@ -70,19 +69,29 @@ public class DatasetServiceImpl implements DatasetService {
         return (dsis != null && dsis.size() > 0);
     }
 
-    // required for check to ensure unique dataset names.
-    // No user check.
+    // Helper method to check for duplicated names
     @Override
-    public Dataset findByNameInternal(String name) {
-        return mongoTemplateAnalysisDB.findOne(new Query(Criteria.where("name").is(name)), Dataset.class);
+    public boolean datasetNameExist(String name) {
+        Dataset dataset = mongoTemplateAnalysisDB.findOne(new 
+        Query(Criteria.where("name").is(name)), Dataset.class);
+        return (dataset != null);
     }
 
+    // Helper method to check for duplicated Ids and Names
+    @Override
+    public boolean datasetNameIdExist(String name, String id) {
+        Dataset dataset = mongoTemplateAnalysisDB.findOne(new 
+        Query(Criteria.where("name").is(name)), Dataset.class);
+        return (dataset != null && !dataset.getId().equals(id));
+    }
+    
     // ROLE_ADMIN: all datasets.
     // ROLE_CM:    granted datasets.
     // ROLE_USER:  granted datasets.
     @Override
     public Dataset findByName(String name) {
-        Dataset ds = mongoTemplateAnalysisDB.findOne(new Query(Criteria.where("name").is(name)), Dataset.class);
+        Dataset ds = mongoTemplateAnalysisDB.findOne(new 
+        Query(Criteria.where("name").is(name)), Dataset.class);
         if (ds == null) {
             return null;
         }
@@ -102,84 +111,95 @@ public class DatasetServiceImpl implements DatasetService {
         if (currentUser.isAdmin()) {
             return mongoTemplateAnalysisDB.findAll(Dataset.class);
         }
-        return this.findByAccount(currentUser.getId());
+        return findByAccount(currentUser.getId());
     }
 
     // ROLE_ADMIN: all datasets.
     // ROLE_CM:    granted datasets.
     // ROLE_USER:  granted datasets.
     @Override
-    public void update(Dataset ds) {
+    public boolean update(Dataset ds) {
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
         if (currentUser.isAdmin() || datasetIsGranted(ds.getId(), currentUser)) {
             logger.info("Updating dataset " + ds.getId());
             mongoTemplateAnalysisDB.save(ds);
+            return true;
         }
+        return false;
     }
 
     
-    // See deleteIsOkForCurrUser(). Internal use may be different
-    @Override
-    public void delete(String id) {
-        MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-        if (currentUser.isAdmin() || (datasetIsGranted(id, currentUser))) {
-            logger.info("Deleting dataset " + id);
-            mongoTemplateAnalysisDB.remove(find(id));
-        }
-    }
-
     // ROLE_ADMIN: all datasets.
     // ROLE_CM:    granted datasets.
     // ROLE_USER:  granted datasets.
     @Override
-    public boolean deleteIsOkForCurrUser(String id) {
+    public boolean delete(String id) {
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-        return (currentUser.isAdmin() || (datasetIsGranted(id, currentUser))) && find(id) != null;
+        Dataset dataset = find(id);
+        if (dataset != null && (currentUser.isAdmin() 
+                || (datasetIsGranted(id, currentUser)))) {
+            logger.info("Deleting dataset " + id);
+            mongoTemplateAnalysisDB.remove(dataset);
+            return true;
+        }
+        return false;
     }
 
     // ROLE_ADMIN: all datasets.
-    // ROLE_CM:    granted datasets.
+    // ROLE_CM:    all datasets.
     // ROLE_USER:  granted datasets.
     @Override
     public List<Dataset> findByAccount(String accountId) {
-
+        // In case of pre-login calls.
         if (!customUserDetailsService.isProperlyLoaded()) {
             return null;
-        } // In case of pre-login calls.
+        } 
+        // In case of pre-login calls.
         if (customUserDetailsService == null) {
             return null;
-        }   // In case of pre-login calls.
+        }   
+        // In case of pre-login calls.
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
         if (currentUser == null) {
             return null;
-        }                // In case of pre-login calls.
+        }                
 
-        if (currentUser.isAdmin() || currentUser.getId().equals(accountId)) {
-            try {
-                List<DatasetInfo> dsis = mongoTemplateUserDB.find(
-                        new Query(Criteria.where("account_id").is(accountId)), DatasetInfo.class);
-                if (dsis == null) {
-                    return null;
-                }
-                List<String> strs = new ArrayList<>(dsis.size());
-                for (DatasetInfo dsi : dsis) {
-                    strs.add(dsi.getDataset_id());
-                }
-                return mongoTemplateAnalysisDB.find(new Query(Criteria.where("id").in(strs)), Dataset.class);
-            } catch (Exception e) {
+        if (!currentUser.isAdmin() && !currentUser.getId().equals(accountId)) {
+            return null;
+        }
+        
+        try {
+            // retrieve dataset_info objects by account
+            List<DatasetInfo> dat_infos = mongoTemplateUserDB.find(
+                    new Query(Criteria.where("account_id").is(accountId)), DatasetInfo.class);  
+            if (dat_infos == null) {
                 return null;
             }
+                
+            List<String> strs = new ArrayList<>(dat_infos.size());
+            for (DatasetInfo dsi : dat_infos) {              
+                strs.add(dsi.getDataset_id());
+            }
+                
+            return mongoTemplateAnalysisDB.find(
+                    new Query(Criteria.where("id").in(strs)), Dataset.class);
+            
+        } catch (Exception e) {
+            logger.info("There was an error retrieving datasets by account", e);
+            return null;
         }
-        return null;
     }
 
+    //helper function to set the account_id field to empty for datasets created
+    //by the given accountId param
     @Override
     public void clearAccountCreator(String accountId) {
-        List<Dataset> l = list();
-        for (Dataset d : l) {
-            if (d.getCreated_by_account_id() != null && d.getCreated_by_account_id().equals(accountId)) {
-                d.setCreated_by_account_id("");
-                update(d);
+        List<Dataset> datasets = list();
+        for (Dataset dataset : datasets) {
+            if (dataset.getCreated_by_account_id() != null 
+                    && dataset.getCreated_by_account_id().equals(accountId)) {
+                dataset.setCreated_by_account_id("");
+                update(dataset);
             }
         }
     }
@@ -191,7 +211,8 @@ public class DatasetServiceImpl implements DatasetService {
             return;
         }
         for (Dataset d : ds) {
-            if (d.getImage_alignment_id() != null && d.getImage_alignment_id().equals(imalId)) {
+            if (d.getImage_alignment_id() != null 
+                    && d.getImage_alignment_id().equals(imalId)) {
                 d.setEnabled(false);
                 d.setImage_alignment_id("");
                 update(d);

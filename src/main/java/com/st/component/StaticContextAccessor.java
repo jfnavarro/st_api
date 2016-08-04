@@ -30,9 +30,7 @@ public class StaticContextAccessor {
      * @return the bean instance.
      */
     public static <T> T getBean(Class<T> clazz) {
-    	
         T inst = instance.applicationContext.getBean(clazz);
-        
         return inst;
     }
 
