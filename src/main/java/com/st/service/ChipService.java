@@ -15,27 +15,27 @@ public interface ChipService {
     /**
      * Returns a chip.
      * @param id the chip ID.
-     * @return the chip.
+     * @return the chip or null if not found.
      */
     public Chip find(String id);
 
     /**
      * Returns a chip by name.
      * @param name the name.
-     * @return the chip.
+     * @return the chip or null if not found.
      */
     public Chip findByName(String name);
 
     /**
      * Returns all chips.
-     * @return the list.
+     * @return the list of null if empty.
      */
     public List<Chip> list();
 
     /**
      * Adds a chip.
      * @param chip the chip.
-     * @return the chip with ID assigned.
+     * @return the chip with ID assigned or null if no permissions.
      */
     public Chip add(Chip chip);
 
@@ -48,6 +48,7 @@ public interface ChipService {
     /**
      * Deletes a chip.
      * @param id the chip ID.
+     * @return true if the deletion was successful
      */
-    public void delete(String id);
+    public boolean delete(String id);
 }

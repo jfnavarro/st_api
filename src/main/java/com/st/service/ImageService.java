@@ -54,6 +54,7 @@ public interface ImageService {
     /**
      * Deletes an image.
      * @param filename the image name.
+     * @return true if the image was deleted successfully
      */
     public boolean delete(String filename);
 }

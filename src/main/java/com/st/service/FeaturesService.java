@@ -42,7 +42,7 @@ public interface FeaturesService {
     /**
      * Finds a features file.
      * @param id the dataset ID.
-     * @return the features file gzipped, as an input stream.
+     * @return the features file gzipped, as an input stream or null.
      */
     public InputStream find(String id);
     

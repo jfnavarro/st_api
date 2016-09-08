@@ -13,14 +13,14 @@ public interface DatasetInfoService {
     /**
      * Finds a dataset info.
      * @param id the ID.
-     * @return the dataset info.
+     * @return the dataset info or null if not found.
      */
     public DatasetInfo find(String id);
 
     /**
      * Adds a dataset info.
      * @param ds the info to add.
-     * @return the info with ID assigned.
+     * @return the info with ID assigned or null if not found.
      */
     public DatasetInfo add(DatasetInfo ds);
 

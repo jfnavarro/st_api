@@ -35,7 +35,8 @@ public class ChipServiceImpl implements ChipService {
     // ROLE_USER:  ok.
     @Override
     public Chip find(String id) {
-        return mongoTemplateAnalysisDB.findOne(new Query(Criteria.where("id").is(id)), Chip.class);
+        return mongoTemplateAnalysisDB.findOne(
+                new Query(Criteria.where("id").is(id)), Chip.class);
     }
 
     // ROLE_ADMIN: ok.
@@ -43,7 +44,8 @@ public class ChipServiceImpl implements ChipService {
     // ROLE_USER:  ok.
     @Override
     public Chip findByName(String name) {
-        return mongoTemplateAnalysisDB.findOne(new Query(Criteria.where("name").is(name)), Chip.class);
+        return mongoTemplateAnalysisDB.findOne(
+                new Query(Criteria.where("name").is(name)), Chip.class);
     }
 
     // ROLE_ADMIN: ok.
@@ -84,11 +86,13 @@ public class ChipServiceImpl implements ChipService {
 
     // See deleteIsOkForCurrUser(). Internal use may be different
     @Override
-    public void delete(String id) {
+    public boolean delete(String id) {
         if (deleteIsOkForCurrUser(id)) {
             mongoTemplateAnalysisDB.remove(find(id));
             logger.info("Deleted chip " + id + " from MongoDB.");
+            return true;
         }
+        return false;
     }
 
     // ROLE_ADMIN: ok.

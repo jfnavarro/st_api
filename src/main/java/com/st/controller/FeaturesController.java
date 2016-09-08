@@ -66,7 +66,7 @@ public class FeaturesController {
         List<FeaturesMetadata> l = featuresService.listMetadata();
         if (l == null) {
             logger.info("Returning empty list of features metadata");
-            throw new CustomNotFoundException("No metadata found or you dont "
+            throw new CustomNotFoundException("No metadata found or you don't "
                     + "have permissions to access them.");
         }
         logger.info("Returning list of features metadata");

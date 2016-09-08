@@ -16,21 +16,21 @@ public interface AccountService {
     /**
      * Finds an account.
      * @param id the ID.
-     * @return the account.
+     * @return the account or null if not found.
      */
     public Account find(String id);
 
     /**
      * Finds an account by username.
      * @param username the username.
-     * @return the account.
+     * @return the account or null if not found.
      */
     public Account findByUsername(String username);
 
     /**
      * Finds all accounts ids granted a dataset.
      * @param datasetId the dataset ID.
-     * @return the accounts ids.
+     * @return the accounts ids or null if empty.
      */
     public List<AccountId> findIdsByDataset(String datasetId);
 
@@ -49,7 +49,7 @@ public interface AccountService {
     /**
      * Adds an account.
      * @param account the account.
-     * @return the account with ID assigned.
+     * @return the account with ID assigned or null of the account was not created.
      */
     public Account add(Account account);
 
@@ -63,7 +63,7 @@ public interface AccountService {
     /**
      * Deletes an account.
      * @param id the account ID.
-     * @return true if the delete went fine
+     * @return true if the deletion was performed
      */
     public boolean delete(String id);
 
