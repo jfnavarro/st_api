@@ -49,6 +49,7 @@ public interface FeaturesService {
     /**
      * Deletes a features file.
      * @param id the dataset ID.
+     * @return 
      */
-    public void delete(String id);
+    public boolean delete(String id);
 }

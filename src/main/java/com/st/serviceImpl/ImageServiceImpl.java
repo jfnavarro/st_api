@@ -1,5 +1,6 @@
 package com.st.serviceImpl;
 
+import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -90,11 +91,10 @@ public class ImageServiceImpl implements ImageService {
             byte[] bytes = IOUtils.toByteArray(in);
             in.close();   // As soon as possible.
             return bytes;
-        } catch (IOException e) {
+        } catch (IOException | AmazonClientException e) {
             logger.error("Error getting JPEG " + filename + " from Amazon S3.", e);
             return null;
         }
-
     }
 
     // ROLE_ADMIN: ok.
@@ -119,10 +119,6 @@ public class ImageServiceImpl implements ImageService {
     // ROLE_USER:  nope.
     @Override
     public void add(String filename, BufferedImage img) {
-        MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-        if (currentUser.isUser()) {
-            return;
-        }
         try {
             ObjectMetadata om = new ObjectMetadata();
             om.setContentType("image/jpeg");
@@ -131,7 +127,7 @@ public class ImageServiceImpl implements ImageService {
             InputStream is = new ByteArrayInputStream(baos.toByteArray());
             s3Client.putObject(imageBucket, filename, is, om);
             logger.info("Added image from BuffereedImage " + filename + " to Amazon S3.");
-        } catch (IOException e) {
+        } catch (IOException | AmazonClientException e) {
             logger.error("Error adding image " + filename + " to Amazon S3:" + e.getMessage());
             throw new RuntimeException("Error adding image " + filename + " to Amazon S3", e);
         }
@@ -142,27 +138,35 @@ public class ImageServiceImpl implements ImageService {
     // ROLE_USER:  nope.
     @Override
     public void addCompressed(String filename, byte[] img) {
-        MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-        if (currentUser.isUser()) {
-            return;
+        try {
+            ObjectMetadata om = new ObjectMetadata();
+            om.setContentType("image/jpeg");
+            InputStream is = new ByteArrayInputStream(img);
+            s3Client.putObject(imageBucket, filename, is, om);
+            logger.info("Added image from JPEG " + filename + " to Amazon S3.");
+        } catch (AmazonClientException e) {
+            logger.error("Error adding image " + filename + " to Amazon S3:" + e.getMessage());
+            throw new RuntimeException("Error adding image " + filename + " to Amazon S3", e);
         }
-        ObjectMetadata om = new ObjectMetadata();
-        om.setContentType("image/jpeg");
-        InputStream is = new ByteArrayInputStream(img);
-        s3Client.putObject(imageBucket, filename, is, om);
-        logger.info("Added image from JPEG " + filename + " to Amazon S3.");
     }
 
     // ROLE_ADMIN: ok.
     // ROLE_CM:    ok.
     // ROLE_USER:  nope.
     @Override
-    public void delete(String filename) {
+    public boolean delete(String filename) {
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
         if (currentUser.isAdmin() || currentUser.isContentManager()) {
-            s3Client.deleteObject(imageBucket, filename);
-            logger.info("Deleted image " + filename + " from Amazon S3.");
+            try {
+                s3Client.deleteObject(imageBucket, filename);
+                logger.info("Deleted image " + filename + " from Amazon S3.");
+                return true;
+            } catch(AmazonClientException e) {
+                logger.info("Could not delete image " + filename + " from Amazon S3.");
+                return false;
+            }
         }
+        return false;
     }
 
 }

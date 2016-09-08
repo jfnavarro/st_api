@@ -9,7 +9,6 @@ import com.st.exceptions.CustomNotModifiedException;
 import com.st.exceptions.NotFoundResponse;
 import com.st.exceptions.NotModifiedResponse;
 import com.st.model.FeaturesMetadata;
-import com.st.model.S3Resource;
 import com.st.model.LastModifiedDate;
 import com.st.serviceImpl.FeaturesServiceImpl;
 import com.st.serviceImpl.MongoUserDetailsServiceImpl;
@@ -22,8 +21,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
@@ -36,6 +33,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * This class is Spring MVC controller class for the API endpoint "rest/features". 
@@ -74,59 +72,6 @@ public class FeaturesController {
         logger.info("Returning list of features metadata");
         return l;
     }
-
-    /**
-     * GET|HEAD /features/json/{id}
-     * 
-     * Finds features payload wrapped in JSON.
-     * 
-     * @param id the dataset ID.
-     * @param ifModifiedSince request timestamp.
-     * @return the account.
-     */
-    @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
-    @RequestMapping(value = "json/{id}", method = {RequestMethod.GET, RequestMethod.HEAD})
-    public @ResponseBody
-    HttpEntity<S3Resource> getAsJSON(@PathVariable String id, 
-            @RequestHeader(value="If-Modified-Since", defaultValue="") String ifModifiedSince) {
-        try {
-            FeaturesMetadata meta = featuresService.getMetadata(id);
-            InputStream is = featuresService.find(id);
-            if (meta == null || is == null) {
-                logger.info("Failed to return features as JSON for dataset " + id);
-                throw new CustomNotFoundException("A features file for a dataset with t"
-                        + "his ID does not exist, or you dont have permissions to access it.");
-            }
-            // Check if already newest.
-            DateTime reqTime = DateOperations.parseHTTPDate(ifModifiedSince);
-            if (reqTime != null) {
-                DateTime resTime = meta.getLastModified() == null ? 
-                        new DateTime(2012,1,1,0,0) : meta.getLastModified();
-                // NOTE: Only precision within day.
-                resTime = new DateTime(resTime.getYear(), 
-                        resTime.getMonthOfYear(), resTime.getDayOfMonth(), 
-                        resTime.getHourOfDay(), resTime.getMinuteOfHour(), resTime.getSecondOfMinute());
-                if (!resTime.isAfter(reqTime)) {
-                    logger.info("Not returning features as JSON for dataset " + id + " since not modified");
-                    throw new CustomNotModifiedException("This features file has not been modified");
-                }
-            }
-            byte[] bytes = IOUtils.toByteArray(is);
-            S3Resource wrap = new S3Resource("application/json", "gzip", id, bytes);
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.add("Cache-Control", "public, must-revalidate, no-transform");
-            headers.add("Vary", "Accept-Encoding");
-            headers.add("Last-modified", DateOperations.getHTTPDateSafely(meta.getLastModified()));
-            HttpEntity<S3Resource> entity = new HttpEntity<>(wrap, headers);
-            logger.info("Returning features as JSON for dataset " + id);
-            return entity;
-        } catch (IOException ex) {
-            logger.error("Error writing features file to output stream with file " + id);
-            throw new CustomInternalServerErrorException("IOError writing features file to output stream");
-        }
-    }
-    
     
     /**
      * Returns the zipped features payload as a file.
@@ -143,7 +88,7 @@ public class FeaturesController {
             FeaturesMetadata meta = featuresService.getMetadata(id);
             InputStream is = featuresService.find(id);
             if (meta == null || is == null) {
-                logger.info("Failed to return features as JSON for dataset " + id);
+                logger.info("Failed to return features for dataset " + id);
                 throw new CustomNotFoundException("A features file for a dataset with "
                         + "this ID does not exist, or you dont have permissions to access it.");
             }
@@ -157,13 +102,13 @@ public class FeaturesController {
                         resTime.getDayOfMonth(), resTime.getHourOfDay(), 
                         resTime.getMinuteOfHour(), resTime.getSecondOfMinute());
                 if (!resTime.isAfter(reqTime)) {
-                    logger.info("Not returning features as JSON for dataset " + id + " since not modified");
+                    logger.info("Not returning features for dataset " + id + " since not modified");
                     throw new CustomNotModifiedException("This features file has not been modified");
                 }
             }
             // Copy raw stream into response.
             IOUtils.copy(is, response.getOutputStream());
-            response.setContentType("application/json");
+            response.setContentType(MediaType.TEXT_PLAIN_VALUE);
             response.addHeader("Content-Encoding", "gzip");
             response.addHeader("Cache-Control", "public, must-revalidate, no-transform");
             response.addHeader("Vary", "Accept-Encoding");
@@ -181,16 +126,27 @@ public class FeaturesController {
      * 
      * Adds a features file payload wrapped in JSON.
      * @param id the dataset ID.
-     * @param feats the features.
+     * @param file
      */
     @Secured({"ROLE_CM", "ROLE_ADMIN"})
     @RequestMapping(value = "{id}", method = RequestMethod.PUT)
     public @ResponseBody
-    void addOrUpdate(@PathVariable String id, @RequestBody S3Resource feats) {
-        byte[] bytes = feats.getFile();
+    void addOrUpdate(@PathVariable String id, @RequestBody MultipartFile file) {
+        byte[] bytes = null;
+        try {
+            bytes = file.getBytes();
+        } catch (IOException ex) {
+            logger.error("Failed to add features for dataset " + id +". Invalid file?");
+            throw new CustomBadRequestException("Failed to add features for dataset " + id +". Is the file valid?");
+        }
         if (id != null && bytes != null && bytes.length != 0) {
             boolean updated = featuresService.addUpdate(id, bytes);
-            logger.info((updated ? "Updated" : "Added") + " features file for dataset " + id);
+            if (updated) {
+                logger.info("Updated/Added features file for dataset " + id);
+            } else {
+                logger.error("Failed to add features for dataset " + id +". S3 error");
+                throw new CustomBadRequestException("Failed to add features for dataset " + id + ". Server problem");                
+            }
         } else {
             logger.error("Failed to add features for dataset " + id +". Empty file?");
             throw new CustomBadRequestException("Failed to add features for dataset " + id +". Is the file empty?");
@@ -207,8 +163,11 @@ public class FeaturesController {
     @RequestMapping(value = "{id}", method = RequestMethod.DELETE)
     public @ResponseBody
     void delete(@PathVariable String id) {
-        featuresService.delete(id);
-        logger.info("Successfully deleted features file for dataset " + id);
+        if (featuresService.delete(id)) {
+            logger.info("Successfully deleted features file for dataset " + id);
+        } else {
+            throw new CustomBadRequestException("Failed to delete features for dataset " + id);
+        }
     }
 
     /**

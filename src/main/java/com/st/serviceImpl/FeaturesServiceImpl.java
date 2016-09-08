@@ -1,6 +1,7 @@
 package com.st.serviceImpl;
 
 import com.amazonaws.AmazonClientException;
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -97,7 +98,7 @@ public class FeaturesServiceImpl implements FeaturesService {
     @Override
     public InputStream find(String id) {
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-        if (currentUser.isContentManager() || datasetIsGranted(id, currentUser)) {
+        if (currentUser.isAdmin()|| datasetIsGranted(id, currentUser)) {
             try {
                 String filename = id + ".gz";
                 // We cache the contents in a byte array so that the S3 stream can be closed ASAP.
@@ -121,41 +122,58 @@ public class FeaturesServiceImpl implements FeaturesService {
     // ROLE_CM:    ok.
     // ROLE_USER:  nope.
     /**
-     * Returns true if the file already existed and was updated, false if added.
-     * @param file
+     * Returns true if the file correctly added/updated.
+     * @param id the dataset Id 
+     * @param file the byte array representation of the file
      */
     @Override
     public boolean addUpdate(String id, byte[] file) {
-        
-        ObjectMetadata om = new ObjectMetadata();
-        om.setContentType("application/json");
-        om.setContentEncoding("gzip");
-        InputStream is = new ByteArrayInputStream(file);
-
-        String filename = id + ".gz";
-        boolean exists = (getMetadata(id) != null);
-        if (exists) {
-            s3Client.putObject(featuresBucket, filename, is, om);
-            logger.info("Updated features for dataset " + id + "on Amazon S3");
-            return true;
-        } else {
-            s3Client.putObject(featuresBucket, filename, is, om);
-            logger.info("Added features for dataset " + id + "on Amazon S3");
+        MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+        if (currentUser.isUser()) {
             return false;
         }
+        // Create the meta data for S3
+        ObjectMetadata om = new ObjectMetadata();
+        om.setContentType("text/plain");
+        om.setContentEncoding("gzip");
+        InputStream is = new ByteArrayInputStream(file);
+        // Filename is the dataset Id given as input plus the gz extension
+        String filename = id + ".gz";
+        boolean exists = (getMetadata(id) != null);
+        
+        try {
+            s3Client.putObject(featuresBucket, filename, is, om);
+        } catch(AmazonClientException e) {
+            logger.info("Error putting features for dataset " + id + "on Amazon S3");
+            return false;           
+        }
+        
+        if (exists) {
+            logger.info("Updated features for dataset " + id + "on Amazon S3");
+        } else {
+            logger.info("Added features for dataset " + id + "on Amazon S3");
+        }
+        
+        return true;
     }
     
     // ROLE_ADMIN: ok.
     // ROLE_CM:    ok.
     // ROLE_USER:  nope.
     @Override
-    public void delete(String id) {
+    public boolean delete(String id) {
+        MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
+        if (currentUser.isUser()) {
+            return false;
+        }
         String filename = id + ".gz";
         try {
             s3Client.deleteObject(featuresBucket, filename);
             logger.info("Deleted features for dataset " + id + " from Amazon S3");
+            return true;
         } catch(AmazonClientException e) {
             logger.info("Error deleting features for dataset " + id + " on Amazon S3.", e);
+            return false;
         }
     }
 

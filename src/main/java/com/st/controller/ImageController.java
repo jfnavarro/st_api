@@ -10,26 +10,18 @@ import com.st.exceptions.NotFoundResponse;
 import com.st.exceptions.NotModifiedResponse;
 import com.st.model.ImageMetadata;
 import com.st.model.LastModifiedDate;
-import com.st.model.S3Resource;
 import com.st.serviceImpl.ImageServiceImpl;
-import com.st.util.DateOperations;
 import java.awt.image.BufferedImage;
 import java.util.List;
-import javax.validation.Valid;
 import org.apache.log4j.Logger;
-import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -75,7 +67,7 @@ public class ImageController {
      * GET|HEAD /image/{id}
      * 
      * Returns image payload as a decompressed BufferedImage. NOTE: When
-     * possible, use getCompressed() or getCompressedAsJSON instead, due to size
+     * possible use getCompressed() instead, due to size
      * limitations.
      *
      * @param id the image name.
@@ -146,66 +138,12 @@ public class ImageController {
         }
         logger.info("Returning JPEG image");
         return image;
-        //HttpHeaders headers = new HttpHeaders();
-        //headers.setContentType(MediaType.IMAGE_JPEG);
-        //headers.setContentLength(image.length);
-        //return new HttpEntity<byte[]>(image, headers);
     }
 
     /**
-     * GET|HEAD /image/compressedjson/{id}
-     * 
-     * Returns image payload as a JPEG wrapped in JSON.
-     *
-     * @param id the image name.
-     * @param ifModifiedSince request mod date info.
-     * @return the image as JSON.
-     */
-    @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
-    @RequestMapping(value = "/compressedjson/{id:.+}", 
-            method = {RequestMethod.GET, RequestMethod.HEAD})
-    public @ResponseBody
-    HttpEntity<S3Resource> getCompressedAsJSON(@PathVariable String id, 
-            @RequestHeader(value="If-Modified-Since", defaultValue="") String ifModifiedSince) {
-        // this {id:.+} is a workaround for a spring bug that truncates path
-        // variables containing a dot
-        byte[] image = imageService.getCompressedImage(id);
-        ImageMetadata meta = imageService.getImageMetadata(id);
-        if (image == null || meta == null) {
-            logger.info("Returning empty S3Resource image");
-            throw new CustomNotFoundException("An image with this name does not exist or "
-                    + "you do not have permissions to access it.");
-        }
-        // Check if already newest.
-        DateTime reqTime = DateOperations.parseHTTPDate(ifModifiedSince);
-        if (reqTime != null) {
-            DateTime resTime = meta.getLastModified() == null 
-                    ? new DateTime(2012,1,1,0,0) : meta.getLastModified();
-            // NOTE: Only precision within day.
-            resTime = new DateTime(resTime.getYear(), resTime.getMonthOfYear(), 
-                    resTime.getDayOfMonth(), resTime.getHourOfDay(), 
-                    resTime.getMinuteOfHour(), resTime.getSecondOfMinute());
-            if (!resTime.isAfter(reqTime)) {
-                logger.info("Not returning S3Resource image " + id + " since not modified");
-                throw new CustomNotModifiedException("This image has not been modified");
-            }
-        }
-        S3Resource wrapper = new S3Resource("image/jpeg", id, image);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.add("Cache-Control", "public, must-revalidate, no-transform");
-        headers.add("Vary", "Accept-Encoding");
-        headers.add("Last-modified", DateOperations.getHTTPDateSafely(meta.getLastModified()));
-        HttpEntity<S3Resource> entity = new HttpEntity<>(wrapper, headers);
-        logger.info("Returning S3Resource image " + id);
-        return entity;
-    }
-
-    /**
-     * PUT /imagealignment/
+     * PUT /image/
      * 
      * Adds an image as a BufferedImage.
-     * NOTE: When possible use addAsJSON() instead.
      * 
      * @param id the image name.
      * @param img the image.
@@ -221,43 +159,13 @@ public class ImageController {
             throw new CustomBadRequestException(
                     "An image with this name exists already. Image names are unique.");
         }
-        imageService.add(id, img);
-        logger.info("Succesfully added BufferedImage image " + id);
-    }
-
-    /**
-     * PUT /imagealignment/compressedjson/{id}
-     * 
-     * Adds an JPEG image wrapped in JSON.
-     * 
-     * @param id the image filename.
-     * @param image the image.
-     * @param result the binding.
-     */
-    @Secured({"ROLE_CM", "ROLE_ADMIN"})
-    @RequestMapping(value = "/compressedjson/{id:.+}", method = RequestMethod.PUT)
-    public @ResponseBody
-    void addAsJSON(@PathVariable String id, @RequestBody @Valid S3Resource image, BindingResult result) {
-        // this {id:.+} is a workaround for a spring bug that truncates path
-        // variables containing a dot
-        if (imageService.getImageMetadata(id) != null) {
-            logger.info("Cannot add S3Resource image: exists " + id);
-            throw new CustomBadRequestException(
-                    "An image with this name exists already. Image names are unique.");
+        // Tries to save the image 
+        try {
+            imageService.add(id, img);
+            logger.info("Succesfully added BufferedImage image " + id);
+        } catch (RuntimeException e) {
+            throw new CustomBadRequestException("There was an error saving the image.");
         }
-        byte[] img = image.getFile();
-        if (id == null || image.getFilename() == null || image.getFilename().equals("")
-                || img == null || img.length == 0) {
-            logger.info("Cannot add empty or nameless S3Resource image.");
-            throw new CustomBadRequestException("The image seems to be empty or lacking name.");
-
-        }
-        if (!id.equals(image.getFilename())) {
-            logger.info("Failed to add S3Resource image. Filename and ID mismatch.");
-            throw new CustomBadRequestException("Filename and ID mismatch.");
-        }
-        imageService.addCompressed(image.getFilename(), img);
-        logger.info("Successfully added S3Resource image " + id);
     }
 
     /**
@@ -273,8 +181,11 @@ public class ImageController {
     void delete(@PathVariable String id) {
         // this {id:.+} is a workaround for a spring bug that truncates path
         // variables containing a dot
-        imageService.delete(id);
-        logger.info("Successfully deleted image " + id);
+        if (imageService.delete(id)) {
+            logger.info("Successfully deleted image " + id);
+        } else {
+            throw new CustomBadRequestException("There was an error deleting the image.");
+        }
     }
 
     @ExceptionHandler(CustomNotModifiedException.class)

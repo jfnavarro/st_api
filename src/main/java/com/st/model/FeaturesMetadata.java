@@ -1,9 +1,6 @@
 package com.st.model;
 
-import com.st.util.StringOperations;
-import java.util.Date;
 import org.joda.time.DateTime;
-import org.springframework.data.annotation.Transient;
 
 /**
  * This class implements the FeaturesMetadata object.
