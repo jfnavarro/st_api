@@ -97,7 +97,8 @@ public class FeaturesServiceImpl implements FeaturesService {
     @Override
     public InputStream find(String id) {
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-        if (currentUser.isContentManager() || datasetIsGranted(id, currentUser)) {
+        // Check access
+        if (currentUser.isAdmin()|| datasetIsGranted(id, currentUser)) {
             try {
                 String filename = id + ".gz";
                 // We cache the contents in a byte array so that the S3 stream can be closed ASAP.
