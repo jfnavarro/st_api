@@ -226,7 +226,7 @@ public class ChipController {
             logger.info("Failed to delete chip " + id + " Missing permissions.");
             throw new CustomBadRequestException("You do not have permission to delete this chip.");
         }
-
+        // TODO check if chip is being used or not
         if (cascade) {
             List<ImageAlignment> imals = imageAlignmentService.deleteForChip(id);
             if (imals != null) {
