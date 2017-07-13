@@ -13,8 +13,7 @@ import com.st.model.Dataset;
 import com.st.model.LastModifiedDate;
 import com.st.serviceImpl.DatasetInfoServiceImpl;
 import com.st.serviceImpl.DatasetServiceImpl;
-import com.st.serviceImpl.FeaturesServiceImpl;
-import com.st.serviceImpl.SelectionServiceImpl;
+import com.st.serviceImpl.FileServiceImpl;
 import com.st.util.DateOperations;
 import static com.st.util.DateOperations.checkIfModified;
 import static com.st.util.HTTPOperations.getHTTPHeaderWithCache;
@@ -58,10 +57,7 @@ public class DatasetController {
     DatasetServiceImpl datasetService;
 
     @Autowired
-    FeaturesServiceImpl featuresService;
-
-    @Autowired
-    SelectionServiceImpl selectionService;
+    FileServiceImpl featuresService;
 
     @Autowired
     DatasetInfoServiceImpl datasetInfoService;
@@ -258,7 +254,6 @@ public class DatasetController {
     void delete(@PathVariable String id) {
         //TODO A error-safe transactional approach should be used here
         if (datasetService.delete(id)) {
-            selectionService.deleteForDataset(id);
             datasetInfoService.deleteForDataset(id);
             featuresService.delete(id);
             logger.info("Successfully deleted dataset and features for dataset " + id);

@@ -17,10 +17,14 @@ public interface IDataset {
 
     public void setName(String name);
 
-    public String getImage_alignment_id();
+    public String getImage_alignment_file();
 
-    public void setImage_alignment_id(String imal);
+    public void setImage_alignment_file(String file);
 
+    public String getSpot_coordinates_file();
+
+    public void setSpot_coordinates_file(String file);
+    
     public String getTissue();
 
     public void setTissue(String tissue);
@@ -28,30 +32,6 @@ public interface IDataset {
     public String getSpecies();
 
     public void setSpecies(String species);
-
-    public int getOverall_feature_count();
-
-    public void setOverall_feature_count(int count);
-
-    public int getOverall_hit_count();
-
-    public void setOverall_hit_count(int count);
-
-    public int getUnique_gene_count();
-
-    public void setUnique_gene_count(int count);
-
-    public int getUnique_barcode_count();
-
-    public void setUnique_barcode_count(int count);
-
-    public double[] getOverall_hit_quartiles();
-
-    public void setOverall_hit_quartiles(double[] quartiles);
-
-    public double[] getGene_pooled_hit_quartiles();
-
-    public void setGene_pooled_hit_quartiles(double[] quartiles);
 
     public String getComment();
 

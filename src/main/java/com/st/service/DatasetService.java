@@ -66,12 +66,6 @@ public interface DatasetService {
     public void clearAccountCreator(String accountId);
 
     /**
-     * Disables all datasets referencing an image alignment.
-     * @param imalId the image alignment ID.
-     */
-    public void setUnabledForImageAlignment(String imalId);
-
-    /**
      * Returns true if a user has access to a specific dataset.
      * @param datasetId the dataset ID.
      * @param user the user.

@@ -6,10 +6,9 @@ import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-import com.st.model.DatasetInfo;
-import com.st.model.FeaturesMetadata;
+import com.st.model.FileMetadata;
 import com.st.model.MongoUserDetails;
-import com.st.service.FeaturesService;
+import com.st.service.FileService;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -22,17 +21,15 @@ import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoOperations;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 /**
- * This class retrieves/stores feature files and features metadata from Amazon
+ * This class retrieves/stores files and metadata from Amazon
  * S3. It uses the Amazon AWS Java SDK, see http://aws.amazon.com/sdkforjava/
  * The AmazonS3Client is configured in the mvc-dispatcher-servlet.xml
  */
 @Service
-public class FeaturesServiceImpl implements FeaturesService {
+public class FileServiceImpl implements FileService {
 
     @Autowired
     AmazonS3Client s3Client;
@@ -48,42 +45,34 @@ public class FeaturesServiceImpl implements FeaturesService {
 
     private static final Logger logger = Logger.getLogger(ImageServiceImpl.class);
 
-    @Override
-    public boolean datasetIsGranted(String datasetId, MongoUserDetails user) {
-        List<DatasetInfo> dsis = mongoTemplateUserDB.find(
-                new Query(Criteria.where("dataset_id").is(datasetId).and("account_id").is(user.getId())),
-                DatasetInfo.class);
-        return (dsis != null && dsis.size() > 0);
-    }
-
     // ROLE_ADMIN: ok.
     // ROLE_CM:    ok.
     // ROLE_USER:  ok.
     @Override
-    public List<FeaturesMetadata> listMetadata() {
-        List<FeaturesMetadata> featuresMetadataList = new ArrayList<>();
+    public List<FileMetadata> listMetadata() {
+        List<FileMetadata> metadataList = new ArrayList<>();
         ObjectListing objects = s3Client.listObjects(featuresBucket);
         List<S3ObjectSummary> objs = objects.getObjectSummaries();
         for (S3ObjectSummary o : objs) {
-            FeaturesMetadata fm = new FeaturesMetadata();
+            FileMetadata fm = new FileMetadata();
             String fn = o.getKey();
             fm.setFilename(fn);
             fm.setDatasetId(fn.substring(0, fn.length() - 3)); // Remove .gz
             fm.setLastModified(new DateTime(o.getLastModified()));
             fm.setCreated(new DateTime(o.getLastModified()));
             fm.setSize(o.getSize());
-            featuresMetadataList.add(fm);
+            metadataList.add(fm);
         }
-        return featuresMetadataList;
+        return metadataList;
     }
 
     // ROLE_ADMIN: ok.
     // ROLE_CM:    ok.
     // ROLE_USER:  ok.
     @Override
-    public FeaturesMetadata getMetadata(String id) {
-        List<FeaturesMetadata> featureList = this.listMetadata();
-        for (FeaturesMetadata fm : featureList) {
+    public FileMetadata getMetadata(String id) {
+        List<FileMetadata> metadataList = this.listMetadata();
+        for (FileMetadata fm : metadataList) {
             if (fm.getDatasetId().equals(id)) {
                 return fm;
             }
@@ -91,29 +80,24 @@ public class FeaturesServiceImpl implements FeaturesService {
         return null;
     }
 
-    // ROLE_ADMIN: all.
-    // ROLE_CM:    granted datasets.
-    // ROLE_USER:  granted datasets.
+    // ROLE_ADMIN: ok.
+    // ROLE_CM:    ok.
+    // ROLE_USER:  ok.
     @Override
     public InputStream find(String id) {
-        MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-        if (currentUser.isAdmin()|| datasetIsGranted(id, currentUser)) {
-            try {
-                String filename = id + ".gz";
-                // We cache the contents in a byte array so that the S3 stream can be closed ASAP.
-                ByteArrayOutputStream bos = new ByteArrayOutputStream(30 * 1024 * 1024);
-                S3ObjectInputStream in = s3Client.getObject(featuresBucket, filename).getObjectContent();
-                IOUtils.copy(in, bos);
-                in.close();   // ASAP!
-                InputStream bis = new ByteArrayInputStream(bos.toByteArray());
-                bos.close();
-                return bis;
-            } catch (AmazonClientException | IOException ex) {
-                logger.error("Failed to download features for dataset " + id);
-                return null;
-            }
-        } else {
-            return null; // user has no permissions on dataset
+        try {
+            String filename = id + ".gz";
+            // We cache the contents in a byte array so that the S3 stream can be closed ASAP.
+            ByteArrayOutputStream bos = new ByteArrayOutputStream(30 * 1024 * 1024);
+            S3ObjectInputStream in = s3Client.getObject(featuresBucket, filename).getObjectContent();
+            IOUtils.copy(in, bos);
+            in.close();   // ASAP!
+            InputStream bis = new ByteArrayInputStream(bos.toByteArray());
+            bos.close();
+            return bis;
+        } catch (AmazonClientException | IOException e) {
+            logger.error("Failed to download file " + id, e);
+            return null;
         }
     }
 
@@ -143,14 +127,14 @@ public class FeaturesServiceImpl implements FeaturesService {
         try {
             s3Client.putObject(featuresBucket, filename, is, om);
         } catch(AmazonClientException e) {
-            logger.info("Error putting features for dataset " + id + "on Amazon S3");
+            logger.info("Error putting file " + id + "on Amazon S3", e);
             return false;           
         }
         
         if (exists) {
-            logger.info("Updated features for dataset " + id + "on Amazon S3");
+            logger.info("Updated file " + id + "on Amazon S3");
         } else {
-            logger.info("Added features for dataset " + id + "on Amazon S3");
+            logger.info("Added file " + id + "on Amazon S3");
         }
         
         return true;
@@ -168,10 +152,10 @@ public class FeaturesServiceImpl implements FeaturesService {
         String filename = id + ".gz";
         try {
             s3Client.deleteObject(featuresBucket, filename);
-            logger.info("Deleted features for dataset " + id + " from Amazon S3");
+            logger.info("Deleted file " + id + " from Amazon S3");
             return true;
         } catch(AmazonClientException e) {
-            logger.info("Error deleting features for dataset " + id + " on Amazon S3.", e);
+            logger.info("Error file " + id + " on Amazon S3.", e);
             return false;
         }
     }

@@ -35,19 +35,21 @@ public class Dataset implements IDataset {
     @NotBlank(message = "Species must not be blank.")
     String species;
 
-    @NotBlank(message = "Image alignment must not be blank.")
-    String image_alignment_id;
+    @NotBlank(message = "ST Data must not be blank.")
+    String st_data_filename;
+    
+    @NotBlank(message = "Main image must not be blank.")
+    String image_main;
 
-    int overall_feature_count;
-    int overall_hit_count;
-    int unique_gene_count;
-    int unique_barcode_count;
-    double[] overall_hit_quartiles;
-    double[] gene_pooled_hit_quartiles;
+    String image_second;
+    
+    String image_alignment_file;
+    
+    String spot_coordinates_file;
     
     String comment;
 
-    public String created_by_account_id;
+    String created_by_account_id;
 
     @CreatedDate
     private DateTime created_at;
@@ -55,7 +57,7 @@ public class Dataset implements IDataset {
     @LastModifiedDate
     private DateTime last_modified;
 
-    public List<String> granted_accounts;
+    List<String> granted_accounts;
 
     /**
      * Default constructor is needed by Jackson, in
@@ -85,13 +87,23 @@ public class Dataset implements IDataset {
     }
 
     @Override
-    public String getImage_alignment_id() {
-        return this.image_alignment_id;
+    public String getImage_alignment_file() {
+        return this.image_alignment_file;
     }
 
     @Override
-    public void setImage_alignment_id(String imal) {
-        this.image_alignment_id = imal;
+    public void setImage_alignment_file(String file) {
+        this.image_alignment_file = file;
+    }
+    
+    @Override
+    public String getSpot_coordinates_file() {
+        return this.spot_coordinates_file;
+    }
+
+    @Override
+    public void setSpot_coordinates_file(String file) {
+        this.spot_coordinates_file = file;
     }
 
     @Override
@@ -112,66 +124,6 @@ public class Dataset implements IDataset {
     @Override
     public void setSpecies(String species) {
         this.species = species;
-    }
-
-    @Override
-    public int getOverall_feature_count() {
-        return overall_feature_count;
-    }
-
-    @Override
-    public void setOverall_feature_count(int count) {
-        this.overall_feature_count = count;
-    }
-
-    @Override
-    public int getUnique_gene_count() {
-        return this.unique_gene_count;
-    }
-
-    @Override
-    public void setUnique_gene_count(int count) {
-        this.unique_gene_count = count;
-    }
-
-    @Override
-    public int getUnique_barcode_count() {
-        return this.unique_barcode_count;
-    }
-
-    @Override
-    public void setUnique_barcode_count(int count) {
-        this.unique_barcode_count = count;
-    }
-
-    @Override
-    public int getOverall_hit_count() {
-        return this.overall_hit_count;
-    }
-
-    @Override
-    public void setOverall_hit_count(int count) {
-        this.overall_hit_count = count;
-    }
-
-    @Override
-    public double[] getOverall_hit_quartiles() {
-        return this.overall_hit_quartiles;
-    }
-
-    @Override
-    public void setOverall_hit_quartiles(double[] quartiles) {
-        this.overall_hit_quartiles = quartiles;
-    }
-
-    @Override
-    public double[] getGene_pooled_hit_quartiles() {
-        return this.gene_pooled_hit_quartiles;
-    }
-
-    @Override
-    public void setGene_pooled_hit_quartiles(double[] quartiles) {
-        this.gene_pooled_hit_quartiles = quartiles;
     }
 
     @Override

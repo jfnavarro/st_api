@@ -16,8 +16,7 @@ import com.st.model.LastModifiedDate;
 import com.st.serviceImpl.AccountServiceImpl;
 import com.st.serviceImpl.DatasetInfoServiceImpl;
 import com.st.serviceImpl.DatasetServiceImpl;
-import com.st.serviceImpl.FeaturesServiceImpl;
-import com.st.serviceImpl.SelectionServiceImpl;
+import com.st.serviceImpl.FileServiceImpl;
 import com.st.util.DateOperations;
 import static com.st.util.DateOperations.checkIfModified;
 import static com.st.util.HTTPOperations.getHTTPHeaderWithCache;
@@ -64,16 +63,13 @@ public class AccountController {
     DatasetInfoServiceImpl datasetinfoService;
 
     @Autowired
-    SelectionServiceImpl selectionService;
-
-    @Autowired
     DatasetServiceImpl datasetService;
 
     @Autowired
     PasswordEncoder passwordEncoder;
 
     @Autowired
-    FeaturesServiceImpl featuresService;
+    FileServiceImpl featuresService;
 
     /**
      * GET|HEAD /account/
@@ -337,7 +333,6 @@ public class AccountController {
             }
             // Always delete the dataset info and selections for the deleted account
             datasetinfoService.deleteForAccount(id);
-            selectionService.deleteForAccount(id);
             logger.info("Successfully deleted account " + id);
         } else {
             logger.error("Failed to delete account " + id + " Missing permissions.");

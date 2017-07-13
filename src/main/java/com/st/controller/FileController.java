@@ -8,9 +8,9 @@ import com.st.exceptions.CustomNotFoundException;
 import com.st.exceptions.CustomNotModifiedException;
 import com.st.exceptions.NotFoundResponse;
 import com.st.exceptions.NotModifiedResponse;
-import com.st.model.FeaturesMetadata;
+import com.st.model.FileMetadata;
 import com.st.model.LastModifiedDate;
-import com.st.serviceImpl.FeaturesServiceImpl;
+import com.st.serviceImpl.FileServiceImpl;
 import com.st.serviceImpl.MongoUserDetailsServiceImpl;
 import com.st.util.DateOperations;
 import java.io.IOException;
@@ -41,13 +41,13 @@ import org.springframework.web.multipart.MultipartFile;
  */
 
 @Controller
-@RequestMapping("/rest/features")
-public class FeaturesController {
+@RequestMapping("/rest/file")
+public class FileController {
 
-    private static final Logger logger = Logger.getLogger(FeaturesController.class);
+    private static final Logger logger = Logger.getLogger(FileController.class);
 
     @Autowired
-    FeaturesServiceImpl featuresService;
+    FileServiceImpl featuresService;
 
     @Autowired
     MongoUserDetailsServiceImpl customUserDetailsService;
@@ -62,14 +62,14 @@ public class FeaturesController {
     @Secured({"ROLE_CM", "ROLE_ADMIN"})
     @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD})
     public @ResponseBody
-    List<FeaturesMetadata> listMetadata() {
-        List<FeaturesMetadata> l = featuresService.listMetadata();
+    List<FileMetadata> listMetadata() {
+        List<FileMetadata> l = featuresService.listMetadata();
         if (l == null) {
-            logger.info("Returning empty list of features metadata");
+            logger.info("Returning empty list of file metadata");
             throw new CustomNotFoundException("No metadata found or you don't "
                     + "have permissions to access them.");
         }
-        logger.info("Returning list of features metadata");
+        logger.info("Returning list of file metadata");
         return l;
     }
     
@@ -85,11 +85,11 @@ public class FeaturesController {
     public void getAsFile(@PathVariable String id, HttpServletResponse response,
             @RequestHeader(value="If-Modified-Since", defaultValue="") String ifModifiedSince) {
         try {
-            FeaturesMetadata meta = featuresService.getMetadata(id);
+            FileMetadata meta = featuresService.getMetadata(id);
             InputStream is = featuresService.find(id);
             if (meta == null || is == null) {
-                logger.info("Failed to return features for dataset " + id);
-                throw new CustomNotFoundException("A features file for a dataset with "
+                logger.info("Failed to return file  " + id);
+                throw new CustomNotFoundException("A file for a dataset with "
                         + "this ID does not exist, or you dont have permissions to access it.");
             }
             // Check if already newest.
@@ -102,8 +102,8 @@ public class FeaturesController {
                         resTime.getDayOfMonth(), resTime.getHourOfDay(), 
                         resTime.getMinuteOfHour(), resTime.getSecondOfMinute());
                 if (!resTime.isAfter(reqTime)) {
-                    logger.info("Not returning features for dataset " + id + " since not modified");
-                    throw new CustomNotModifiedException("This features file has not been modified");
+                    logger.info("Not returning file for dataset " + id + " since not modified");
+                    throw new CustomNotModifiedException("This file has not been modified");
                 }
             }
             // Copy raw stream into response.
@@ -113,11 +113,11 @@ public class FeaturesController {
             response.addHeader("Cache-Control", "public, must-revalidate, no-transform");
             response.addHeader("Vary", "Accept-Encoding");
             response.addHeader("Last-modified", DateOperations.getHTTPDateSafely(meta.getLastModified()));
-            logger.info("Returning features as raw gzip file for dataset " + id);
+            logger.info("Returning file as raw gzip file for dataset " + id);
             response.flushBuffer();
         } catch (IOException ex) {
-            logger.error("Error writing features file to output stream with file " + id);
-            throw new RuntimeException("IOError writing features file to HTTP response", ex);
+            logger.error("Error writing file to output stream with file " + id);
+            throw new RuntimeException("IOError writing file to HTTP response", ex);
         }
     }
 
@@ -136,20 +136,20 @@ public class FeaturesController {
         try {
             bytes = file.getBytes();
         } catch (IOException ex) {
-            logger.error("Failed to add features for dataset " + id +". Invalid file?");
-            throw new CustomBadRequestException("Failed to add features for dataset " + id +". Is the file valid?");
+            logger.error("Failed to add file for dataset " + id +". Invalid file?");
+            throw new CustomBadRequestException("Failed to add file for dataset " + id +". Is the file valid?");
         }
         if (id != null && bytes != null && bytes.length != 0) {
             boolean updated = featuresService.addUpdate(id, bytes);
             if (updated) {
-                logger.info("Updated/Added features file for dataset " + id);
+                logger.info("Updated/Added file for dataset " + id);
             } else {
-                logger.error("Failed to add features for dataset " + id +". S3 error");
-                throw new CustomBadRequestException("Failed to add features for dataset " + id + ". Server problem");                
+                logger.error("Failed to add file for dataset " + id +". S3 error");
+                throw new CustomBadRequestException("Failed to add file for dataset " + id + ". Server problem");                
             }
         } else {
-            logger.error("Failed to add features for dataset " + id +". Empty file?");
-            throw new CustomBadRequestException("Failed to add features for dataset " + id +". Is the file empty?");
+            logger.error("Failed to add file for dataset " + id +". Empty file?");
+            throw new CustomBadRequestException("Failed to add file for dataset " + id +". Is the file empty?");
         }
     }
 
@@ -164,9 +164,9 @@ public class FeaturesController {
     public @ResponseBody
     void delete(@PathVariable String id) {
         if (featuresService.delete(id)) {
-            logger.info("Successfully deleted features file for dataset " + id);
+            logger.info("Successfully deleted file for dataset " + id);
         } else {
-            throw new CustomBadRequestException("Failed to delete features for dataset " + id);
+            throw new CustomBadRequestException("Failed to delete file for dataset " + id);
         }
     }
 
@@ -181,13 +181,13 @@ public class FeaturesController {
     @RequestMapping(value = "/lastmodified/{id}", method = {RequestMethod.GET, RequestMethod.HEAD})
     public @ResponseBody
     LastModifiedDate getLastModified(@PathVariable String id) {
-        FeaturesMetadata feat = featuresService.getMetadata(id);
+        FileMetadata feat = featuresService.getMetadata(id);
         if (feat == null) {
-            logger.info("Failed to return last modified time of features file for dataset " + id);
-            throw new CustomNotFoundException("A features file with this id does not "
+            logger.info("Failed to return last modified time of file for dataset " + id);
+            throw new CustomNotFoundException("A file with this id does not "
                     + "exist or you do not have permissions to access it.");
         }
-        logger.info("Returning last modified time of features file for dataset " + id);
+        logger.info("Returning last modified time of file for dataset " + id);
         return new LastModifiedDate(feat.getLastModified());
     }
 
@@ -216,7 +216,7 @@ public class FeaturesController {
     @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
     public @ResponseBody
     CustomInternalServerErrorResponse handleRuntimeException(CustomInternalServerErrorException ex) {
-        logger.error("Unknown error in features controller: " + ex.getMessage());
+        logger.error("Unknown error in file controller: " + ex.getMessage());
         return new CustomInternalServerErrorResponse(ex.getMessage());
     }
     
