@@ -6,7 +6,7 @@ import org.joda.time.DateTime;
  * This class implements the FileMetadata object.
  * It derives its contents from Amazon S3.
  * 
- * Features metadata holds properties of a file stored on Amazon S3.
+ * File metadata holds properties of a file stored on Amazon S3.
  */
 public class FileMetadata implements IFileMetadata {
 

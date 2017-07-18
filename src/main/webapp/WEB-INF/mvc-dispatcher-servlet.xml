@@ -112,11 +112,5 @@
 		<constructor-arg name="databaseName" value="${mongodb.database.user}" />
 		<constructor-arg name="userCredentials" ref="mongoCredentials" />
 	</bean>
-        
-	<bean id="mongoTemplateExperimentDB" class="org.springframework.data.mongodb.core.MongoTemplate">
-		<constructor-arg ref="mongo" />
-		<constructor-arg name="databaseName" value="${mongodb.database.experiment}" />
-		<constructor-arg name="userCredentials" ref="mongoCredentials" />
-	</bean> 
 
 </beans>

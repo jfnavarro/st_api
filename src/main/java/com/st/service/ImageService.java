@@ -1,9 +1,8 @@
 package com.st.service;
 
+import com.st.model.FileMetadata;
 import java.awt.image.BufferedImage;
 import java.util.List;
-
-import com.st.model.ImageMetadata;
 
 /**
  * Interface for the image service.
@@ -14,14 +13,14 @@ public interface ImageService {
      * Lists all image metadata.
      * @return the list.
      */
-    public List<ImageMetadata> list();
+    public List<FileMetadata> list();
 
     /**
      * Returns image metadata for an image.
      * @param filename the image name.
      * @return metadata.
      */
-    public ImageMetadata getImageMetadata(String filename);
+    public FileMetadata getImageMetadata(String filename);
 
     /**
      * Returns an image as a BufferedImage.

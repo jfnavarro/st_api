@@ -8,7 +8,7 @@ import com.st.exceptions.CustomNotFoundException;
 import com.st.exceptions.CustomNotModifiedException;
 import com.st.exceptions.NotFoundResponse;
 import com.st.exceptions.NotModifiedResponse;
-import com.st.model.ImageMetadata;
+import com.st.model.FileMetadata;
 import com.st.model.LastModifiedDate;
 import com.st.serviceImpl.ImageServiceImpl;
 import java.awt.image.BufferedImage;
@@ -52,8 +52,8 @@ public class ImageController {
     @Secured({"ROLE_CM", "ROLE_ADMIN"})
     @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD})
     public @ResponseBody
-    List<ImageMetadata> listMetadata() {
-        List<ImageMetadata> list = imageService.list();
+    List<FileMetadata> listMetadata() {
+        List<FileMetadata> list = imageService.list();
         if (list == null) {
             logger.info("Returning empty list of image metedata");
             throw new CustomNotFoundException("No image metadata found or "
@@ -105,7 +105,7 @@ public class ImageController {
     LastModifiedDate getLastModified(@PathVariable String id) {
         // this {id:.+} is a workaround for a spring bug that truncates path
         // variables containing a dot
-        ImageMetadata img = imageService.getImageMetadata(id);
+        FileMetadata img = imageService.getImageMetadata(id);
         if (img == null) {
             logger.info("Failed to return last modified time of image " + id);
             throw new CustomNotFoundException("An image with this name does not "

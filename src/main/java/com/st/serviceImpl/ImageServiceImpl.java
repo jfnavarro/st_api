@@ -6,7 +6,7 @@ import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-import com.st.model.ImageMetadata;
+import com.st.model.FileMetadata;
 import com.st.model.MongoUserDetails;
 import com.st.service.ImageService;
 import java.awt.image.BufferedImage;
@@ -48,15 +48,14 @@ public class ImageServiceImpl implements ImageService {
     // ROLE_CM:    ok.
     // ROLE_USER:  nope.
     @Override
-    public List<ImageMetadata> list() {
-        List<ImageMetadata> imageMetadataList = new ArrayList<>();
+    public List<FileMetadata> list() {
+        List<FileMetadata> imageMetadataList = new ArrayList<>();
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
         if (currentUser.isAdmin() || currentUser.isContentManager()) {
             ObjectListing objects = s3Client.listObjects(imageBucket);
             List<S3ObjectSummary> objs = objects.getObjectSummaries();
             for (S3ObjectSummary o : objs) {
-                ImageMetadata im = new ImageMetadata();
-                im.setImageType("jpeg");
+                FileMetadata im = new FileMetadata();
                 im.setFilename(o.getKey());
                 im.setLastModified(new DateTime(o.getLastModified()));
                     im.setCreated(new DateTime(o.getLastModified()));
@@ -71,9 +70,9 @@ public class ImageServiceImpl implements ImageService {
     // ROLE_CM:    ok.
     // ROLE_USER:  ok.
     @Override
-    public ImageMetadata getImageMetadata(String filename) {
-        List<ImageMetadata> imList = this.list();
-        for (ImageMetadata im : imList) {
+    public FileMetadata getImageMetadata(String filename) {
+        List<FileMetadata> imList = this.list();
+        for (FileMetadata im : imList) {
             if (im.getFilename().equals(filename)) {
                 return im;
             }
