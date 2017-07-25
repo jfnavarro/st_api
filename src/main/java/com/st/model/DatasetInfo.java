@@ -32,8 +32,6 @@ public class DatasetInfo implements IDatasetInfo {
     @NotBlank(message = "dataset_id must not be blank.")
     String dataset_id;
 
-    String comment;
-
     /**
      * Default constructor is needed by Jackson, in
      * case other constructors are added.
@@ -41,10 +39,9 @@ public class DatasetInfo implements IDatasetInfo {
     public DatasetInfo() {}
 
     // HACK. Only for admin editing.
-    public DatasetInfo(String accountId, String datasetId, String comment) {
+    public DatasetInfo(String accountId, String datasetId) {
         this.account_id = accountId;
         this.dataset_id = datasetId;
-        this.comment = comment;
     }
 
     @Override
@@ -75,15 +72,5 @@ public class DatasetInfo implements IDatasetInfo {
     @Override
     public void setDataset_id(String dataset_id) {
         this.dataset_id = dataset_id;
-    }
-
-    @Override
-    public String getComment() {
-        return comment;
-    }
-
-    @Override
-    public void setComment(String comment) {
-        this.comment = comment;
     }
 }

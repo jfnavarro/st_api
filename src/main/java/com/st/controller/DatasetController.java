@@ -13,7 +13,6 @@ import com.st.model.Dataset;
 import com.st.model.LastModifiedDate;
 import com.st.serviceImpl.DatasetInfoServiceImpl;
 import com.st.serviceImpl.DatasetServiceImpl;
-import com.st.serviceImpl.FileServiceImpl;
 import com.st.util.DateOperations;
 import static com.st.util.DateOperations.checkIfModified;
 import static com.st.util.HTTPOperations.getHTTPHeaderWithCache;
@@ -57,9 +56,6 @@ public class DatasetController {
     DatasetServiceImpl datasetService;
 
     @Autowired
-    FileServiceImpl featuresService;
-
-    @Autowired
     DatasetInfoServiceImpl datasetInfoService;
 
     /**
@@ -97,6 +93,10 @@ public class DatasetController {
                 if (!dataset.getEnabled()) {
                     it.remove();
                 }
+            }
+            if (datasets.isEmpty()) {
+                logger.info("Returning empty list of datasets");
+                throw new CustomNotFoundException("No datasets found");
             }
         }
         
@@ -191,7 +191,7 @@ public class DatasetController {
         Dataset d = datasetService.add(ds);
         if (d != null) {
             // We update the granted accounts once the dataset is added (auto generated ID)
-            datasetInfoService.updateForDataset(d.getId(), d.getGranted_accounts());
+            datasetInfoService.updateForDataset(d.getId(), d.getGrantedAccounts());
             logger.info("Successfully added dataset " + d.getId()); 
             return d;
         } else {
@@ -233,7 +233,7 @@ public class DatasetController {
         
         if (datasetService.update(ds)) {
             //TODO should be performed only if the list of granted accounts changed
-            datasetInfoService.updateForDataset(ds.getId(), ds.getGranted_accounts());
+            datasetInfoService.updateForDataset(ds.getId(), ds.getGrantedAccounts());
             logger.info("Successfully updated dataset " + ds.getId());
         } else {
             logger.error("Failed to update dataset. DB Error or permissions");
@@ -255,7 +255,6 @@ public class DatasetController {
         //TODO A error-safe transactional approach should be used here
         if (datasetService.delete(id)) {
             datasetInfoService.deleteForDataset(id);
-            featuresService.delete(id);
             logger.info("Successfully deleted dataset and features for dataset " + id);
         } else {
             logger.error("Failed to delete dataset " + id + " Missing permissions.");

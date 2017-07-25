@@ -33,6 +33,11 @@ public class DatasetServiceImpl implements DatasetService {
     @Autowired
     MongoOperations mongoTemplateUserDB;
 
+    @Autowired
+    FileServiceImpl filesService;
+    
+    //add the file services
+    
     // ROLE_ADMIN: ok.
     // ROLE_CM:    ok.
     // ROLE_USER:  none.
@@ -140,6 +145,14 @@ public class DatasetServiceImpl implements DatasetService {
                 || (datasetIsGranted(id, currentUser)))) {
             logger.info("Deleting dataset " + id);
             mongoTemplateAnalysisDB.remove(dataset);
+            boolean files_deleted = true;
+            for (String filename : dataset.getFiles()) {
+                files_deleted &= filesService.delete(filename, id);
+            }
+            if (!files_deleted) {
+                logger.info("There were error deleting the files for " + id);
+                //TODO should return false?
+            }
             return true;
         }
         return false;

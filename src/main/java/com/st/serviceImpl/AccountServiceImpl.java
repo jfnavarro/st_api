@@ -148,8 +148,9 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public boolean delete(String id) {
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-        if (currentUser.isAdmin() && find(id) != null) {
-            mongoTemplateUserDB.remove(find(id));
+        Account acc_id = find(id);
+        if (currentUser.isAdmin() && acc_id != null) {
+            mongoTemplateUserDB.remove(acc_id);
             logger.info("Deleted account " + id + " from MongoDB.");
             return true;
         }

@@ -2,7 +2,6 @@ package com.st.service;
 
 import com.st.model.FileMetadata;
 import java.io.InputStream;
-import java.util.List;
 
 /**
  * Interface for the features service.
@@ -10,37 +9,35 @@ import java.util.List;
 public interface FileService {
     
     /**
-     * Returns all files' metadata.
-     * @return metadata list.
-     */
-    public List<FileMetadata> listMetadata();
-    
-    /**
      * Returns a file metadata.
-     * @param id the file ID.
+     * @param filename the name of the file
+     * @param id the dataset ID.
      * @return the metadata.
      */
-    public FileMetadata getMetadata(String id);
+    public FileMetadata getMetadata(String filename, String id);
     
     /**
      * Adds or updates a file.
-     * @param id the file ID.
+     * @param filename the name of the file
+     * @param id the dataset ID.
      * @param gzipfile the file, gzipped in BASE64-encoding.
-     * @return true if file was updated; false if added.
+     * @return true if file was updated or added correctly
      */
-    public boolean addUpdate(String id, byte[] gzipfile);
+    public boolean addUpdate(String filename, String id, byte[] gzipfile);
     
     /**
      * Finds a file.
-     * @param id the file ID.
+     * @param filename the name of the file
+     * @param id the dataset ID.
      * @return the file gzipped, as an input stream or null.
      */
-    public InputStream find(String id);
+    public InputStream find(String filename, String id);
     
     /**
      * Deletes a file.
-     * @param id the file ID.
+     * @param filename the name of the file
+     * @param id the dataset ID.
      * @return 
      */
-    public boolean delete(String id);
+    public boolean delete(String filename, String id);
 }

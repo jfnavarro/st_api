@@ -35,20 +35,19 @@ public class Dataset implements IDataset {
     @NotBlank(message = "Species must not be blank.")
     String species;
 
-    @NotBlank(message = "ST Data must not be blank.")
-    String st_data_filename;
+    double[] alignmentMatrix;
     
-    @NotBlank(message = "Main image must not be blank.")
-    String image_main;
+    @NotBlank(message = "HE image must not be blank.")
+    String imageHE;
 
-    String image_second;
-    
-    String image_alignment_file;
-    
-    String spot_coordinates_file;
+    String imageCy3;
+        
+    @NotBlank(message = "Files must contain at least one.")
+    List<String> files;
     
     String comment;
 
+    @NotBlank(message = "Created by must not be blank.")
     String created_by_account_id;
 
     @CreatedDate
@@ -57,7 +56,8 @@ public class Dataset implements IDataset {
     @LastModifiedDate
     private DateTime last_modified;
 
-    List<String> granted_accounts;
+    @NotBlank(message = "Granted account must contain at least one.")
+    List<String> grantedAccounts;
 
     /**
      * Default constructor is needed by Jackson, in
@@ -87,23 +87,43 @@ public class Dataset implements IDataset {
     }
 
     @Override
-    public String getImage_alignment_file() {
-        return this.image_alignment_file;
+    public String getImageHE() {
+        return this.imageHE;
     }
 
     @Override
-    public void setImage_alignment_file(String file) {
-        this.image_alignment_file = file;
+    public void setImageHE(String filename) {
+        this.imageHE = filename;
+    }
+
+    @Override
+    public String getImageCy3() {
+        return this.imageCy3;
+    }
+
+    @Override
+    public void setImageCy3(String filename) {
+        this.imageCy3 = filename;
     }
     
     @Override
-    public String getSpot_coordinates_file() {
-        return this.spot_coordinates_file;
+    public double[] getAlignmentMatrix() {
+        return this.alignmentMatrix;
+    }
+    
+    @Override
+    public void setAlignmentMatrix(double[] arr) {
+        this.alignmentMatrix = arr;
+    }
+    
+    @Override
+    public List<String> getFiles() {
+        return this.files;
     }
 
     @Override
-    public void setSpot_coordinates_file(String file) {
-        this.spot_coordinates_file = file;
+    public void setFiles(List<String> files) {
+        this.files = files;
     }
 
     @Override
@@ -157,17 +177,16 @@ public class Dataset implements IDataset {
     }
 
     @Override
-    public List<String> getGranted_accounts() {
+    public List<String> getGrantedAccounts() {
         // Controller must assure to synch these in the DB with DatasetInfo objects
-        return granted_accounts;
+        return grantedAccounts;
     }
 
     @Override
-    public void setGranted_accounts(List<String> grantedAccounts) {
+    public void setGrantedAccounts(List<String> grantedAccounts) {
         // Controller must assure to synch these in the DB with DatasetInfo objects
-        this.granted_accounts = grantedAccounts;
+        this.grantedAccounts = grantedAccounts;
     }
-
 
     @Override
     public DateTime getCreated_at() {

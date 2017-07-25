@@ -16,7 +16,6 @@ import com.st.model.LastModifiedDate;
 import com.st.serviceImpl.AccountServiceImpl;
 import com.st.serviceImpl.DatasetInfoServiceImpl;
 import com.st.serviceImpl.DatasetServiceImpl;
-import com.st.serviceImpl.FileServiceImpl;
 import com.st.util.DateOperations;
 import static com.st.util.DateOperations.checkIfModified;
 import static com.st.util.HTTPOperations.getHTTPHeaderWithCache;
@@ -68,9 +67,6 @@ public class AccountController {
     @Autowired
     PasswordEncoder passwordEncoder;
 
-    @Autowired
-    FileServiceImpl featuresService;
-
     /**
      * GET|HEAD /account/
      * 
@@ -96,6 +92,11 @@ public class AccountController {
                     it.remove();
                 }
             }
+            // check if accounts if empty
+            if (accounts.isEmpty()) {
+                logger.info("Returning empty list of accounts");
+                throw new CustomNotFoundException("No enabled accounts found");
+            } 
         }
         logger.info("Returning list of accounts");
         return accounts;
@@ -120,7 +121,7 @@ public class AccountController {
         } else {
             accounts = accountService.listIds();
         }
-        if (accounts == null) {
+        if (accounts == null || accounts.isEmpty()) {
             logger.info("Returning empty list of accounts ids");
             throw new CustomNotFoundException("No accounts found or "
                     + "you don't have permissions to access");
@@ -322,7 +323,6 @@ public class AccountController {
                 // Deleting the datasets created by the user
                 List<Dataset> datasets = datasetService.findByAccount(id);
                 for (Dataset dataset : datasets) {
-                    featuresService.delete(dataset.getId());
                     datasetService.delete(dataset.getId());
                 }
                 logger.info("Successfully cascade-deleted dependencies for account " + id);

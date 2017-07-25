@@ -15,7 +15,6 @@ import com.st.serviceImpl.MongoUserDetailsServiceImpl;
 import com.st.util.DateOperations;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
@@ -31,63 +30,51 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
- * This class is Spring MVC controller class for the API endpoint "rest/features". 
+ * This class is Spring MVC controller class for the API endpoint "rest/files". 
  * It implements the methods available at this endpoint.
  */
 
 @Controller
-@RequestMapping("/rest/file")
+@RequestMapping("/rest/files")
 public class FileController {
 
     private static final Logger logger = Logger.getLogger(FileController.class);
 
     @Autowired
-    FileServiceImpl featuresService;
+    FileServiceImpl filesService;
 
     @Autowired
     MongoUserDetailsServiceImpl customUserDetailsService;
-
-    /**
-     * GET|HEAD /features/
-     *
-     * Lists features metadata.
-     *
-     * @return the list.
-     */
-    @Secured({"ROLE_CM", "ROLE_ADMIN"})
-    @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD})
-    public @ResponseBody
-    List<FileMetadata> listMetadata() {
-        List<FileMetadata> l = featuresService.listMetadata();
-        if (l == null) {
-            logger.info("Returning empty list of file metadata");
-            throw new CustomNotFoundException("No metadata found or you don't "
-                    + "have permissions to access them.");
-        }
-        logger.info("Returning list of file metadata");
-        return l;
-    }
     
     /**
-     * Returns the zipped features payload as a file.
+     * Returns the gzipped file requested for the given dataset.
      *
+     * @param filename the name of the file
      * @param id dataset ID.
      * @param response HTTP response containing the file.
      * @param ifModifiedSince last modified tag.
      */
     @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
     @RequestMapping(value = "{id}", method = {RequestMethod.GET, RequestMethod.HEAD})
-    public void getAsFile(@PathVariable String id, HttpServletResponse response,
+    public void getAsFile(
+            @PathVariable String id, HttpServletResponse response,
+            @RequestParam(value = "filename", required = true) String filename, 
             @RequestHeader(value="If-Modified-Since", defaultValue="") String ifModifiedSince) {
         try {
-            FileMetadata meta = featuresService.getMetadata(id);
-            InputStream is = featuresService.find(id);
-            if (meta == null || is == null) {
+            FileMetadata meta = filesService.getMetadata(filename, id);
+            if (meta == null) {
+                logger.info("Failed to return meta info for file  " + id);
+                throw new CustomNotFoundException("A file for a dataset with "
+                        + "this ID does not exist, or you dont have permissions to access it.");                
+            }
+            InputStream is = filesService.find(filename, id);
+            if (is == null) {
                 logger.info("Failed to return file  " + id);
                 throw new CustomNotFoundException("A file for a dataset with "
                         + "this ID does not exist, or you dont have permissions to access it.");
@@ -122,66 +109,80 @@ public class FileController {
     }
 
     /**
-     * PUT /features/
+     * PUT /files/?filename=xx
      * 
      * Adds a features file payload wrapped in JSON.
      * @param id the dataset ID.
+     * @param filename the name of the file
      * @param file
      */
     @Secured({"ROLE_CM", "ROLE_ADMIN"})
     @RequestMapping(value = "{id}", method = RequestMethod.PUT)
     public @ResponseBody
-    void addOrUpdate(@PathVariable String id, @RequestBody MultipartFile file) {
+    void addOrUpdate(
+            @PathVariable String id, 
+            @RequestParam(value = "filename", required = true) String filename,
+            @RequestBody MultipartFile file) {
         byte[] bytes = null;
         try {
             bytes = file.getBytes();
         } catch (IOException ex) {
-            logger.error("Failed to add file for dataset " + id +". Invalid file?");
-            throw new CustomBadRequestException("Failed to add file for dataset " + id +". Is the file valid?");
+            logger.error("Failed to add file for dataset " + id + ". Invalid file?", ex);
+            throw new CustomBadRequestException("Failed to add file for dataset " 
+                    + id + ". Is the file valid?");
         }
         if (id != null && bytes != null && bytes.length != 0) {
-            boolean updated = featuresService.addUpdate(id, bytes);
+            final boolean updated = filesService.addUpdate(filename, id, bytes);
             if (updated) {
                 logger.info("Updated/Added file for dataset " + id);
             } else {
-                logger.error("Failed to add file for dataset " + id +". S3 error");
-                throw new CustomBadRequestException("Failed to add file for dataset " + id + ". Server problem");                
+                logger.error("Failed to add file for dataset " + id + ". S3 error");
+                throw new CustomBadRequestException("Failed to add file for dataset " 
+                        + id + ". Server problem");                
             }
         } else {
-            logger.error("Failed to add file for dataset " + id +". Empty file?");
-            throw new CustomBadRequestException("Failed to add file for dataset " + id +". Is the file empty?");
+            logger.error("Failed to add file for dataset " + id + ". Empty file?");
+            throw new CustomBadRequestException("Failed to add file for dataset " 
+                    + id + ". Is the file empty?");
         }
     }
 
     /**
-     * DELETE /features/{id}
+     * DELETE /files/{id}?filename=xx
      * 
      * Deletes a features file.
      * @param id the dataset ID.
+     * @param filename the name of the file
      */
     @Secured({"ROLE_CM", "ROLE_ADMIN"})
     @RequestMapping(value = "{id}", method = RequestMethod.DELETE)
     public @ResponseBody
-    void delete(@PathVariable String id) {
-        if (featuresService.delete(id)) {
+    void delete(
+            @PathVariable String id,
+            @RequestParam(value = "filename", required = true) String filename) {
+        if (filesService.delete(filename, id)) {
             logger.info("Successfully deleted file for dataset " + id);
         } else {
+            logger.info("Error deleting file for dataset " + id);
             throw new CustomBadRequestException("Failed to delete file for dataset " + id);
         }
     }
 
     /**
-     * GET|HEAD /features/lastmodified/{id}
+     * GET|HEAD /files/lastmodified/{id}?filename=xx
      * 
      * Finds last modified timestamp of features.
      * @param id the dataset ID.
+     * @param filename the name of the file
      * @return the timestamp.
      */
     @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
     @RequestMapping(value = "/lastmodified/{id}", method = {RequestMethod.GET, RequestMethod.HEAD})
     public @ResponseBody
-    LastModifiedDate getLastModified(@PathVariable String id) {
-        FileMetadata feat = featuresService.getMetadata(id);
+    LastModifiedDate getLastModified(
+            @PathVariable String id,
+            @RequestParam(value = "filename", required = true) String filename) {
+        final FileMetadata feat = filesService.getMetadata(filename, id);
         if (feat == null) {
             logger.info("Failed to return last modified time of file for dataset " + id);
             throw new CustomNotFoundException("A file with this id does not "

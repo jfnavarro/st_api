@@ -155,7 +155,7 @@ public class ImageController {
         // this {id:.+} is a workaround for a spring bug that truncates path
         // variables containing a dot
         if (imageService.getImageMetadata(id) != null) {
-            logger.info("Cannot add JPEG image: exists " + id);
+            logger.info("Cannot add image: exists " + id);
             throw new CustomBadRequestException(
                     "An image with this name exists already. Image names are unique.");
         }
@@ -164,6 +164,7 @@ public class ImageController {
             imageService.add(id, img);
             logger.info("Succesfully added BufferedImage image " + id);
         } catch (RuntimeException e) {
+            logger.info("Error uploading image " + id, e);
             throw new CustomBadRequestException("There was an error saving the image.");
         }
     }
@@ -184,6 +185,7 @@ public class ImageController {
         if (imageService.delete(id)) {
             logger.info("Successfully deleted image " + id);
         } else {
+            logger.info("Error deleting image " + id);
             throw new CustomBadRequestException("There was an error deleting the image.");
         }
     }

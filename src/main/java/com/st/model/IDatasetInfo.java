@@ -23,9 +23,4 @@ public interface IDatasetInfo {
     public String getDataset_id();
 
     public void setDataset_id(String id);
-
-    public String getComment();
-
-    public void setComment(String id);
-
 }

@@ -17,13 +17,21 @@ public interface IDataset {
 
     public void setName(String name);
 
-    public String getImage_alignment_file();
+    public String getImageHE();
 
-    public void setImage_alignment_file(String file);
+    public void setImageHE(String filename);
 
-    public String getSpot_coordinates_file();
+    public String getImageCy3();
 
-    public void setSpot_coordinates_file(String file);
+    public void setImageCy3(String filename);
+    
+    public double[] getAlignmentMatrix();
+    
+    public void setAlignmentMatrix(double[] arr);
+
+    public List<String> getFiles();
+
+    public void setFiles(List<String> files);
     
     public String getTissue();
 
@@ -41,9 +49,9 @@ public interface IDataset {
 
     public void setEnabled(boolean b);
 
-    public List<String> getGranted_accounts();
+    public List<String> getGrantedAccounts();
 
-    public void setGranted_accounts(List<String> grantedAccounts);
+    public void setGrantedAccounts(List<String> grantedAccounts);
 
     public DateTime getCreated_at();
 

@@ -127,7 +127,7 @@ public class ImageServiceImpl implements ImageService {
             s3Client.putObject(imageBucket, filename, is, om);
             logger.info("Added image from BuffereedImage " + filename + " to Amazon S3.");
         } catch (IOException | AmazonClientException e) {
-            logger.error("Error adding image " + filename + " to Amazon S3:" + e.getMessage());
+            logger.error("Error adding image " + filename + " to Amazon S3:", e);
             throw new RuntimeException("Error adding image " + filename + " to Amazon S3", e);
         }
     }
@@ -161,7 +161,7 @@ public class ImageServiceImpl implements ImageService {
                 logger.info("Deleted image " + filename + " from Amazon S3.");
                 return true;
             } catch(AmazonClientException e) {
-                logger.info("Could not delete image " + filename + " from Amazon S3.");
+                logger.info("Could not delete image " + filename + " from Amazon S3.", e);
                 return false;
             }
         }
