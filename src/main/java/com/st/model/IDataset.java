@@ -29,6 +29,10 @@ public interface IDataset {
     
     public void setAlignmentMatrix(double[] arr);
 
+    public String getDataFile();
+
+    public void setDataFile(String file);
+    
     public List<String> getFiles();
 
     public void setFiles(List<String> files);

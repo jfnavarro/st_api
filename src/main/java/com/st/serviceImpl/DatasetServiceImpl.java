@@ -149,9 +149,10 @@ public class DatasetServiceImpl implements DatasetService {
             for (String filename : dataset.getFiles()) {
                 files_deleted &= filesService.delete(filename, id);
             }
+            files_deleted &= filesService.delete(dataset.getDataFile(), id);
             if (!files_deleted) {
                 logger.info("There were error deleting the files for " + id);
-                //TODO should return false?
+                return false;
             }
             return true;
         }
