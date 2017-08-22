@@ -84,9 +84,13 @@ public class AccountServiceImpl implements AccountService {
         if (currentUser.isAdmin()) {
             return mongoTemplateUserDB.findAll(Account.class);
         }
+        Account acc = mongoTemplateUserDB.findOne(new 
+            Query(Criteria.where("id").is(currentUser.getId())), Account.class);
+        if (acc == null) {
+            return null;
+        }
         ArrayList<Account> accounts = new ArrayList<>(1);
-        accounts.add(mongoTemplateUserDB.findOne(new 
-        Query(Criteria.where("id").is(currentUser.getId())), Account.class));
+        accounts.add(acc);
         return accounts;
     }
     
@@ -106,10 +110,12 @@ public class AccountServiceImpl implements AccountService {
         // Obtain a list of AccountId objects from the Account objects
         List<AccountId> account_ids = new ArrayList<>();
         for (Account account : accounts) {
-            AccountId account_id = new AccountId();
-            account_id.setId(account.getId());
-            account_id.setUsername(account.getUsername());
-            account_ids.add(account_id);
+            if (account != null) {
+                AccountId account_id = new AccountId();
+                account_id.setId(account.getId());
+                account_id.setUsername(account.getUsername());
+                account_ids.add(account_id);
+            }
         }
         return account_ids;
     }
@@ -148,9 +154,9 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public boolean delete(String id) {
         MongoUserDetails currentUser = customUserDetailsService.loadCurrentUser();
-        Account acc_id = find(id);
-        if (currentUser.isAdmin() && acc_id != null) {
-            mongoTemplateUserDB.remove(acc_id);
+        Account acc = find(id);
+        if (currentUser.isAdmin() && acc != null) {
+            mongoTemplateUserDB.remove(acc);
             logger.info("Deleted account " + id + " from MongoDB.");
             return true;
         }
@@ -186,10 +192,12 @@ public class AccountServiceImpl implements AccountService {
         // Obtain a list of AccountId objects from the Account objects
         List<AccountId> account_ids = new ArrayList<>();
         for (Account account : accounts) {
-            AccountId account_id = new AccountId();
-            account_id.setId(account.getId());
-            account_id.setUsername(account.getUsername());
-            account_ids.add(account_id);
+            if (account != null) {
+                AccountId account_id = new AccountId();
+                account_id.setId(account.getId());
+                account_id.setUsername(account.getUsername());
+                account_ids.add(account_id);
+            }
         }
         return account_ids;
     }

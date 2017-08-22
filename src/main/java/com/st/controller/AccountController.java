@@ -92,11 +92,6 @@ public class AccountController {
                     it.remove();
                 }
             }
-            // check if accounts if empty
-            if (accounts.isEmpty()) {
-                logger.info("Returning empty list of accounts");
-                throw new CustomNotFoundException("No enabled accounts found");
-            } 
         }
         logger.info("Returning list of accounts");
         return accounts;
@@ -121,7 +116,7 @@ public class AccountController {
         } else {
             accounts = accountService.listIds();
         }
-        if (accounts == null || accounts.isEmpty()) {
+        if (accounts == null) {
             logger.info("Returning empty list of accounts ids");
             throw new CustomNotFoundException("No accounts found or "
                     + "you don't have permissions to access");
@@ -143,7 +138,7 @@ public class AccountController {
     @RequestMapping(value = "{id}", method = {RequestMethod.GET, RequestMethod.HEAD})
     public @ResponseBody HttpEntity<Account> get(
             @PathVariable String id, 
-            @RequestHeader(value="If-Modified-Since", defaultValue="") String ifModifiedSince,
+            @RequestHeader(value = "If-Modified-Since", defaultValue = "") String ifModifiedSince,
             @RequestParam(value = "onlyEnabled", required = false, defaultValue = "true") boolean onlyEnabled) {
         
         Account account = accountService.find(id);

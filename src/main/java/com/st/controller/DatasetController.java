@@ -94,10 +94,6 @@ public class DatasetController {
                     it.remove();
                 }
             }
-            if (datasets.isEmpty()) {
-                logger.info("Returning empty list of datasets");
-                throw new CustomNotFoundException("No datasets found");
-            }
         }
         
         logger.info("Returning list of datasets");
@@ -118,7 +114,7 @@ public class DatasetController {
     public @ResponseBody HttpEntity<Dataset> get(
             @PathVariable String id,
             @RequestParam(value = "onlyEnabled", required = false, defaultValue = "true") boolean onlyEnabled,
-            @RequestHeader(value="If-Modified-Since", defaultValue="") String ifModifiedSince) {
+            @RequestHeader(value = "If-Modified-Since", defaultValue = "") String ifModifiedSince) {
         
         Dataset dataset = datasetService.find(id);
         if (dataset == null || (onlyEnabled && !dataset.getEnabled())) {

@@ -128,10 +128,10 @@ public class DatasetInfoServiceImpl implements DatasetInfoService {
         // Add all the datasets again
         Date d = new Date();
         for (String datasetId : datasetsIds) {
-            add(new DatasetInfo(accountId, datasetId));
             Dataset dataset = mongoTemplateAnalysisDB.findOne(
                     new Query(Criteria.where("id").is(datasetId)), Dataset.class);
             if (dataset != null) {
+                add(new DatasetInfo(accountId, datasetId));
                 List<String> granted_accounts = dataset.getGrantedAccounts();
                 if (granted_accounts == null) {
                     granted_accounts = new ArrayList<>();
@@ -164,10 +164,10 @@ public class DatasetInfoServiceImpl implements DatasetInfoService {
         // the granted dataset Id
         Date d = new Date();
         for (String accountId : accountsIds) {
-            add(new DatasetInfo(accountId, datasetId));
             Account account = mongoTemplateUserDB.findOne(
                     new Query(Criteria.where("id").is(accountId)), Account.class);
             if (account != null) {
+                add(new DatasetInfo(accountId, datasetId));
                 List<String> granted_datasets = account.getGranted_datasets();
                 if (granted_datasets == null) {
                     granted_datasets = new ArrayList<>();

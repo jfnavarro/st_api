@@ -61,11 +61,12 @@ public class FileController {
      * @param ifModifiedSince last modified tag.
      */
     @Secured({"ROLE_CM", "ROLE_USER", "ROLE_ADMIN"})
-    @RequestMapping(value = "{id}", method = {RequestMethod.GET, RequestMethod.HEAD})
+    @RequestMapping(value = "{id}", method = {RequestMethod.GET, RequestMethod.HEAD}, 
+            produces = MediaType.TEXT_PLAIN_VALUE)
     public void getAsFile(
             @PathVariable String id, HttpServletResponse response,
             @RequestParam(value = "filename", required = true) String filename, 
-            @RequestHeader(value="If-Modified-Since", defaultValue="") String ifModifiedSince) {
+            @RequestHeader(value = "If-Modified-Since", defaultValue = "") String ifModifiedSince) {
         try {
             FileMetadata meta = filesService.getMetadata(filename, id);
             if (meta == null) {
